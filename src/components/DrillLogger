@@ -1,0 +1,26 @@
+import React from "react";
+import { saveSportLog } from "../storage/sportsLogs";
+
+export function DrillLogger({ drill }) {
+  if (!drill) return null;
+
+  const handleSave = () => {
+    saveSportLog({
+      timestamp: Date.now(),
+      sport: drill.sport,
+      category: drill.category,
+      action: drill.action,
+      modifier: drill.modifier,
+      level: drill.level,
+      output: drill.output,
+    });
+  };
+
+  return (
+    <div className="logger-section">
+      <button className="save-btn" onClick={handleSave}>
+        Save Drill
+      </button>
+    </div>
+  );
+}

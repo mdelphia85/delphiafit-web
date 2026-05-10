@@ -1,0 +1,12 @@
+.delphia-logo {
+  height: 320px;
+  width: auto;
+  max-width: 95%;
+  display: block;
+  margin: 20px 0;
+}
+
+.journal-input::placeholder {
+  color: #FF2ECC;
+  opacity: 1;
+}
