@@ -35,7 +35,7 @@ import AdminAnalytics from "./admin/Analytics.jsx";
 import AdminAnnouncements from "./admin/Announcements.jsx";
 import AdminLogs from "./admin/Logs.jsx";
 import AdminMessages from "./admin/Messages.jsx";
-import AdminUsers from "./admin/Users.jsx";
+import AdminUsers from "./Admin/Users.jsx";
 
 
 import { MenuProvider, MenuContext } from "./context/MenuContext.jsx";
