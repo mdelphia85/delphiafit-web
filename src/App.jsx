@@ -29,16 +29,16 @@ import ResetPassword from "./pages/ResetPassword.jsx";
 import DailyLog from "./pages/DailyLog.jsx";
 
 // ADMIN SCREENS
-import AdminLogin from "./admin/Login.jsx";
-import AdminDashboard from "./admin/Dashboard.jsx";
-import AdminAnalytics from "./admin/Analytics.jsx";
-import AdminAnnouncements from "./admin/Announcements.jsx";
-import AdminLogs from "./admin/Logs.jsx";
-import AdminMessages from "./admin/Messages.jsx";
+import AdminLogin from "./Admin/Login.jsx";
+import AdminDashboard from "./Admin/Dashboard.jsx";
+import AdminAnalytics from "./Admin/Analytics.jsx";
+import AdminAnnouncements from "./Admin/Announcements.jsx";
+import AdminLogs from "./Admin/Logs.jsx";
+import AdminMessages from "./Admin/Messages.jsx";
 import AdminUsers from "./Admin/Users.jsx";
 
-
 import { MenuProvider, MenuContext } from "./context/MenuContext.jsx";
+
 
 function App() {
   return (
