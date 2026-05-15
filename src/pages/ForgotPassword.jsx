@@ -19,23 +19,25 @@ export default function ForgotPassword() {
     setStatus("loading");
 
     try {
-      const res = await fetch("/api/request-reset", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+      const res = await fetch(
+        "https://delphiafit-backend-production.up.railway.app/auth/forgot-password",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
+      );
 
-      const data = await res.json();
-
-      if (data.success) {
-        setStatus("success");
-
-        // For testing, you can log the token:
-        console.log("Reset token:", data.token);
-      } else {
+      if (!res.ok) {
         setStatus("error");
-        setErrorMessage("Something went wrong.");
+        setErrorMessage("Email not found or server error.");
+        return;
       }
+
+      // Backend returns: { message: "Reset email sent" }
+      await res.json();
+
+      setStatus("success");
     } catch (err) {
       setStatus("error");
       setErrorMessage("Server error. Please try again.");
@@ -54,7 +56,7 @@ export default function ForgotPassword() {
     width: "100%",
     maxWidth: "400px",
     textShadow: "0px 0px 10px rgba(0,0,0,1)",
-    caretColor: "#4da6ff"
+    caretColor: "#4da6ff",
   };
 
   return (
@@ -71,17 +73,16 @@ export default function ForgotPassword() {
         flexDirection: "column",
         alignItems: "center",
         textAlign: "center",
-        position: "relative"
+        position: "relative",
       }}
     >
-
       {/* DARK OVERLAY */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           backgroundColor: "rgba(0,0,0,0.72)",
-          zIndex: 1
+          zIndex: 1,
         }}
       ></div>
 
@@ -117,7 +118,7 @@ export default function ForgotPassword() {
             textDecoration: "underline",
             cursor: "pointer",
             marginTop: "10px",
-            textShadow: "0px 0px 10px rgba(0,0,0,1)"
+            textShadow: "0px 0px 10px rgba(0,0,0,1)",
           }}
         >
           {status === "loading"
@@ -136,7 +137,7 @@ export default function ForgotPassword() {
             textDecoration: "underline",
             cursor: "pointer",
             marginTop: "25px",
-            textShadow: "0px 0px 10px rgba(0,0,0,1)"
+            textShadow: "0px 0px 10px rgba(0,0,0,1)",
           }}
         >
           Reset Password
@@ -144,9 +145,7 @@ export default function ForgotPassword() {
 
         {/* ERROR MESSAGE */}
         {status === "error" && (
-          <p style={{ color: "red", marginTop: "12px" }}>
-            {errorMessage}
-          </p>
+          <p style={{ color: "red", marginTop: "12px" }}>{errorMessage}</p>
         )}
       </div>
 

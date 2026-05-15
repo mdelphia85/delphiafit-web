@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import homescreen from "../assets/homescreen.png";
 
@@ -11,6 +11,34 @@ export default function Register() {
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
+  const token = localStorage.getItem("token");
+
+  // If token exists → verify with backend → redirect to home
+  useEffect(() => {
+    async function verifyToken() {
+      if (!token) return;
+
+      try {
+        const res = await fetch(
+          "https://delphiafit-backend-production.up.railway.app/auth/me",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (res.ok) {
+          navigate("/home");
+        }
+      } catch (err) {
+        console.log("Token invalid or expired");
+      }
+    }
+
+    verifyToken();
+  }, [token, navigate]);
+
   async function handleRegister() {
     if (!email.includes("@") || password.length < 10 || name.length < 2) {
       setStatus("error");
@@ -21,21 +49,26 @@ export default function Register() {
     setStatus("loading");
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
+      const res = await fetch(
+        "https://delphiafit-backend-production.up.railway.app/auth/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
-      const data = await res.json();
-
-      if (data.success) {
-        setStatus("success");
-        setTimeout(() => navigate("/login"), 800);
-      } else {
+      if (!res.ok) {
         setStatus("error");
-        setErrorMessage(data.message || "Registration failed.");
+        setErrorMessage("Registration failed.");
+        return;
       }
+
+      await res.json();
+
+      setStatus("success");
+
+      setTimeout(() => navigate("/login"), 800);
     } catch (err) {
       setStatus("error");
       setErrorMessage("Server error. Please try again.");
@@ -54,7 +87,7 @@ export default function Register() {
     width: "100%",
     maxWidth: "400px",
     textShadow: "0px 0px 10px rgba(0,0,0,1)",
-    caretColor: "#4da6ff"
+    caretColor: "#4da6ff",
   };
 
   return (
@@ -71,27 +104,23 @@ export default function Register() {
         flexDirection: "column",
         alignItems: "center",
         textAlign: "center",
-        position: "relative"
+        position: "relative",
       }}
     >
-
-      {/* DARK OVERLAY */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           backgroundColor: "rgba(0,0,0,0.72)",
-          zIndex: 1
+          zIndex: 1,
         }}
       ></div>
 
-      {/* CONTENT */}
       <div style={{ position: "relative", zIndex: 2, width: "100%" }}>
         <h1 style={{ fontSize: "36px", fontWeight: "700", marginBottom: "35px" }}>
           Create Account
         </h1>
 
-        {/* NAME */}
         <input
           type="text"
           placeholder="Full Name"
@@ -103,7 +132,6 @@ export default function Register() {
           style={inputStyle}
         />
 
-        {/* EMAIL */}
         <input
           type="email"
           placeholder="Email"
@@ -115,7 +143,6 @@ export default function Register() {
           style={inputStyle}
         />
 
-        {/* PASSWORD */}
         <input
           type="password"
           placeholder="Password (min 10 chars)"
@@ -127,7 +154,6 @@ export default function Register() {
           style={inputStyle}
         />
 
-        {/* REGISTER ACTION */}
         <div
           onClick={handleRegister}
           style={{
@@ -142,7 +168,7 @@ export default function Register() {
             textDecoration: "underline",
             cursor: "pointer",
             marginTop: "10px",
-            textShadow: "0px 0px 10px rgba(0,0,0,1)"
+            textShadow: "0px 0px 10px rgba(0,0,0,1)",
           }}
         >
           {status === "loading"
@@ -152,14 +178,10 @@ export default function Register() {
             : "Register"}
         </div>
 
-        {/* ERROR MESSAGE */}
         {status === "error" && (
-          <p style={{ color: "red", marginTop: "12px" }}>
-            {errorMessage}
-          </p>
+          <p style={{ color: "red", marginTop: "12px" }}>{errorMessage}</p>
         )}
 
-        {/* LOGIN LINK */}
         <div style={{ marginTop: "35px" }}>
           <div
             onClick={() => navigate("/login")}
@@ -168,7 +190,7 @@ export default function Register() {
               fontSize: "18px",
               textDecoration: "underline",
               cursor: "pointer",
-              textShadow: "0px 0px 10px rgba(0,0,0,1)"
+              textShadow: "0px 0px 10px rgba(0,0,0,1)",
             }}
           >
             Already have an account? Login
@@ -176,7 +198,6 @@ export default function Register() {
         </div>
       </div>
 
-      {/* BLUE PLACEHOLDER */}
       <style>
         {`
           ::placeholder {

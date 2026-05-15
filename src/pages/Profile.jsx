@@ -7,7 +7,7 @@ export default function Profile() {
   const navigate = useNavigate();
   const { openMenu } = useContext(MenuContext);
 
-  const userEmail = localStorage.getItem("userEmail");
+  const token = localStorage.getItem("token");
 
   // FORM STATE
   const [name, setName] = useState("");
@@ -24,19 +24,40 @@ export default function Profile() {
 
   const [avatar, setAvatar] = useState(null);
 
-  // ⭐ LOAD PROFILE ON MOUNT
+  // ⭐ VERIFY TOKEN + LOAD PROFILE
   useEffect(() => {
-    async function loadProfile() {
+    async function verifyAndLoad() {
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/profile/get", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: userEmail })
-        });
+        const verify = await fetch(
+          "https://delphiafit-backend-production.up.railway.app/auth/me",
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+
+        if (!verify.ok) {
+          navigate("/login");
+          return;
+        }
+
+        // Load profile
+        const res = await fetch(
+          "https://delphiafit-backend-production.up.railway.app/profile/get",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
 
         const data = await res.json();
 
-        if (data.success) {
+        if (data) {
           setName(data.name || "");
           setDob(data.dob || "");
           setWeightUnit(data.weight_unit || "kg");
@@ -47,12 +68,12 @@ export default function Profile() {
           setHeight(data.height || "");
         }
       } catch (err) {
-        console.log("Error loading profile:", err);
+        navigate("/login");
       }
     }
 
-    loadProfile();
-  }, []);
+    verifyAndLoad();
+  }, [token, navigate]);
 
   // AUTO CALCULATIONS
   const totalChanged =
@@ -77,7 +98,7 @@ export default function Profile() {
     return bmiValue ? bmiValue.toFixed(1) : "-";
   }
 
-  // ⭐ COLOR LOGIC (APPLIED TO TOTAL CHANGED)
+  // ⭐ COLOR LOGIC
   function getWeightColor() {
     if (!startingWeight || !currentWeight) return profileColor;
 
@@ -105,40 +126,36 @@ export default function Profile() {
     setAvatar(null);
   }
 
-  // ⭐ SAVE PROFILE TO BACKEND
+  // ⭐ SAVE PROFILE
   async function saveProfile() {
     const payload = {
-      email: userEmail,
       name,
       dob,
-      weightUnit,
-      heightUnit,
-      startingWeight,
-      currentWeight,
-      goalWeight,
+      weight_unit: weightUnit,
+      height_unit: heightUnit,
+      starting_weight: startingWeight,
+      current_weight: currentWeight,
+      goal_weight: goalWeight,
       height
     };
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/profile/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+      const res = await fetch(
+        "https://delphiafit-backend-production.up.railway.app/profile/update",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        }
+      );
 
-      let data = null;
-      try {
-        data = await res.json();
-      } catch {
-        console.log("Backend returned non‑JSON response");
-        return;
-      }
+      const data = await res.json();
 
       if (data.success) {
         console.log("Profile saved");
-
-        localStorage.setItem("profileComplete", "1");
-
         navigate("/login");
       } else {
         console.log("Profile save failed:", data.message);
@@ -163,7 +180,6 @@ export default function Profile() {
         position: "relative"
       }}
     >
-
       {/* LEFT COLUMN */}
       <div
         style={{
@@ -196,22 +212,11 @@ export default function Profile() {
 
           <Input label="Starting Weight" value={startingWeight} onChange={setStartingWeight} color={profileColor} />
 
-          {/* ⭐ CURRENT WEIGHT — NEUTRAL COLOR */}
-          <Input
-            label="Current Weight"
-            value={currentWeight}
-            onChange={setCurrentWeight}
-            color={profileColor}
-          />
+          <Input label="Current Weight" value={currentWeight} onChange={setCurrentWeight} color={profileColor} />
 
           <Input label="Target Weight" value={goalWeight} onChange={setGoalWeight} color={profileColor} />
 
-          {/* ⭐ TOTAL CHANGED — COLOR LOGIC APPLIED */}
-          <Display
-            label="Total Changed"
-            value={totalChanged}
-            color={getWeightColor()}
-          />
+          <Display label="Total Changed" value={totalChanged} color={getWeightColor()} />
 
           <Selector
             label="Height Unit"
@@ -225,7 +230,6 @@ export default function Profile() {
 
           <Display label="Body Mass Index" value={bmi} color={profileColor} />
 
-          {/* SAVE PROFILE */}
           <p
             onClick={saveProfile}
             style={{
@@ -240,7 +244,6 @@ export default function Profile() {
           </p>
         </div>
 
-        {/* RETURN TO MENU */}
         <div
           onClick={openMenu}
           style={{
@@ -271,7 +274,6 @@ export default function Profile() {
           {name || "Your Name"} / Your Profile
         </h2>
 
-        {/* AVATAR */}
         <div style={{ textAlign: "center" }}>
           {avatar ? (
             <img
@@ -299,7 +301,6 @@ export default function Profile() {
           )}
         </div>
 
-        {/* AVATAR BUTTONS */}
         <div style={{ display: "flex", justifyContent: "center", gap: "15px" }}>
           <Button label="Upload" onClick={() => document.getElementById("avatarInput").click()} color={profileColor} />
           <Button label="Camera" onClick={handleCamera} color={profileColor} />
@@ -308,7 +309,6 @@ export default function Profile() {
 
         <input id="avatarInput" type="file" accept="image/*" onChange={handleUpload} style={{ display: "none" }} />
 
-        {/* CONVERSION FORMULAS */}
         <div style={{ marginTop: "10px" }}>
           <h3 style={{ marginBottom: "10px" }}>Conversion Formulas</h3>
           <p>kg → lb: lb = kg × 2.20462</p>
@@ -383,7 +383,7 @@ function Display({ label, value, color }) {
           border: `2px solid ${color}`,
           backgroundColor: "#111",
           fontSize: "18px",
-          color: color,        // ⭐ TEXT COLOR NOW MATCHES LOGIC
+          color: color,
           fontWeight: "600"
         }}
       >

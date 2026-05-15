@@ -1,4 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.jsx";
 
 import {
@@ -12,6 +13,7 @@ import { generateWorkout } from "../generators/workoutGenerator.js";
 
 export default function Workouts() {
   const { openMenu } = useContext(MenuContext);
+  const navigate = useNavigate();
 
   const BLACK = "rgb(0,0,0)";
   const SILVER = "rgb(220,220,220)";
@@ -60,6 +62,34 @@ export default function Workouts() {
     cooldown: "3"
   });
 
+  const token = localStorage.getItem("token");
+
+  // ⭐ Token verification
+  useEffect(() => {
+    async function verify() {
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          "https://delphiafit-backend-production.up.railway.app/auth/me",
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+
+        if (!res.ok) navigate("/login");
+      } catch {
+        navigate("/login");
+      }
+    }
+
+    verify();
+  }, [token, navigate]);
+
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (timerRef.current) {
@@ -69,6 +99,7 @@ export default function Workouts() {
     };
   }, []);
 
+  // Timer logic
   useEffect(() => {
     if (!currentBlock) return;
 
@@ -173,6 +204,15 @@ export default function Workouts() {
   function handleSave() {
     if (!saveEnabled || !cooldownStarted) return;
 
+    console.log("Workout saved:", {
+      workoutType,
+      duration,
+      weightUnit,
+      weightValue,
+      plan,
+      blockElapsed
+    });
+
     setSaveEnabled(false);
     setCurrentBlock(null);
 
@@ -182,6 +222,7 @@ export default function Workouts() {
     }
   }
 
+  // Styles
   const container = {
     width: "100vw",
     height: "100vh",
@@ -287,6 +328,7 @@ export default function Workouts() {
   return (
     <div style={container}>
       <div style={inner}>
+        {/* Workout Type */}
         <div>
           <div style={label}>Workout Type</div>
           <select
@@ -307,6 +349,7 @@ export default function Workouts() {
           </select>
         </div>
 
+        {/* Duration */}
         <div>
           <div style={label}>Duration</div>
           <select
@@ -321,6 +364,7 @@ export default function Workouts() {
           </select>
         </div>
 
+        {/* Weight Section */}
         {weightSectionEnabled && (
           <div>
             <div style={label}>Weight Unit</div>
@@ -343,17 +387,13 @@ export default function Workouts() {
           </div>
         )}
 
+        {/* Generate */}
         <div style={clickable} onClick={handleGenerate}>
           Generate Workout
         </div>
 
-        {/* ⭐ UPDATED SCROLL AREA WITH INNER PADDING FIX */}
-        <div
-          style={{
-            maxHeight: "50vh",
-            overflowY: "auto"
-          }}
-        >
+        {/* Scroll Area */}
+        <div style={{ maxHeight: "50vh", overflowY: "auto" }}>
           <div style={{ paddingRight: "16px", paddingBottom: "12px" }}>
             {workoutType && (
               <div
@@ -499,6 +539,7 @@ export default function Workouts() {
               </>
             )}
 
+            {/* Equipment */}
             {plan.equipment.length > 0 && (
               <div style={{ color: SILVER, fontSize: "14px", marginTop: "8px" }}>
                 Equipment: {plan.equipment.join(", ")}
@@ -508,6 +549,7 @@ export default function Workouts() {
         </div>
       </div>
 
+      {/* Footer */}
       <div style={footer}>
         <div style={saveStyle} onClick={handleSave}>
           Save Workout

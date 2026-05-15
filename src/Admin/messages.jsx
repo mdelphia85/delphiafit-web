@@ -1,0 +1,191 @@
+import { useState } from "react";
+import AdminLayout from "./Admin.jsx";
+
+export default function AdminMessages() {
+  const BG = "rgb(0,0,0)";
+  const CARD_BG = "rgb(15,15,15)";
+  const BORDER = "rgb(60,60,60)";
+  const TEXT_MAIN = "rgb(240,240,240)";
+  const TEXT_MUTED = "rgb(160,160,160)";
+  const ACCENT = "rgb(128,0,128)";
+
+  // ⭐ Static UI-only messages (NOT backend)
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      name: "John Doe",
+      email: "john@example.com",
+      message: "I love the app! Could you add more sports options?",
+      date: "2026-05-11",
+      resolved: false
+    },
+    {
+      id: 2,
+      name: "Sarah Smith",
+      email: "sarah@example.com",
+      message: "My daily log didn’t save yesterday.",
+      date: "2026-05-10",
+      resolved: true
+    },
+    {
+      id: 3,
+      name: "Mike Johnson",
+      email: "mike@example.com",
+      message: "How do I reset my password?",
+      date: "2026-05-09",
+      resolved: false
+    }
+  ]);
+
+  function toggleResolved(id) {
+    setMessages(prev =>
+      prev.map(m =>
+        m.id === id ? { ...m, resolved: !m.resolved } : m
+      )
+    );
+  }
+
+  function deleteMessage(id) {
+    setMessages(prev => prev.filter(m => m.id !== id));
+  }
+
+  const container = {
+    width: "100%",
+    height: "100%",
+    backgroundColor: BG,
+    color: TEXT_MAIN,
+    padding: "20px",
+    boxSizing: "border-box",
+    display: "flex",
+    flexDirection: "column",
+    gap: "20px",
+    overflow: "auto"
+  };
+
+  const title = {
+    fontSize: "26px",
+    fontWeight: "600"
+  };
+
+  const subtitle = {
+    fontSize: "14px",
+    color: TEXT_MUTED
+  };
+
+  const card = {
+    backgroundColor: CARD_BG,
+    border: `1px solid ${BORDER}`,
+    borderRadius: "10px",
+    padding: "16px",
+    boxSizing: "border-box"
+  };
+
+  const messageCard = {
+    ...card,
+    marginBottom: "12px"
+  };
+
+  const messageHeader = {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: "6px"
+  };
+
+  const nameStyle = {
+    fontSize: "16px",
+    fontWeight: "600"
+  };
+
+  const emailStyle = {
+    fontSize: "14px",
+    color: TEXT_MUTED
+  };
+
+  const messageBody = {
+    fontSize: "14px",
+    margin: "10px 0"
+  };
+
+  const dateStyle = {
+    fontSize: "12px",
+    color: TEXT_MUTED
+  };
+
+  const actionsRow = {
+    display: "flex",
+    gap: "14px",
+    marginTop: "10px"
+  };
+
+  const resolveBtn = resolved => ({
+    padding: "6px 12px",
+    borderRadius: "6px",
+    border: `1px solid ${resolved ? ACCENT : BORDER}`,
+    backgroundColor: resolved ? ACCENT : CARD_BG,
+    color: resolved ? "white" : TEXT_MAIN,
+    cursor: "pointer",
+    fontSize: "13px"
+  });
+
+  const deleteBtn = {
+    padding: "6px 12px",
+    borderRadius: "6px",
+    border: `1px solid red`,
+    backgroundColor: "transparent",
+    color: "red",
+    cursor: "pointer",
+    fontSize: "13px"
+  };
+
+  return (
+    <AdminLayout>
+      <div style={container}>
+        {/* HEADER */}
+        <div>
+          <div style={title}>Admin Messages</div>
+          <div style={subtitle}>View and manage user messages and support requests.</div>
+        </div>
+
+        {/* MESSAGES LIST */}
+        <div>
+          {messages.map(msg => (
+            <div key={msg.id} style={messageCard}>
+              <div style={messageHeader}>
+                <div>
+                  <div style={nameStyle}>{msg.name}</div>
+                  <div style={emailStyle}>{msg.email}</div>
+                </div>
+
+                <div style={dateStyle}>{msg.date}</div>
+              </div>
+
+              <div style={messageBody}>{msg.message}</div>
+
+              <div style={actionsRow}>
+                <div
+                  style={resolveBtn(msg.resolved)}
+                  onClick={() => toggleResolved(msg.id)}
+                >
+                  {msg.resolved ? "Mark as Unresolved" : "Mark as Resolved"}
+                </div>
+
+                <div
+                  style={deleteBtn}
+                  onClick={() => deleteMessage(msg.id)}
+                >
+                  Delete
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {messages.length === 0 && (
+            <div style={{ color: TEXT_MUTED, fontSize: "14px" }}>
+              No messages found.
+            </div>
+          )}
+        </div>
+      </div>
+    </AdminLayout>
+  );
+}

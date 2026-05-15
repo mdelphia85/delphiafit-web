@@ -1,7 +1,9 @@
-import React, { useContext, useState, useRef } from "react";
+import React, { useContext, useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.jsx";
 
 export default function FreeTraining() {
+  const navigate = useNavigate();
   const { setMenuOpen } = useContext(MenuContext);
 
   const FREE_TRAINING_COLOR = "yellow";
@@ -15,6 +17,38 @@ export default function FreeTraining() {
 
   const [time, setTime] = useState(0);
   const timerRef = useRef(null);
+
+  const [status, setStatus] = useState("idle");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const token = localStorage.getItem("token");
+
+  // Verify token on load
+  useEffect(() => {
+    async function verify() {
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          "https://delphiafit-backend-production.up.railway.app/auth/me",
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+
+        if (!res.ok) {
+          navigate("/login");
+        }
+      } catch (err) {
+        navigate("/login");
+      }
+    }
+
+    verify();
+  }, [token, navigate]);
 
   function updateField(key, value) {
     setFields({ ...fields, [key]: value });
@@ -37,8 +71,42 @@ export default function FreeTraining() {
     setTime(0);
   }
 
-  function saveSession() {
-    console.log("Saved session:", fields, time);
+  async function saveSession() {
+    setStatus("loading");
+
+    try {
+      const res = await fetch(
+        "https://delphiafit-backend-production.up.railway.app/free/log",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            workout_name: fields.name,
+            skill_focus: fields.skill,
+            notes: fields.notes,
+            extra: fields.extra,
+            duration_seconds: time
+          })
+        }
+      );
+
+      if (!res.ok) {
+        setStatus("error");
+        setErrorMessage("Failed to save session.");
+        return;
+      }
+
+      setStatus("success");
+      resetTimer();
+      setFields({ name: "", skill: "", notes: "", extra: "" });
+
+    } catch (err) {
+      setStatus("error");
+      setErrorMessage("Server error. Please try again.");
+    }
   }
 
   function formatTime(seconds) {
@@ -67,6 +135,7 @@ export default function FreeTraining() {
           type="text"
           value={fields[key]}
           onChange={(e) => updateField(key, e.target.value)}
+          placeholder={key.charAt(0).toUpperCase() + key.slice(1)}
           style={{
             width: "100%",
             height: "40px",
@@ -96,6 +165,19 @@ export default function FreeTraining() {
         {formatTime(time)}
       </p>
 
+      {/* STATUS MESSAGE */}
+      {status === "error" && (
+        <p style={{ color: "red", textAlign: "center", marginBottom: "20px" }}>
+          {errorMessage}
+        </p>
+      )}
+
+      {status === "success" && (
+        <p style={{ color: "lightgreen", textAlign: "center", marginBottom: "20px" }}>
+          Session Saved!
+        </p>
+      )}
+
       {/* BUTTONS */}
       <p
         onClick={saveSession}
@@ -108,7 +190,7 @@ export default function FreeTraining() {
           marginBottom: "20px"
         }}
       >
-        Save Session
+        {status === "loading" ? "Saving..." : "Save Session"}
       </p>
 
       <p

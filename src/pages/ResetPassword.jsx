@@ -31,7 +31,7 @@ export default function ResetPassword() {
       return;
     }
 
-    if (token.length < 10) {
+    if (token.length < 5) {
       setStatus("error");
       setErrorMessage("Invalid or missing reset token.");
       return;
@@ -40,25 +40,29 @@ export default function ResetPassword() {
     setStatus("loading");
 
     try {
-      const res = await fetch("/api/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          token,
-          new_password: password
-        }),
-      });
+      const res = await fetch(
+        "https://delphiafit-backend-production.up.railway.app/auth/reset-password",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            token,
+            new_password: password,
+          }),
+        }
+      );
 
-      const data = await res.json();
-
-      if (data.success) {
-        setStatus("success");
-        setTimeout(() => navigate("/login"), 1500);
-      } else {
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
         setStatus("error");
         setErrorMessage(data.message || "Reset failed.");
+        return;
       }
+
+      setStatus("success");
+
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
       setStatus("error");
       setErrorMessage("Server error. Please try again.");
@@ -77,7 +81,7 @@ export default function ResetPassword() {
     width: "100%",
     maxWidth: "400px",
     textShadow: "0px 0px 10px rgba(0,0,0,1)",
-    caretColor: "#4da6ff"
+    caretColor: "#4da6ff",
   };
 
   return (
@@ -94,17 +98,16 @@ export default function ResetPassword() {
         flexDirection: "column",
         alignItems: "center",
         textAlign: "center",
-        position: "relative"
+        position: "relative",
       }}
     >
-
       {/* DARK OVERLAY */}
       <div
         style={{
           position: "absolute",
           inset: 0,
           backgroundColor: "rgba(0,0,0,0.72)",
-          zIndex: 1
+          zIndex: 1,
         }}
       ></div>
 
@@ -177,7 +180,7 @@ export default function ResetPassword() {
             textDecoration: "underline",
             cursor: "pointer",
             marginTop: "10px",
-            textShadow: "0px 0px 10px rgba(0,0,0,1)"
+            textShadow: "0px 0px 10px rgba(0,0,0,1)",
           }}
         >
           {status === "loading"
@@ -189,9 +192,7 @@ export default function ResetPassword() {
 
         {/* ERROR MESSAGES */}
         {(status === "error" || status === "mismatch") && (
-          <p style={{ color: "red", marginTop: "12px" }}>
-            {errorMessage}
-          </p>
+          <p style={{ color: "red", marginTop: "12px" }}>{errorMessage}</p>
         )}
       </div>
 

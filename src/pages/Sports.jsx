@@ -1,34 +1,123 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.jsx";
-import {
-  SPORTS,
-  SKILL_LEVELS,
-  getSportsList,
-  getCategoriesForSport,
-  generateDrill
-} from "../generators/sportsGenerator";
 
 export default function Sports() {
+  const navigate = useNavigate();
+  const { openMenu } = useContext(MenuContext);
+
+  const [sportsList, setSportsList] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [levels, setLevels] = useState([]);
+  const [drill, setDrill] = useState(null);
+
   const [sport, setSport] = useState("");
   const [category, setCategory] = useState("");
   const [level, setLevel] = useState("");
-  const [result, setResult] = useState(null);
 
-  const { openMenu } = useContext(MenuContext);
+  const token = localStorage.getItem("token");
 
-  const sportsList = getSportsList();
-  const categories = sport ? getCategoriesForSport(sport) : [];
+  // Verify token + load sports
+  useEffect(() => {
+    async function verifyAndLoad() {
+      if (!token) {
+        navigate("/login");
+        return;
+      }
 
-  const handleGenerate = () => {
+      try {
+        const verify = await fetch(
+          "https://delphiafit-backend-production.up.railway.app/auth/me",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (!verify.ok) {
+          navigate("/login");
+          return;
+        }
+
+        // Load sports list
+        const res = await fetch(
+          "https://delphiafit-backend-production.up.railway.app/sports",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const data = await res.json();
+        setSportsList(data.sports || []);
+      } catch (err) {
+        navigate("/login");
+      }
+    }
+
+    verifyAndLoad();
+  }, [token, navigate]);
+
+  // Load categories when sport changes
+  useEffect(() => {
+    async function loadCategories() {
+      if (!sport) return;
+
+      const res = await fetch(
+        `https://delphiafit-backend-production.up.railway.app/sports/${sport}/skills`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = await res.json();
+      setCategories(data.skills || []);
+      setCategory("");
+      setLevel("");
+      setDrill(null);
+    }
+
+    loadCategories();
+  }, [sport, token]);
+
+  // Load levels when category changes
+  useEffect(() => {
+    async function loadLevels() {
+      if (!sport || !category) return;
+
+      const res = await fetch(
+        `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/levels`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = await res.json();
+      setLevels(data.levels || []);
+      setLevel("");
+      setDrill(null);
+    }
+
+    loadLevels();
+  }, [category, sport, token]);
+
+  // Load drill when level selected
+  async function handleGenerate() {
     if (!sport || !category || !level) return;
-    const drill = generateDrill(sport, category, level);
-    setResult(drill);
-  };
 
-  // Native app colors
-  const BACKGROUND = "#000000";      // black
-  const TEXT = "#FFFFFF";            // white
-  const ACCENT = "#B3FF00";          // neon yellow-green
+    const res = await fetch(
+      `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/${level}/drills`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    const data = await res.json();
+    setDrill(data.drill || null);
+  }
+
+  // Colors
+  const BACKGROUND = "#000000";
+  const TEXT = "#FFFFFF";
+  const ACCENT = "#B3FF00";
 
   return (
     <div
@@ -39,12 +128,11 @@ export default function Sports() {
         padding: "20px",
         color: TEXT,
         fontFamily: "sans-serif",
-        position: "relative"
+        position: "relative",
       }}
     >
-
       <h1 style={{ color: ACCENT, marginBottom: "20px" }}>
-        Sports Generator
+        Sports Training
       </h1>
 
       {/* SPORT SELECTOR */}
@@ -52,11 +140,7 @@ export default function Sports() {
         <label style={{ color: ACCENT }}>Sport</label>
         <select
           value={sport}
-          onChange={(e) => {
-            setSport(e.target.value);
-            setCategory("");
-            setResult(null);
-          }}
+          onChange={(e) => setSport(e.target.value)}
           style={{
             width: "100%",
             padding: "10px",
@@ -69,7 +153,9 @@ export default function Sports() {
         >
           <option value="">Select Sport</option>
           {sportsList.map((s) => (
-            <option key={s} value={s}>{s}</option>
+            <option key={s} value={s}>
+              {s}
+            </option>
           ))}
         </select>
       </div>
@@ -80,10 +166,7 @@ export default function Sports() {
           <label style={{ color: ACCENT }}>Category</label>
           <select
             value={category}
-            onChange={(e) => {
-              setCategory(e.target.value);
-              setResult(null);
-            }}
+            onChange={(e) => setCategory(e.target.value)}
             style={{
               width: "100%",
               padding: "10px",
@@ -96,7 +179,9 @@ export default function Sports() {
           >
             <option value="">Select Category</option>
             {categories.map((c) => (
-              <option key={c} value={c}>{c}</option>
+              <option key={c} value={c}>
+                {c}
+              </option>
             ))}
           </select>
         </div>
@@ -120,8 +205,10 @@ export default function Sports() {
             }}
           >
             <option value="">Select Level</option>
-            {SKILL_LEVELS.map((lvl) => (
-              <option key={lvl} value={lvl}>{lvl}</option>
+            {levels.map((lvl) => (
+              <option key={lvl} value={lvl}>
+                {lvl}
+              </option>
             ))}
           </select>
         </div>
@@ -148,7 +235,7 @@ export default function Sports() {
       )}
 
       {/* OUTPUT */}
-      {result && (
+      {drill && (
         <div
           className="output-box"
           style={{
@@ -168,7 +255,7 @@ export default function Sports() {
               padding: 0,
             }}
           >
-            Generated Drill
+            Drill
           </h3>
 
           <p
@@ -178,7 +265,7 @@ export default function Sports() {
               marginBottom: 0,
             }}
           >
-            {result.output}
+            {drill}
           </p>
         </div>
       )}
@@ -193,12 +280,11 @@ export default function Sports() {
           color: ACCENT,
           textDecoration: "underline",
           fontSize: "18px",
-          cursor: "pointer"
+          cursor: "pointer",
         }}
       >
         Return to Menu
       </div>
-
     </div>
   );
 }
