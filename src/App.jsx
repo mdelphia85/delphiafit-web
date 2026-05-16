@@ -158,6 +158,7 @@ function AppWithMenu() {
         <Route path="/daily-log" element={<DailyLog />} />
 
         {/* ⭐ ADMIN ROUTES */}
+        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/analytics" element={<AdminAnalytics />} />
