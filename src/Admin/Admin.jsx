@@ -74,7 +74,6 @@ export default function AdminLayout({ children }) {
         <div style={link} onClick={() => go("/admin/analytics")}>Analytics</div>
         <div style={link} onClick={() => go("/admin/announcements")}>Announcements</div>
         <div style={link} onClick={() => go("/admin/dashboard")}>Dashboard</div>
-        <div style={link} onClick={() => go("/admin/logs")}>Login Logs</div>
         <div style={link} onClick={() => go("/admin/logs")}>Logs</div>
         <div style={link} onClick={() => go("/admin/messages")}>Messages</div>
         <div style={link} onClick={() => go("/admin/users")}>Users</div>
