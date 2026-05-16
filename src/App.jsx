@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import { useContext } from "react";
 
 import Login from "./pages/Login.jsx";
