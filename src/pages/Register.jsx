@@ -22,8 +22,10 @@ export default function Register() {
         const res = await fetch(
           "https://delphiafit-backend-production.up.railway.app/auth/me",
           {
+            method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
+              Accept: "application/json",
             },
           }
         );
@@ -53,14 +55,18 @@ export default function Register() {
         "https://delphiafit-backend-production.up.railway.app/auth/register",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
           body: JSON.stringify({ name, email, password }),
         }
       );
 
       if (!res.ok) {
+        const data = await res.json().catch(() => null);
         setStatus("error");
-        setErrorMessage("Registration failed.");
+        setErrorMessage(data?.detail || "Registration failed.");
         return;
       }
 

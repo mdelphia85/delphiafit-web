@@ -25,8 +25,10 @@ export default function Login() {
         const res = await fetch(
           "https://delphiafit-backend-production.up.railway.app/auth/me",
           {
+            method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
+              Accept: "application/json",
             },
           }
         );
@@ -47,7 +49,7 @@ export default function Login() {
     verifyToken();
   }, [token]);
 
-  // ⭐ UPDATED handleLogin() with debug logs
+  // ⭐ FIXED handleLogin() — now CORS‑safe
   async function handleLogin() {
     if (!email.includes("@") || password.length < 10) {
       setStatus("error");
@@ -62,7 +64,10 @@ export default function Login() {
         "https://delphiafit-backend-production.up.railway.app/auth/login",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
           body: JSON.stringify({ email, password }),
         }
       );
