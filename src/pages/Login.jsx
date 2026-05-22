@@ -13,6 +13,9 @@ export default function Login() {
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
+  // ⭐ THIS WAS MISSING — REQUIRED FOR HOME SCREEN
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   async function handleLogin() {
     if (!email.includes("@") || password.length < 10) {
       setStatus("error");
@@ -23,7 +26,7 @@ export default function Login() {
     setStatus("loading");
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+      const res = await fetch("https://delphiafit-backend-production.up.railway.app/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -31,24 +34,27 @@ export default function Login() {
 
       const data = await res.json();
 
-      if (res.ok) {
-        // ⭐ Store JWT token
-        localStorage.setItem("token", data.access_token);
-
-        // ⭐ Store email
+      if (data.success) {
+        // ⭐ Save login info
         localStorage.setItem("userEmail", email);
+        localStorage.setItem("profileComplete", data.profile_complete);
 
-        // ⭐ If you later add profile completion, handle it here
-        // For now, just go to the daily log
         setStatus("success");
 
         setTimeout(() => {
-          navigate("/daily-log");
+          // ⭐ Redirect based on onboarding status
+          if (data.profile_complete === 1) {
+            // LOGIN SCREEN → HOME SCREEN
+            setIsLoggedIn(true);
+          } else {
+            // LOGIN SCREEN → PROFILE SCREEN
+            navigate("/profile");
+          }
         }, 600);
 
       } else {
         setStatus("error");
-        setErrorMessage(data.detail || "Invalid email or password.");
+        setErrorMessage("Invalid email or password.");
       }
     } catch (err) {
       setStatus("error");
@@ -56,6 +62,60 @@ export default function Login() {
     }
   }
 
+  // ⭐ AFTER LOGIN → HOME SCREEN
+  if (isLoggedIn) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          backgroundImage: `url(${homescreen})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          color: "white",
+          padding: "40px 20px",
+          textAlign: "center",
+          position: "relative"
+        }}
+      >
+        {/* DARK OVERLAY */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.72)",
+            zIndex: 1
+          }}
+        ></div>
+
+        {/* MENU BUTTON */}
+        <img
+          src={menuIcon}
+          alt="menu"
+          onClick={() => setMenuOpen(!menuOpen)}
+          style={{
+            position: "absolute",
+            top: "40px",
+            left: "20px",
+            width: "40px",
+            height: "40px",
+            zIndex: 3,
+            cursor: "pointer"
+          }}
+        />
+
+        {/* HOME CONTENT */}
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <h1 style={{ fontSize: "40px", fontWeight: "700" }}>Home</h1>
+          <p style={{ fontSize: "22px", marginTop: "20px" }}>
+            Welcome back!
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ⭐ BEFORE LOGIN → LOGIN FORM
   const inputStyle = {
     padding: "12px 4px",
     border: "none",
