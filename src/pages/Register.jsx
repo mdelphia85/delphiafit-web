@@ -24,17 +24,20 @@ export default function Register() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({
+          email,
+          password
+        }), // FIXED — backend does NOT accept name
       });
 
       const data = await res.json();
 
-      if (data.success) {
+      if (res.ok) {
         setStatus("success");
         setTimeout(() => navigate("/login"), 800);
       } else {
         setStatus("error");
-        setErrorMessage(data.message || "Registration failed.");
+        setErrorMessage(data.detail || "Registration failed.");
       }
     } catch (err) {
       setStatus("error");
@@ -189,3 +192,4 @@ export default function Register() {
     </div>
   );
 }
+

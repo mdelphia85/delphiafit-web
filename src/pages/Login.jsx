@@ -31,23 +31,24 @@ export default function Login() {
 
       const data = await res.json();
 
-      if (data.success) {
-        localStorage.setItem("userEmail", email);
-        localStorage.setItem("profileComplete", data.profile_complete);
+      if (res.ok) {
+        // ⭐ Store JWT token
+        localStorage.setItem("token", data.access_token);
 
+        // ⭐ Store email
+        localStorage.setItem("userEmail", email);
+
+        // ⭐ If you later add profile completion, handle it here
+        // For now, just go to the daily log
         setStatus("success");
 
         setTimeout(() => {
-          if (data.profile_complete === 1) {
-            navigate("/daily-log");   // ⭐ REAL HOME PAGE
-          } else {
-            navigate("/profile");
-          }
+          navigate("/daily-log");
         }, 600);
 
       } else {
         setStatus("error");
-        setErrorMessage("Invalid email or password.");
+        setErrorMessage(data.detail || "Invalid email or password.");
       }
     } catch (err) {
       setStatus("error");
@@ -55,7 +56,6 @@ export default function Login() {
     }
   }
 
-  // ⭐ BEFORE LOGIN → LOGIN FORM
   const inputStyle = {
     padding: "12px 4px",
     border: "none",
