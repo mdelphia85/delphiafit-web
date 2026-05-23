@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
 
 const PROGRESS_COLOR = "yellow";
@@ -52,36 +52,6 @@ export default function DailyLog() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  // ⭐ LOAD TODAY'S LOG ON MOUNT
-  useEffect(() => {
-    async function loadToday() {
-      try {
-        const email = localStorage.getItem("userEmail");
-        const res = await fetch(
-          `http://127.0.0.1:8000/api/progress/today?email=${email}`
-        );
-
-        const data = await res.json();
-
-        if (data.success) {
-          setForm({
-            protein: String(data.protein),
-            water: String(data.water),
-            calories: String(data.calories),
-            meals: String(data.meals),
-            workouts: String(data.workouts),
-            supplements: String(data.supplements)
-          });
-        }
-      } catch (err) {
-        console.log("Error loading today's log:", err);
-      }
-    }
-
-    loadToday();
-  }, []);
-
-  // ⭐ SAVE TODAY'S LOG
   async function saveLog() {
     try {
       const email = localStorage.getItem("userEmail");
@@ -98,7 +68,7 @@ export default function DailyLog() {
         supplements: normalize(form.supplements)
       });
 
-      const url = `http://127.0.0.1:8000/api/progress/log?${params.toString()}`;
+      https://delphiafit-backend-production.up.railway.app/api/progress/log
 
       const res = await fetch(url, {
         method: "POST",

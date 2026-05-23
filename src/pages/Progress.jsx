@@ -37,7 +37,7 @@ export default function Progress() {
     try {
       const email = localStorage.getItem("userEmail");
       const res = await fetch(
-        `http://127.0.0.1:8000/api/progress/history?email=${email}`
+        https://delphiafit-backend-production.up.railway.app/api/progress/history?email=${email}
       );
       const data = await res.json();
 
