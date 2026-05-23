@@ -33,12 +33,17 @@ export default function Progress() {
     }
   }, [refreshProgress]);
 
+  // ---------------------------------------------------------
+  // LOAD HISTORY
+  // ---------------------------------------------------------
   async function loadHistory() {
     try {
       const email = localStorage.getItem("userEmail");
+
       const res = await fetch(
-        https://delphiafit-backend-production.up.railway.app/api/progress/history?email=${email}
+        `https://delphiafit-backend-production.up.railway.app/api/progress/history?email=${email}`
       );
+
       const data = await res.json();
 
       if (data.success) {
@@ -50,12 +55,17 @@ export default function Progress() {
     }
   }
 
+  // ---------------------------------------------------------
+  // LOAD SUMMARY
+  // ---------------------------------------------------------
   async function loadSummary(days) {
     try {
       const email = localStorage.getItem("userEmail");
+
       const res = await fetch(
-        `http://127.0.0.1:8000/api/progress/summary?email=${email}&days=${days}`
+        `https://delphiafit-backend-production.up.railway.app/api/progress/summary?email=${email}&days=${days}`
       );
+
       const data = await res.json();
 
       if (data.success) {
