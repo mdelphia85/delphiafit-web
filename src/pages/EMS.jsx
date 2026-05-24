@@ -5,7 +5,7 @@ import {
   updateEMSDrill,
   deleteEMSDrill
 } from "../api/tactical.js";
-import { generateEMSDrill } from "../generators/EMS.js";
+import { generateEMSDrill } from "../generators/ems";
 
 const categories = [
   "Patient Assessment",
