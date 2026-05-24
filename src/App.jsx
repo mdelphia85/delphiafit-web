@@ -39,7 +39,7 @@ import AdminUsers from "./Admin/Users.jsx";
 
 //TACTICAL SCREENS
 import Firefighters from "./pages/Firefighters.jsx";
-import EMS from "./pages/Ems.jsx";
+import EMS from "./pages/EMS.jsx";
 import Military from "./pages/Military.jsx";
 import Police from "./pages/Police.jsx";
 
