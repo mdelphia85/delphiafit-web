@@ -6,7 +6,7 @@ import {
   deleteFirefighterDrill
 } from "../api/tactical.js";
 
-import { generateFirefighterDrill } from "../generators/firefighter";
+import { generateFirefighterDrill } from "../generators/Firefighter";
 
 const categories = [
   "SCBA Endurance",
