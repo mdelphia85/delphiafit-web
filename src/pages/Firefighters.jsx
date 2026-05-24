@@ -81,9 +81,7 @@ export default function Firefighters() {
     })();
   }, []);
 
-  // -----------------------------
-  // PAYLOAD BUILDERS
-  // -----------------------------
+  // MANUAL PAYLOAD
   const buildManualPayload = (categoryOverride = null) => {
     const category = categoryOverride || activeCategory;
 
@@ -95,7 +93,6 @@ export default function Firefighters() {
       duration: formData.duration,
       notes: formData.notes,
 
-      // shared metadata
       intensity: null,
       focus: null,
       environment: null,
@@ -105,7 +102,6 @@ export default function Firefighters() {
       obstacles: null,
       weather: null,
 
-      // EMS-specific
       gearLoad: null,
       crewSize: null,
       scenarioType: null,
@@ -114,24 +110,22 @@ export default function Firefighters() {
       medicalLoad: null,
       timePressure: null,
 
-      // Fire-specific
       fireType: null,
       buildingType: null,
       smokeConditions: null,
       rescueProfile: null,
 
-      // Military
       terrain: null,
       loadout: null,
       movementType: null,
       contactType: null,
 
-      // Police
       suspectProfile: null,
       threatLevel: null
     };
   };
 
+  // GENERATED PAYLOAD
   const buildGeneratedPayload = (drill) => {
     const category = categories.includes(drill.focus)
       ? drill.focus
@@ -145,7 +139,6 @@ export default function Firefighters() {
       duration: drill.duration,
       notes: drill.description,
 
-      // shared metadata
       intensity: drill.intensity || null,
       focus: drill.focus || null,
       environment: drill.environment || null,
@@ -155,7 +148,6 @@ export default function Firefighters() {
       obstacles: drill.obstacles || null,
       weather: drill.weather || null,
 
-      // EMS-specific
       gearLoad: drill.gearLoad || null,
       crewSize: drill.crewSize || null,
       scenarioType: drill.scenarioType || null,
@@ -164,27 +156,22 @@ export default function Firefighters() {
       medicalLoad: null,
       timePressure: drill.timePressure || null,
 
-      // Fire-specific
       fireType: drill.fireType || null,
       buildingType: drill.buildingType || null,
       smokeConditions: drill.smokeConditions || null,
       rescueProfile: drill.victimProfile || null,
 
-      // Military
       terrain: null,
       loadout: null,
       movementType: null,
       contactType: null,
 
-      // Police
       suspectProfile: null,
       threatLevel: null
     };
   };
 
-  // -----------------------------
   // MANUAL HANDLERS
-  // -----------------------------
   const openCreateForm = (category) => {
     setActiveCategory(category);
     setEditingDrill(null);
@@ -237,9 +224,7 @@ export default function Firefighters() {
     }
   };
 
-  // -----------------------------
   // DELETE
-  // -----------------------------
   const handleDelete = async (category, drill) => {
     if (!window.confirm("Delete this drill?")) return;
 
@@ -256,9 +241,7 @@ export default function Firefighters() {
     }
   };
 
-  // -----------------------------
   // GENERATOR
-  // -----------------------------
   const generateDrill = async () => {
     try {
       setError("");
@@ -295,9 +278,7 @@ export default function Firefighters() {
     }
   };
 
-  // -----------------------------
   // RENDER
-  // -----------------------------
   return (
     <div style={{ padding: 20, minHeight: "100vh", background: "#f4f6f8" }}>
       <div style={{ maxWidth: 980, margin: "0 auto" }}>
@@ -338,10 +319,6 @@ export default function Firefighters() {
             Generator
           </button>
         </div>
-      </div>   // closes the maxWidth wrapper (line 303)
-    </div>     // closes the page wrapper (line 302)
-  );
-}
 
         {/* MANUAL MODE */}
         {mode === "manual" && (
@@ -358,281 +335,138 @@ export default function Firefighters() {
               >
                 <h2>{category}</h2>
 
-                <div>
-                  {drillLists[category].length === 0 ? (
-                    <p style={{ color: "#6b7280" }}>No drills yet.</p>
-                  ) : (
-                    drillLists[category].map((drill) => (
-                      <div
-                        key={drill.id}
-                        style={{
-                          padding: 12,
-                          marginBottom: 12,
-                          borderRadius: 10,
-                          background: "#f8fafc",
-                          border: "1px solid #e2e8f0",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          gap: 10
-                        }}
-                      >
-                        <div>
-                          <strong>{drill.name}</strong>
-                          <div style={{ marginTop: 6, color: "#475569" }}>
-                            {drill.level} · {drill.duration} min
-                          </div>
-                          {drill.notes && (
-                            <p style={{ marginTop: 8, color: "#334155" }}>
-                              {drill.notes}
-                            </p>
-                          )}
-                        </div>
-
-                        <div
-                          style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 6
-                          }}
-                        >
-                          <button
-                            onClick={() => openEditForm(category, drill)}
-                            style={{
-                              padding: "6px 10px",
-                              borderRadius: 6,
-                              border: "1px solid #cbd5e1",
-                              background: "#e0f2fe",
-                              cursor: "pointer",
-                              fontSize: 12
-                            }}
-                          >
-                            Edit
-                          </button>
-
-                          <button
-                            onClick={() => handleDelete(category, drill)}
-                            style={{
-                              padding: "6px 10px",
-                              borderRadius: 6,
-                              border: "1px solid #fecaca",
-                              background: "#fee2e2",
-                              cursor: "pointer",
-                              fontSize: 12,
-                              color: "#b91c1c"
-                            }}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
                 <button
                   onClick={() => openCreateForm(category)}
                   style={{
-                    marginTop: 12,
-                    padding: "10px 14px",
-                    borderRadius: 8,
-                    border: "none",
+                    marginBottom: 12,
+                    padding: "8px 12px",
+                    borderRadius: 6,
                     background: "#2563eb",
-                    color: "#ffffff",
+                    color: "#fff",
+                    border: "none",
                     cursor: "pointer"
                   }}
                 >
-                  Add Drill to {category}
+                  Add Drill
                 </button>
+
+                {drillLists[category].map((drill) => (
+                  <div
+                    key={drill.id}
+                    style={{
+                      padding: 12,
+                      border: "1px solid #e5e7eb",
+                      borderRadius: 8,
+                      marginBottom: 10
+                    }}
+                  >
+                    <strong>{drill.name}</strong> — {drill.duration} mins
+                    <br />
+                    Level: {drill.level}
+                    <br />
+                    <button
+                      onClick={() => openEditForm(category, drill)}
+                      style={{
+                        marginRight: 10,
+                        padding: "6px 10px",
+                        borderRadius: 6,
+                        border: "1px solid #2563eb",
+                        background: "#eff6ff",
+                        cursor: "pointer"
+                      }}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(category, drill)}
+                      style={{
+                        padding: "6px 10px",
+                        borderRadius: 6,
+                        border: "1px solid #dc2626",
+                        background: "#fee2e2",
+                        cursor: "pointer"
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
               </section>
             ))}
           </div>
         )}
 
         {/* GENERATOR MODE */}
-{mode === "generator" && (
-  <div
-    style={{
-      marginTop: 10,
-      padding: 20,
-      background: "#ffffff",
-      borderRadius: 12,
-      border: "1px solid #e2e8f0"
-    }}
-  >
-    <h2>Generate Firefighter Drill</h2>
+        {mode === "generator" && (
+          <div style={{ marginTop: 20 }}>
+            <h2>Generate Firefighter Drill</h2>
 
-    <div style={{ display: "grid", gap: 12, marginTop: 12 }}>
-      <input
-        placeholder="Duration (minutes)"
-        value={genData.duration}
-        onChange={(e) =>
-          setGenData({ ...genData, duration: e.target.value })
-        }
-        style={inputStyle}
-      />
+            <div style={{ display: "grid", gap: 12, maxWidth: 500 }}>
+              {Object.keys(genData).map((key) => (
+                <input
+                  key={key}
+                  placeholder={key}
+                  value={genData[key]}
+                  onChange={(e) =>
+                    setGenData({ ...genData, [key]: e.target.value })
+                  }
+                  style={{
+                    padding: 10,
+                    borderRadius: 6,
+                    border: "1px solid #cbd5e1"
+                  }}
+                />
+              ))}
+            </div>
 
-      <input
-        placeholder="Intensity (Low / Medium / High)"
-        value={genData.intensity}
-        onChange={(e) =>
-          setGenData({ ...genData, intensity: e.target.value })
-        }
-        style={inputStyle}
-      />
+            <button
+              onClick={generateDrill}
+              disabled={genLoading}
+              style={{
+                marginTop: 16,
+                padding: "10px 14px",
+                borderRadius: 8,
+                background: "#2563eb",
+                color: "#fff",
+                border: "none",
+                cursor: "pointer"
+              }}
+            >
+              {genLoading ? "Generating..." : "Generate Drill"}
+            </button>
 
-      <input
-        placeholder="Focus (SCBA, Hose, Ladders, etc.)"
-        value={genData.focus}
-        onChange={(e) =>
-          setGenData({ ...genData, focus: e.target.value })
-        }
-        style={inputStyle}
-      />
+            {generated && (
+              <div
+                style={{
+                  marginTop: 20,
+                  padding: 18,
+                  borderRadius: 12,
+                  background: "#ffffff",
+                  border: "1px solid #dfe3e8"
+                }}
+              >
+                <h3>{generated.name}</h3>
+                <p>{generated.description}</p>
 
-      <input
-        placeholder="Environment (Interior, Exterior, Confined Space)"
-        value={genData.environment}
-        onChange={(e) =>
-          setGenData({ ...genData, environment: e.target.value })
-        }
-        style={inputStyle}
-      />
-
-      <input
-        placeholder="Gear Load (Light, Full Turnout Gear, SCBA)"
-        value={genData.gearLoad}
-        onChange={(e) =>
-          setGenData({ ...genData, gearLoad: e.target.value })
-        }
-        style={inputStyle}
-      />
-
-      <input
-        placeholder="Objective (Search, Rescue, Fire Attack, etc.)"
-        value={genData.objective}
-        onChange={(e) =>
-          setGenData({ ...genData, objective: e.target.value })
-        }
-        style={inputStyle}
-      />
-
-      <input
-        placeholder="Crew Size"
-        value={genData.crewSize}
-        onChange={(e) =>
-          setGenData({ ...genData, crewSize: e.target.value })
-        }
-        style={inputStyle}
-      />
-
-      <input
-        placeholder="Required Equipment (comma-separated)"
-        value={genData.equipment}
-        onChange={(e) =>
-          setGenData({ ...genData, equipment: e.target.value })
-        }
-        style={inputStyle}
-      />
-
-      <input
-        placeholder="Weather Conditions"
-        value={genData.weather}
-        onChange={(e) =>
-          setGenData({ ...genData, weather: e.target.value })
-        }
-        style={inputStyle}
-      />
-
-      <input
-        placeholder="Scenario Type (Structure Fire, Rescue, etc.)"
-        value={genData.scenarioType}
-        onChange={(e) =>
-          setGenData({ ...genData, scenarioType: e.target.value })
-        }
-        style={inputStyle}
-      />
-
-      <input
-        placeholder="Victim Profile (Adult, Child, Unconscious, etc.)"
-        value={genData.victimProfile}
-        onChange={(e) =>
-          setGenData({ ...genData, victimProfile: e.target.value })
-        }
-        style={inputStyle}
-      />
-
-      <input
-        placeholder="Time Pressure (Low, Moderate, High)"
-        value={genData.timePressure}
-        onChange={(e) =>
-          setGenData({ ...genData, timePressure: e.target.value })
-        }
-        style={inputStyle}
-      />
-
-      <input
-        placeholder="Obstacles (comma-separated)"
-        value={genData.obstacles}
-        onChange={(e) =>
-          setGenData({ ...genData, obstacles: e.target.value })
-        }
-        style={inputStyle}
-      />
-
-      <input
-        placeholder="Hazards (comma-separated)"
-        value={genData.hazards}
-        onChange={(e) =>
-          setGenData({ ...genData, hazards: e.target.value })
-        }
-        style={inputStyle}
-      />
-
-      <button
-        onClick={generateDrill}
-        style={saveButton}
-        type="button"
-      >
-        {genLoading ? "Generating..." : "Generate Drill"}
-      </button>
-    </div>
-
-    {generated && (
-      <div
-        style={{
-          marginTop: 20,
-          padding: 16,
-          borderRadius: 12,
-          background: "#f8fafc",
-          border: "1px solid #e2e8f0"
-        }}
-      >
-        <h3>{generated.name}</h3>
-        <p>{generated.description}</p>
-
-        <p><strong>Duration:</strong> {generated.duration} min</p>
-        <p><strong>Intensity:</strong> {generated.intensity}</p>
-        <p><strong>Focus:</strong> {generated.focus}</p>
-        <p><strong>Environment:</strong> {generated.environment}</p>
-        <p><strong>Gear Load:</strong> {generated.gearLoad}</p>
-        <p><strong>Objective:</strong> {generated.objective}</p>
-        <p><strong>Crew Size:</strong> {generated.crewSize}</p>
-        <p><strong>Required Equipment:</strong> {generated.equipment}</p>
-        <p><strong>Weather:</strong> {generated.weather}</p>
-        <p><strong>Scenario Type:</strong> {generated.scenarioType}</p>
-        <p><strong>Victim Profile:</strong> {generated.victimProfile}</p>
-        <p><strong>Time Pressure:</strong> {generated.timePressure}</p>
-        <p><strong>Obstacles:</strong> {generated.obstacles}</p>
-        <p><strong>Hazards:</strong> {generated.hazards}</p>
-
-        <button
-          onClick={() => saveGenerated(generated)}
-          style={{ ...saveButton, marginTop: 12 }}
-          type="button"
-        >
-          Save to Drills
-        </button>
+                <button
+                  onClick={() => saveGenerated(generated)}
+                  style={{
+                    marginTop: 12,
+                    padding: "10px 14px",
+                    borderRadius: 8,
+                    background: "#16a34a",
+                    color: "#fff",
+                    border: "none",
+                    cursor: "pointer"
+                  }}
+                >
+                  Save Drill
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
-    )}
-  </div>
-)}
+    </div>
+  );
+}

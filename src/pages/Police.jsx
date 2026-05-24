@@ -85,9 +85,7 @@ export default function Police() {
     })();
   }, []);
 
-  // -----------------------------
   // PAYLOAD BUILDERS
-  // -----------------------------
   const buildManualPayload = (categoryOverride = null) => {
     const category = categoryOverride || activeCategory;
 
@@ -99,7 +97,6 @@ export default function Police() {
       duration: formData.duration,
       notes: formData.notes,
 
-      // shared metadata
       intensity: null,
       focus: null,
       environment: null,
@@ -109,7 +106,6 @@ export default function Police() {
       obstacles: null,
       weather: null,
 
-      // EMS-specific
       gearLoad: null,
       crewSize: null,
       scenarioType: null,
@@ -118,19 +114,16 @@ export default function Police() {
       medicalLoad: null,
       timePressure: null,
 
-      // Fire
       fireType: null,
       buildingType: null,
       smokeConditions: null,
       rescueProfile: null,
 
-      // Military
       terrain: null,
       loadout: null,
       movementType: null,
       contactType: null,
 
-      // Police
       callType: null,
       threatLevel: null,
       suspectProfile: null,
@@ -153,7 +146,6 @@ export default function Police() {
       duration: drill.duration,
       notes: drill.description,
 
-      // shared metadata
       intensity: drill.intensity || null,
       focus: drill.focus || null,
       environment: drill.environment || null,
@@ -163,7 +155,6 @@ export default function Police() {
       obstacles: drill.obstacles || null,
       weather: drill.weather || null,
 
-      // EMS-specific
       gearLoad: drill.gearLoad || null,
       crewSize: drill.crewSize || null,
       scenarioType: drill.scenarioType || null,
@@ -172,19 +163,16 @@ export default function Police() {
       medicalLoad: null,
       timePressure: drill.timePressure || null,
 
-      // Fire
       fireType: null,
       buildingType: null,
       smokeConditions: null,
       rescueProfile: null,
 
-      // Military
       terrain: null,
       loadout: null,
       movementType: null,
       contactType: null,
 
-      // Police
       callType: drill.callType || null,
       threatLevel: drill.threatLevel || null,
       suspectProfile: drill.suspectProfile || null,
@@ -194,9 +182,7 @@ export default function Police() {
     };
   };
 
-  // -----------------------------
   // MANUAL HANDLERS
-  // -----------------------------
   const openCreateForm = (category) => {
     setActiveCategory(category);
     setEditingDrill(null);
@@ -249,9 +235,7 @@ export default function Police() {
     }
   };
 
-  // -----------------------------
   // DELETE
-  // -----------------------------
   const handleDelete = async (category, drill) => {
     if (!window.confirm("Delete this drill?")) return;
 
@@ -268,9 +252,7 @@ export default function Police() {
     }
   };
 
-  // -----------------------------
   // GENERATOR
-  // -----------------------------
   const generateDrill = async () => {
     try {
       setError("");
@@ -307,9 +289,7 @@ export default function Police() {
     }
   };
 
-  // -----------------------------
   // RENDER
-  // -----------------------------
   return (
     <div style={{ padding: 20, minHeight: "100vh", background: "#f4f6f8" }}>
       <div style={{ maxWidth: 980, margin: "0 auto" }}>
@@ -652,7 +632,7 @@ export default function Police() {
                 }}
               >
                 <h3>{generated.name}</h3>
-                <p>{generated.description}</p>
+                                <p>{generated.description}</p>
 
                 <p>
                   <strong>Duration:</strong> {generated.duration} min
@@ -805,3 +785,4 @@ const saveButton = {
   color: "#ffffff",
   cursor: "pointer"
 };
+

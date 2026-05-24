@@ -17,7 +17,6 @@ const categories = [
 ];
 
 export default function EMS() {
-  // MODE
   const [mode, setMode] = useState("manual");
 
   // MANUAL STATE
@@ -112,7 +111,6 @@ export default function EMS() {
       duration: formData.duration,
       notes: formData.notes,
 
-      // shared metadata (manual = null)
       intensity: null,
       focus: null,
       environment: null,
@@ -122,7 +120,6 @@ export default function EMS() {
       obstacles: null,
       weather: null,
 
-      // EMS-specific
       gearLoad: null,
       crewSize: null,
       scenarioType: null,
@@ -131,19 +128,16 @@ export default function EMS() {
       medicalLoad: null,
       timePressure: null,
 
-      // Fire
       fireType: null,
       buildingType: null,
       smokeConditions: null,
       rescueProfile: null,
 
-      // Military
       terrain: null,
       loadout: null,
       movementType: null,
       contactType: null,
 
-      // Police
       suspectProfile: null,
       threatLevel: null
     };
@@ -200,7 +194,7 @@ export default function EMS() {
     }
   };
 
-  // GENERATOR HANDLERS
+  // GENERATOR
   const generateDrill = async () => {
     try {
       setError("");
@@ -230,7 +224,6 @@ export default function EMS() {
       duration: drill.duration,
       notes: drill.description,
 
-      // shared metadata
       intensity: drill.intensity || null,
       focus: drill.focus || null,
       environment: drill.environment || null,
@@ -240,7 +233,6 @@ export default function EMS() {
       obstacles: drill.obstacles || null,
       weather: drill.weather || null,
 
-      // EMS-specific
       gearLoad: drill.gearLoad || null,
       crewSize: drill.crewSize || null,
       scenarioType: drill.scenarioType || null,
@@ -249,19 +241,16 @@ export default function EMS() {
       medicalLoad: drill.medicalLoad || null,
       timePressure: drill.timePressure || null,
 
-      // Fire (not used for EMS)
       fireType: null,
       buildingType: null,
       smokeConditions: null,
       rescueProfile: null,
 
-      // Military (not used for EMS)
       terrain: null,
       loadout: null,
       movementType: null,
       contactType: null,
 
-      // Police (not used for EMS)
       suspectProfile: null,
       threatLevel: null
     };
@@ -296,7 +285,7 @@ export default function EMS() {
         {loading && <p>Loading drills...</p>}
         {error && <p style={{ color: "red" }}>{error}</p>}
 
-        {/* TOGGLE */}
+        {/* MODE TOGGLE */}
         <div style={{ display: "flex", gap: 12, margin: "16px 0 24px" }}>
           <button
             onClick={() => setMode("manual")}
