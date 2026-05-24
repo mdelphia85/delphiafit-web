@@ -13,11 +13,10 @@ export default function Login() {
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
-  // ⭐ THIS WAS MISSING — REQUIRED FOR HOME SCREEN
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   async function handleLogin() {
-    if (!email.includes("@") || password.length < 10) {
+    if (!email.includes("@") || password.length < 1) {
       setStatus("error");
       setErrorMessage("Invalid email or password.");
       return;
@@ -32,30 +31,26 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
-
-      if (data.success) {
-        // ⭐ Save login info
-        localStorage.setItem("userEmail", email);
-        localStorage.setItem("profileComplete", data.profile_complete);
-
-        setStatus("success");
-
-        setTimeout(() => {
-          // ⭐ Redirect based on onboarding status
-          if (data.profile_complete === 1) {
-            // LOGIN SCREEN → HOME SCREEN
-            setIsLoggedIn(true);
-          } else {
-            // LOGIN SCREEN → PROFILE SCREEN
-            navigate("/profile");
-          }
-        }, 600);
-
-      } else {
+      // ⭐ CHECK THIS FIRST — backend returns 400 on invalid login
+      if (!res.ok) {
         setStatus("error");
         setErrorMessage("Invalid email or password.");
+        return;
       }
+
+      const data = await res.json();
+
+      // ⭐ Save JWT + email
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("userEmail", email);
+
+      setStatus("success");
+
+      setTimeout(() => {
+        // ⭐ Redirect to home screen
+        setIsLoggedIn(true);
+      }, 600);
+
     } catch (err) {
       setStatus("error");
       setErrorMessage("Server error. Please try again.");
@@ -78,7 +73,6 @@ export default function Login() {
           position: "relative"
         }}
       >
-        {/* DARK OVERLAY */}
         <div
           style={{
             position: "absolute",
@@ -88,7 +82,6 @@ export default function Login() {
           }}
         ></div>
 
-        {/* MENU BUTTON */}
         <img
           src={menuIcon}
           alt="menu"
@@ -104,7 +97,6 @@ export default function Login() {
           }}
         />
 
-        {/* HOME CONTENT */}
         <div style={{ position: "relative", zIndex: 2 }}>
           <h1 style={{ fontSize: "40px", fontWeight: "700" }}>Home</h1>
           <p style={{ fontSize: "22px", marginTop: "20px" }}>
@@ -148,8 +140,6 @@ export default function Login() {
         position: "relative"
       }}
     >
-
-      {/* DARK OVERLAY */}
       <div
         style={{
           position: "absolute",
@@ -159,14 +149,11 @@ export default function Login() {
         }}
       ></div>
 
-      {/* CONTENT */}
       <div style={{ position: "relative", zIndex: 2, width: "100%" }}>
-
         <h1 style={{ fontSize: "36px", fontWeight: "700", marginBottom: "35px" }}>
           Login
         </h1>
 
-        {/* EMAIL */}
         <input
           type="email"
           placeholder="Email"
@@ -178,10 +165,9 @@ export default function Login() {
           style={inputStyle}
         />
 
-        {/* PASSWORD */}
         <input
           type="password"
-          placeholder="Password (min 10 chars)"
+          placeholder="Password"
           value={password}
           onChange={(e) => {
             setPassword(e.target.value);
@@ -190,7 +176,6 @@ export default function Login() {
           style={inputStyle}
         />
 
-        {/* FORGOT PASSWORD */}
         <div
           onClick={() => navigate("/forgot-password")}
           style={{
@@ -206,7 +191,6 @@ export default function Login() {
           Forgot Password?
         </div>
 
-        {/* LOGIN ACTION */}
         <div
           onClick={handleLogin}
           style={{
@@ -237,7 +221,6 @@ export default function Login() {
           </p>
         )}
 
-        {/* CREATE ACCOUNT */}
         <div style={{ marginTop: "35px" }}>
           <div
             onClick={() => navigate("/register")}
@@ -252,10 +235,8 @@ export default function Login() {
             Create Account
           </div>
         </div>
-
       </div>
 
-      {/* BLUE PLACEHOLDER */}
       <style>
         {`
           ::placeholder {

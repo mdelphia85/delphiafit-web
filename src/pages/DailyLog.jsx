@@ -3,7 +3,6 @@ import { MenuContext } from "../context/MenuContext.jsx";
 
 const PROGRESS_COLOR = "yellow";
 
-// Field outside component to avoid unnecessary re-renders
 function Field({ label, keyName, value, onChange }) {
   return (
     <div style={{ marginBottom: "22px" }}>
@@ -57,7 +56,7 @@ export default function DailyLog() {
       const email = localStorage.getItem("userEmail");
       const today = new Date().toISOString().split("T")[0];
 
-      const params = new URLSearchParams({
+      const payload = {
         email,
         date: today,
         protein: normalize(form.protein),
@@ -66,21 +65,24 @@ export default function DailyLog() {
         meals: normalize(form.meals),
         workouts: normalize(form.workouts),
         supplements: normalize(form.supplements)
-      });
+      };
 
-      https://delphiafit-backend-production.up.railway.app/api/progress/log
+      const url = "https://delphiafit-backend-production.up.railway.app/api/progress/log";
 
       const res = await fetch(url, {
         method: "POST",
-        mode: "cors"
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
 
-      if (data.success) {
+      if (res.ok) {
         alert("Daily log saved");
       } else {
-        alert("Error saving log");
+        alert(data.detail || "Error saving log");
       }
     } catch (e) {
       console.log("Error saving log:", e);
@@ -111,7 +113,6 @@ export default function DailyLog() {
       <Field label="Workouts" keyName="workouts" value={form.workouts} onChange={updateField} />
       <Field label="Supplements" keyName="supplements" value={form.supplements} onChange={updateField} />
 
-      {/* PURE CLICKABLE TEXT — NO BUTTON, NO BAR, NO BOX */}
       <p
         onClick={saveLog}
         style={{
@@ -130,7 +131,6 @@ export default function DailyLog() {
         Save Log
       </p>
 
-      {/* RETURN TO MENU */}
       <p
         onClick={() => setMenuOpen(true)}
         style={{

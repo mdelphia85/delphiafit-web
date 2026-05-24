@@ -27,15 +27,31 @@ export default function Register() {
         body: JSON.stringify({ name, email, password }),
       });
 
-      const data = await res.json();
+      // ⭐ CHECK THIS FIRST
+      if (!res.ok) {
+        let errorText = "Registration failed.";
 
-      if (res.ok) {
-        setStatus("success");
-        setTimeout(() => navigate("/login"), 800);
-      } else {
+        try {
+          const errData = await res.json();
+          if (errData.detail) errorText = errData.detail;
+        } catch (_) {
+          // ignore JSON parse errors
+        }
+
         setStatus("error");
-        setErrorMessage(data.message || "Registration failed.");
+        setErrorMessage(errorText);
+        return;
       }
+
+      // ⭐ SUCCESS — safe to parse JSON now
+      await res.json();
+
+      setStatus("success");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 800);
+
     } catch (err) {
       setStatus("error");
       setErrorMessage("Server error. Please try again.");
@@ -75,7 +91,6 @@ export default function Register() {
       }}
     >
 
-      {/* DARK OVERLAY */}
       <div
         style={{
           position: "absolute",
@@ -85,13 +100,11 @@ export default function Register() {
         }}
       ></div>
 
-      {/* CONTENT */}
       <div style={{ position: "relative", zIndex: 2, width: "100%" }}>
         <h1 style={{ fontSize: "36px", fontWeight: "700", marginBottom: "35px" }}>
           Create Account
         </h1>
 
-        {/* NAME */}
         <input
           type="text"
           placeholder="Full Name"
@@ -103,7 +116,6 @@ export default function Register() {
           style={inputStyle}
         />
 
-        {/* EMAIL */}
         <input
           type="email"
           placeholder="Email"
@@ -115,7 +127,6 @@ export default function Register() {
           style={inputStyle}
         />
 
-        {/* PASSWORD */}
         <input
           type="password"
           placeholder="Password (min 10 chars)"
@@ -127,7 +138,6 @@ export default function Register() {
           style={inputStyle}
         />
 
-        {/* REGISTER ACTION */}
         <div
           onClick={handleRegister}
           style={{
@@ -152,14 +162,12 @@ export default function Register() {
             : "Register"}
         </div>
 
-        {/* ERROR MESSAGE */}
         {status === "error" && (
           <p style={{ color: "red", marginTop: "12px" }}>
             {errorMessage}
           </p>
         )}
 
-        {/* LOGIN LINK */}
         <div style={{ marginTop: "35px" }}>
           <div
             onClick={() => navigate("/login")}
@@ -176,7 +184,6 @@ export default function Register() {
         </div>
       </div>
 
-      {/* BLUE PLACEHOLDER */}
       <style>
         {`
           ::placeholder {
