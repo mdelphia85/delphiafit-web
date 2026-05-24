@@ -37,6 +37,12 @@ import AdminLogs from "./Admin/Logs.jsx";
 import AdminMessages from "./Admin/Messages.jsx";
 import AdminUsers from "./Admin/Users.jsx";
 
+//TACTICAL SCREENS
+import Firefighters from "./pages/firefighters.jsx";
+import EMS from "./pages/ems.jsx";
+import Military from "./pages/military.jsx";
+import Police from "./pages/police.jsx";
+
 import { MenuProvider, MenuContext } from "./context/MenuContext.jsx";
 
 
@@ -109,6 +115,10 @@ function AppWithMenu() {
           <MenuItem label="Achievements" onClick={() => go("/achievements")} />
           <MenuItem label="Streaks" onClick={() => go("/streaks")} />
           <MenuItem label="About" onClick={() => go("/about")} />
+          <MenuItem label="Firefighters" onClick={() => go("/tactical/firefighters")} />
+          <MenuItem label="EMS" onClick={() => go("/tactical/ems")} />
+          <MenuItem label="Military" onClick={() => go("/tactical/military")} />
+          <MenuItem label="Police" onClick={() => go("/tactical/police")} />
 
           {/* ⭐ LOG OUT */}
           <div
@@ -156,6 +166,10 @@ function AppWithMenu() {
         <Route path="/streaks" element={<Streaks />} />
         <Route path="/about" element={<About />} />
         <Route path="/daily-log" element={<DailyLog />} />
+        <Route path="/tactical/firefighters" element={<Firefighters />} />
+        <Route path="/tactical/ems" element={<EMS />} />
+        <Route path="/tactical/military" element={<Military />} />
+        <Route path="/tactical/police" element={<Police />} />
 
         {/* ⭐ ADMIN ROUTES */}
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
