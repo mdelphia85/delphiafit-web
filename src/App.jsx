@@ -38,10 +38,10 @@ import AdminMessages from "./Admin/Messages.jsx";
 import AdminUsers from "./Admin/Users.jsx";
 
 //TACTICAL SCREENS
-import Firefighters from "./pages/firefighters.jsx";
-import EMS from "./pages/ems.jsx";
-import Military from "./pages/military.jsx";
-import Police from "./pages/police.jsx";
+import Firefighters from "./pages/Firefighters.jsx";
+import EMS from "./pages/Ems.jsx";
+import Military from "./pages/Military.jsx";
+import Police from "./pages/Police.jsx";
 
 import { MenuProvider, MenuContext } from "./context/MenuContext.jsx";
 
