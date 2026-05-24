@@ -6,7 +6,7 @@ import {
   deleteMilitaryDrill
 } from "../api/tactical.js";
 
-import { generateMilitaryDrill } from "../generators/Military";
+import { generateMilitaryDrill } from "../generators/military.js";
 
 const categories = [
   "Physical Conditioning",

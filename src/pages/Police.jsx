@@ -6,7 +6,7 @@ import {
   deletePoliceDrill
 } from "../api/tactical.js";
 
-import { generatePoliceDrill } from "../generators/Police";
+import { generatePoliceDrill } from "../generators/police";
 
 const categories = [
   "Patrol Skills",
