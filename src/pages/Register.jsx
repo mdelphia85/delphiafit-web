@@ -29,7 +29,7 @@ export default function Register() {
 
       const data = await res.json();
 
-      if (data.success) {
+      if (res.ok) {
         setStatus("success");
         setTimeout(() => navigate("/login"), 800);
       } else {
