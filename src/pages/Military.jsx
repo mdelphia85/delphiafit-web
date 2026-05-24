@@ -4,7 +4,7 @@ import {
   createMilitaryDrill,
   updateMilitaryDrill,
   deleteMilitaryDrill
-} from "../api/tactical";
+} from "../api/tactical.js";
 
 import { generateMilitaryDrill } from "../generators/military";
 

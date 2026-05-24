@@ -4,7 +4,7 @@ import {
   createEMSDrill,
   updateEMSDrill,
   deleteEMSDrill
-} from "../api/tactical";
+} from "../api/tactical.js";
 import { generateEMSDrill } from "../generators/ems";
 
 const categories = [

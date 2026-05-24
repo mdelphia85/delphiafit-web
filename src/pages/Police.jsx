@@ -4,7 +4,7 @@ import {
   createPoliceDrill,
   updatePoliceDrill,
   deletePoliceDrill
-} from "../api/tactical";
+} from "../api/tactical.js";
 
 import { generatePoliceDrill } from "../generators/police";
 

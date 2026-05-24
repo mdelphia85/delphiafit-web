@@ -4,7 +4,7 @@ import {
   createFirefighterDrill,
   updateFirefighterDrill,
   deleteFirefighterDrill
-} from "../api/tactical";
+} from "../api/tactical.js";
 
 import { generateFirefighterDrill } from "../generators/firefighter";
 
