@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useNavigate, Navigate } from "react-router-dom";
+import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import { useContext } from "react";
 
 import Login from "./pages/Login.jsx";
@@ -23,10 +23,13 @@ import Challenges from "./pages/Challenges.jsx";
 import Achievements from "./pages/Achievements.jsx";
 import Streaks from "./pages/Streaks.jsx";
 import About from "./pages/About.jsx";
-import Landing from "./pages/Landing.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import DailyLog from "./pages/DailyLog.jsx";
+
+// ⭐ NEW DEMO MODE SCREENS
+import Landing from "./pages/Landing.jsx";
+import DemoDashboard from "./pages/DemoDashboard.jsx";
 
 // ADMIN SCREENS
 import AdminLogin from "./Admin/Login.jsx";
@@ -37,7 +40,7 @@ import AdminLogs from "./Admin/Logs.jsx";
 import AdminMessages from "./Admin/Messages.jsx";
 import AdminUsers from "./Admin/Users.jsx";
 
-//TACTICAL SCREENS
+// TACTICAL SCREENS
 import Firefighters from "./pages/Firefighters.jsx";
 import EMS from "./pages/EMS.jsx";
 import Military from "./pages/Military.jsx";
@@ -45,13 +48,10 @@ import Police from "./pages/Police.jsx";
 
 import { MenuProvider, MenuContext } from "./context/MenuContext.jsx";
 
-
 function App() {
   return (
     <MenuProvider>
-      <BrowserRouter>
-        <AppWithMenu />
-      </BrowserRouter>
+      <AppWithMenu />
     </MenuProvider>
   );
 }
@@ -90,7 +90,6 @@ function AppWithMenu() {
             flexDirection: "column",
             gap: "12px",
             minWidth: "200px",
-            boxSizing: "border-box",
             border: "2px solid white"
           }}
         >
@@ -115,12 +114,14 @@ function AppWithMenu() {
           <MenuItem label="Achievements" onClick={() => go("/achievements")} />
           <MenuItem label="Streaks" onClick={() => go("/streaks")} />
           <MenuItem label="About" onClick={() => go("/about")} />
+
+          {/* TACTICAL */}
           <MenuItem label="Firefighters" onClick={() => go("/tactical/firefighters")} />
           <MenuItem label="EMS" onClick={() => go("/tactical/ems")} />
           <MenuItem label="Military" onClick={() => go("/tactical/military")} />
           <MenuItem label="Police" onClick={() => go("/tactical/police")} />
 
-          {/* ⭐ LOG OUT */}
+          {/* LOG OUT */}
           <div
             onClick={logout}
             style={{
@@ -139,12 +140,19 @@ function AppWithMenu() {
 
       {/* ⭐ ROUTES */}
       <Routes>
+        {/* ⭐ NEW HOMEPAGE → DEMO GATEWAY */}
         <Route path="/" element={<Landing />} />
+
+        {/* ⭐ DEMO MODE */}
+        <Route path="/demo" element={<DemoDashboard />} />
+
+        {/* AUTH */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
+        {/* MAIN APP */}
         <Route path="/protein" element={<Protein />} />
         <Route path="/water" element={<Water />} />
         <Route path="/meals" element={<Meals />} />
@@ -166,12 +174,14 @@ function AppWithMenu() {
         <Route path="/streaks" element={<Streaks />} />
         <Route path="/about" element={<About />} />
         <Route path="/daily-log" element={<DailyLog />} />
+
+        {/* TACTICAL */}
         <Route path="/tactical/firefighters" element={<Firefighters />} />
         <Route path="/tactical/ems" element={<EMS />} />
         <Route path="/tactical/military" element={<Military />} />
         <Route path="/tactical/police" element={<Police />} />
 
-        {/* ⭐ ADMIN ROUTES */}
+        {/* ADMIN */}
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
@@ -179,8 +189,7 @@ function AppWithMenu() {
         <Route path="/admin/announcements" element={<AdminAnnouncements />} />
         <Route path="/admin/logs" element={<AdminLogs />} />
         <Route path="/admin/messages" element={<AdminMessages />} />
-<Route path="/admin/users" element={<AdminUsers />} />
-
+        <Route path="/admin/users" element={<AdminUsers />} />
       </Routes>
     </div>
   );
@@ -193,7 +202,6 @@ function MenuItem({ label, onClick }) {
       style={{
         color: "white",
         fontSize: "20px",
-        textDecoration: "none",
         fontWeight: "500",
         cursor: "pointer"
       }}
