@@ -29,7 +29,8 @@ import DailyLog from "./pages/DailyLog.jsx";
 
 // ⭐ NEW DEMO MODE SCREENS
 import Landing from "./pages/Landing.jsx";
-import DemoDashboard from "./pages/DemoDashboard.jsx";
+import DemoDashboard from "./pages/demo/DemoDashboard.jsx";
+
 
 // ADMIN SCREENS
 import AdminLogin from "./Admin/Login.jsx";
