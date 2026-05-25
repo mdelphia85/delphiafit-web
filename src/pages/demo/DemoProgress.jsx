@@ -1,72 +1,77 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import DemoBanner from "../../components/DemoBanner";
 import demoProgress from "../../demo/demoProgress.js";
 
 export default function DemoProgress() {
+  const navigate = useNavigate();
+
   return (
     <div style={{ padding: 20, minHeight: "100vh", background: "#f4f6f8" }}>
+      <DemoBanner />
+
       <div style={{ maxWidth: 980, margin: "0 auto" }}>
-        <h1>Progress Overview (Demo Mode)</h1>
-        <p style={{ marginBottom: 20, color: "#555" }}>
-          This is a read‑only preview. Tracking and analytics updates are disabled.
+
+        {/* CLICKABLE TEXT NAVIGATION */}
+        <p
+          style={{
+            color: "#007bff",
+            textDecoration: "underline",
+            cursor: "pointer",
+            marginBottom: 8,
+            fontSize: 18
+          }}
+          onClick={() => navigate("/demo/dashboard")}
+        >
+          ← Back to Demo Dashboard
         </p>
 
-        {/* SUMMARY CARD */}
-        <div
+        <p
           style={{
-            padding: 16,
-            borderRadius: 10,
-            background: "#fff",
-            border: "1px solid #e5e7eb",
-            marginBottom: 20
+            color: "#28a745",
+            textDecoration: "underline",
+            cursor: "pointer",
+            marginBottom: 8,
+            fontSize: 18
           }}
+          onClick={() => navigate("/register")}
         >
-          <p><strong>Workouts Completed:</strong> {demoProgress.workoutsCompleted}</p>
-          <p><strong>Meals Logged:</strong> {demoProgress.mealsLogged}</p>
-          <p><strong>Current Streak:</strong> {demoProgress.streak} days</p>
-        </div>
+          Create Your Account →
+        </p>
 
-        {/* STRENGTH PROGRESSION */}
-        <h2>Strength Progression</h2>
-
-        <div
+        <p
           style={{
-            padding: 16,
-            borderRadius: 10,
-            background: "#fff",
-            border: "1px solid #e5e7eb",
-            marginBottom: 20
+            color: "#007bff",
+            textDecoration: "underline",
+            cursor: "pointer",
+            marginBottom: 30,
+            fontSize: 18
           }}
+          onClick={() => navigate("/login")}
         >
-          <p><strong>Squat:</strong> {demoProgress.strengthIncrease.squat}</p>
-          <p><strong>Bench:</strong> {demoProgress.strengthIncrease.bench}</p>
-          <p><strong>Deadlift:</strong> {demoProgress.strengthIncrease.deadlift}</p>
-        </div>
+          Already have an account? Log In →
+        </p>
 
-        {/* OPTIONAL WEEKLY STATS (SAFE CHECK) */}
-        {demoProgress.weeklyStats && (
-          <>
-            <h2>Weekly Stats</h2>
+        <h1>Progress (Demo Mode)</h1>
 
-            {demoProgress.weeklyStats.map((week, index) => (
-              <div
-                key={index}
-                style={{
-                  padding: 16,
-                  borderRadius: 10,
-                  background: "#fff",
-                  border: "1px solid #e5e7eb",
-                  marginBottom: 14
-                }}
-              >
-                <h3 style={{ margin: 0 }}>{week.week}</h3>
-                <p><strong>Workouts:</strong> {week.workouts}</p>
-                <p><strong>Meals:</strong> {week.meals}</p>
-                <p><strong>Drills:</strong> {week.drills}</p>
-              </div>
-            ))}
-          </>
-        )}
+        {demoProgress.map((item, index) => (
+          <div
+            key={index}
+            style={{
+              padding: 16,
+              borderRadius: 10,
+              background: "#fff",
+              border: "1px solid #e5e7eb",
+              marginBottom: 14
+            }}
+          >
+            <h3 style={{ margin: 0 }}>{item.metric}</h3>
+            <p><strong>Value:</strong> {item.value}</p>
+            <p><strong>Trend:</strong> {item.trend}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
+

@@ -1,13 +1,60 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import DemoBanner from "../../components/DemoBanner";
 import demoMeals from "../../demo/demoMeals.js";
 
 export default function DemoMeals() {
+  const navigate = useNavigate();
+
   return (
     <div style={{ padding: 20, minHeight: "100vh", background: "#f4f6f8" }}>
+      <DemoBanner />
+
       <div style={{ maxWidth: 980, margin: "0 auto" }}>
+
+        {/* CLICKABLE TEXT NAVIGATION */}
+        <p
+          style={{
+            color: "#007bff",
+            textDecoration: "underline",
+            cursor: "pointer",
+            marginBottom: 8,
+            fontSize: 18
+          }}
+          onClick={() => navigate("/demo/dashboard")}
+        >
+          ← Back to Demo Dashboard
+        </p>
+
+        <p
+          style={{
+            color: "#28a745",
+            textDecoration: "underline",
+            cursor: "pointer",
+            marginBottom: 8,
+            fontSize: 18
+          }}
+          onClick={() => navigate("/register")}
+        >
+          Create Your Account →
+        </p>
+
+        <p
+          style={{
+            color: "#007bff",
+            textDecoration: "underline",
+            cursor: "pointer",
+            marginBottom: 30,
+            fontSize: 18
+          }}
+          onClick={() => navigate("/login")}
+        >
+          Already have an account? Log In →
+        </p>
+
         <h1>Meals (Demo Mode)</h1>
         <p style={{ marginBottom: 20, color: "#555" }}>
-          This is a read‑only preview. Creating, editing, and logging meals are disabled.
+          This is a read‑only preview. Meal creation and editing are disabled.
         </p>
 
         {demoMeals.map((meal, index) => (
@@ -22,39 +69,10 @@ export default function DemoMeals() {
             }}
           >
             <h3 style={{ margin: 0 }}>{meal.name}</h3>
-
-            <p style={{ margin: "6px 0" }}>
-              <strong>Category:</strong> {meal.category}
-            </p>
-
-            <p style={{ margin: "6px 0" }}>
-              <strong>Calories:</strong> {meal.calories}
-            </p>
-
-            <p style={{ margin: "6px 0" }}>
-              <strong>Protein:</strong> {meal.protein}g
-            </p>
-
-            <p style={{ margin: "6px 0" }}>
-              <strong>Carbs:</strong> {meal.carbs}g
-            </p>
-
-            <p style={{ margin: "6px 0" }}>
-              <strong>Fats:</strong> {meal.fat}g
-            </p>
-
-            <p style={{ marginTop: 10 }}>
-              <strong>Ingredients:</strong>
-            </p>
-            <ul>
-              {meal.ingredients.map((item, i) => (
-                <li key={i}>{item}</li>
-              ))}
-            </ul>
-
-            <p style={{ marginTop: 10 }}>
-              <strong>Instructions:</strong> {meal.instructions}
-            </p>
+            <p><strong>Calories:</strong> {meal.calories}</p>
+            <p><strong>Protein:</strong> {meal.protein}g</p>
+            <p><strong>Carbs:</strong> {meal.carbs}g</p>
+            <p><strong>Fat:</strong> {meal.fat}g</p>
           </div>
         ))}
       </div>

@@ -1,77 +1,106 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import DemoBanner from "../../components/DemoBanner";
 
 export default function DemoTactical() {
+  const navigate = useNavigate();
+
   return (
     <div style={{ padding: 20, minHeight: "100vh", background: "#f4f6f8" }}>
+      <DemoBanner />
+
       <div style={{ maxWidth: 980, margin: "0 auto" }}>
-        <h1>Tactical Drills (Demo Mode)</h1>
-        <p style={{ marginBottom: 20, color: "#555" }}>
-          Choose a tactical division to explore in read‑only demo mode.
+
+        {/* CLICKABLE TEXT NAVIGATION */}
+        <p
+          style={{
+            color: "#007bff",
+            textDecoration: "underline",
+            cursor: "pointer",
+            marginBottom: 8,
+            fontSize: 18
+          }}
+          onClick={() => navigate("/demo/dashboard")}
+        >
+          ← Back to Demo Dashboard
         </p>
 
-        <div
+        <p
           style={{
-            display: "grid",
-            gap: 20,
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))"
+            color: "#28a745",
+            textDecoration: "underline",
+            cursor: "pointer",
+            marginBottom: 8,
+            fontSize: 18
           }}
+          onClick={() => navigate("/register")}
         >
-          <div
-            onClick={() => (window.location.href = "/demo/firefighter")}
-            style={{
-              padding: 20,
-              borderRadius: 12,
-              background: "#fff",
-              border: "1px solid #e5e7eb",
-              cursor: "pointer"
-            }}
-          >
-            <h3>Firefighter</h3>
-            <p>View sample fireground tactical drills</p>
-          </div>
+          Create Your Account →
+        </p>
 
-          <div
-            onClick={() => (window.location.href = "/demo/ems")}
-            style={{
-              padding: 20,
-              borderRadius: 12,
-              background: "#fff",
-              border: "1px solid #e5e7eb",
-              cursor: "pointer"
-            }}
-          >
-            <h3>EMS</h3>
-            <p>View sample emergency medical drills</p>
-          </div>
+        <p
+          style={{
+            color: "#007bff",
+            textDecoration: "underline",
+            cursor: "pointer",
+            marginBottom: 30,
+            fontSize: 18
+          }}
+          onClick={() => navigate("/login")}
+        >
+          Already have an account? Log In →
+        </p>
 
-          <div
-            onClick={() => (window.location.href = "/demo/military")}
-            style={{
-              padding: 20,
-              borderRadius: 12,
-              background: "#fff",
-              border: "1px solid #e5e7eb",
-              cursor: "pointer"
-            }}
-          >
-            <h3>Military</h3>
-            <p>View sample military tactical drills</p>
-          </div>
+        <h1>Tactical Drills (Demo Mode)</h1>
 
-          <div
-            onClick={() => (window.location.href = "/demo/police")}
-            style={{
-              padding: 20,
-              borderRadius: 12,
-              background: "#fff",
-              border: "1px solid #e5e7eb",
-              cursor: "pointer"
-            }}
-          >
-            <h3>Police</h3>
-            <p>View sample law enforcement drills</p>
-          </div>
-        </div>
+        <p
+          style={{
+            color: "#007bff",
+            textDecoration: "underline",
+            cursor: "pointer",
+            marginTop: 20,
+            fontSize: 18
+          }}
+          onClick={() => navigate("/demo/firefighter")}
+        >
+          Firefighter Drills →
+        </p>
+
+        <p
+          style={{
+            color: "#007bff",
+            textDecoration: "underline",
+            cursor: "pointer",
+            fontSize: 18
+          }}
+          onClick={() => navigate("/demo/ems")}
+        >
+          EMS Drills →
+        </p>
+
+        <p
+          style={{
+            color: "#007bff",
+            textDecoration: "underline",
+            cursor: "pointer",
+            fontSize: 18
+          }}
+          onClick={() => navigate("/demo/military")}
+        >
+          Military Drills →
+        </p>
+
+        <p
+          style={{
+            color: "#007bff",
+            textDecoration: "underline",
+            cursor: "pointer",
+            fontSize: 18
+          }}
+          onClick={() => navigate("/demo/police")}
+        >
+          Police Drills →
+        </p>
       </div>
     </div>
   );
