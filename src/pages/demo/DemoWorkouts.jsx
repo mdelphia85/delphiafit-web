@@ -1,5 +1,5 @@
 import React from "react";
-import demoWorkouts from "../demo/demoWorkouts";
+import demoWorkouts from "../../demo/demoWorkouts.js";
 
 export default function DemoWorkouts() {
   return (
@@ -10,9 +10,9 @@ export default function DemoWorkouts() {
           This is a read‑only preview. Creating, editing, and logging workouts are disabled.
         </p>
 
-        {demoWorkouts.map((workout) => (
+        {demoWorkouts.map((workout, index) => (
           <div
-            key={workout.id}
+            key={index}
             style={{
               padding: 16,
               borderRadius: 10,

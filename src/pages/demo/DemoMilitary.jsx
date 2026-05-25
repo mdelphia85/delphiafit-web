@@ -1,5 +1,5 @@
 import React from "react";
-import demoTactical from "../demo/demoTactical";
+import demoTactical from "../../demo/demoTactical.js";
 
 export default function DemoMilitary() {
   return (
@@ -10,9 +10,9 @@ export default function DemoMilitary() {
           This is a read‑only preview. Creating, editing, deleting, and generating drills are disabled.
         </p>
 
-        {demoTactical.military.map((drill) => (
+        {demoTactical.military.map((drill, index) => (
           <div
-            key={drill.id}
+            key={index}
             style={{
               padding: 16,
               borderRadius: 10,
@@ -21,23 +21,11 @@ export default function DemoMilitary() {
               marginBottom: 14
             }}
           >
-            <h3 style={{ margin: 0 }}>{drill.name}</h3>
+            <h3 style={{ margin: 0 }}>{drill}</h3>
 
-            <p style={{ margin: "6px 0" }}>
-              <strong>Duration:</strong> {drill.duration} mins
+            <p style={{ marginTop: 10, color: "#444" }}>
+              This is a sample military tactical drill used for demo preview mode.
             </p>
-
-            <p style={{ margin: "6px 0" }}>
-              <strong>Level:</strong> {drill.level}
-            </p>
-
-            <p style={{ margin: "6px 0" }}>
-              <strong>Category:</strong> {drill.category}
-            </p>
-
-            {drill.notes && (
-              <p style={{ marginTop: 10, color: "#444" }}>{drill.notes}</p>
-            )}
           </div>
         ))}
       </div>

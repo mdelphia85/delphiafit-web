@@ -1,5 +1,5 @@
 import React from "react";
-import demoMeals from "../demo/demoMeals";
+import demoMeals from "../../demo/demoMeals.js";
 
 export default function DemoMeals() {
   return (
@@ -10,9 +10,9 @@ export default function DemoMeals() {
           This is a read‑only preview. Creating, editing, and logging meals are disabled.
         </p>
 
-        {demoMeals.map((meal) => (
+        {demoMeals.map((meal, index) => (
           <div
-            key={meal.id}
+            key={index}
             style={{
               padding: 16,
               borderRadius: 10,
@@ -22,6 +22,10 @@ export default function DemoMeals() {
             }}
           >
             <h3 style={{ margin: 0 }}>{meal.name}</h3>
+
+            <p style={{ margin: "6px 0" }}>
+              <strong>Category:</strong> {meal.category}
+            </p>
 
             <p style={{ margin: "6px 0" }}>
               <strong>Calories:</strong> {meal.calories}
@@ -36,7 +40,20 @@ export default function DemoMeals() {
             </p>
 
             <p style={{ margin: "6px 0" }}>
-              <strong>Fats:</strong> {meal.fats}g
+              <strong>Fats:</strong> {meal.fat}g
+            </p>
+
+            <p style={{ marginTop: 10 }}>
+              <strong>Ingredients:</strong>
+            </p>
+            <ul>
+              {meal.ingredients.map((item, i) => (
+                <li key={i}>{item}</li>
+              ))}
+            </ul>
+
+            <p style={{ marginTop: 10 }}>
+              <strong>Instructions:</strong> {meal.instructions}
             </p>
           </div>
         ))}
@@ -44,4 +61,3 @@ export default function DemoMeals() {
     </div>
   );
 }
- 
