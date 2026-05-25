@@ -117,3 +117,409 @@ code {
   color: #FF2ECC;
   opacity: 1;
 }
+
+/* ========================= */
+/* DEMO MODE BANNER          */
+/* ========================= */
+.demo-banner {
+  width: 100%;
+  background: #222;
+  color: #fff;
+  padding: 12px 0;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  border-bottom: 2px solid #444;
+  position: sticky;
+  top: 0;
+  z-index: 9999;
+}
+
+/* ========================= */
+/* DEMO CONTAINER            */
+/* ========================= */
+.demo-container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-bottom: 80px;
+}
+
+/* ========================= */
+/* HERO SECTION              */
+/* ========================= */
+.demo-hero {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.demo-hero h1 {
+  font-size: 2.4rem;
+  margin-bottom: 10px;
+}
+
+.demo-hero p {
+  font-size: 1.1rem;
+  color: #ccc;
+}
+
+.demo-start-btn {
+  margin-top: 20px;
+  padding: 12px 24px;
+  background: #4a90e2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.demo-start-btn:hover {
+  background: #3a78c2;
+}
+
+/* ========================= */
+/* DASHBOARD PREVIEW         */
+/* ========================= */
+.demo-dashboard {
+  padding: 40px 20px;
+}
+
+.demo-dashboard h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* ========================= */
+/* DEMO GRID                 */
+/* ========================= */
+.demo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* ========================= */
+/* DEMO CARD                 */
+/* ========================= */
+.demo-card {
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #333;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  cursor: pointer;
+  text-align: center;
+}
+
+.demo-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+}
+
+.demo-card:active {
+  transform: scale(0.97);
+}
+
+/* ========================= */
+/* FEATURES SECTION          */
+/* ========================= */
+.demo-features {
+  padding: 40px 20px;
+}
+
+.demo-features h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.demo-features ul {
+  list-style: none;
+  padding: 0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.demo-features li {
+  padding: 10px 0;
+  font-size: 1.05rem;
+  border-bottom: 1px solid #333;
+}
+
+/* ========================= */
+/* CTA SECTION               */
+/* ========================= */
+.demo-cta {
+  text-align: center;
+  padding: 50px 20px;
+}
+
+.demo-create-btn {
+  padding: 14px 28px;
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.demo-create-btn:hover {
+  background: #3f8f42;
+}
+
+/* ========================= */
+/* MODALS                    */
+/* ========================= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999;
+}
+
+.modal.demo-modal {
+  background: #1e1e1e;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  border: 1px solid #333;
+}
+
+.modal-section {
+  margin-bottom: 20px;
+}
+
+.close-btn {
+  width: 100%;
+  padding: 12px;
+  background: #b33a3a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.close-btn:hover {
+  background: #992f2f;
+}
+
+/* ========================= */
+/* TRY ANOTHER DRILL BUTTON */
+/* ========================= */
+.demo-alt-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  background: #444;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.demo-alt-btn:hover {
+  background: #555;
+}
+
+/* ========================= */
+/* DEMO WARNING              */
+/* ========================= */
+.demo-warning {
+  background: #333;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 20px;
+  text-align: center;
+  color: #ffcc00;
+  font-size: 0.9rem;
+}
+
+/* ========================= */
+/* SWITCH TO REAL APP BUTTON */
+/* ========================= */
+.demo-real-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.demo-real-btn:hover {
+  background: #3f8f42;
+}
+
+/* ========================= */
+/* GUIDE PROGRESS DOTS       */
+/* ========================= */
+.guide-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px 0 22px;
+}
+
+.guide-dot {
+  width: 10px;
+  height: 10px;
+  background: #555;
+  border-radius: 50%;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.guide-dot.active {
+  background: #4a90e2;
+  transform: scale(1.3);
+}
+
+.demo-choice {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.demo-choice h1 {
+  font-size: 2.6rem;
+  margin-bottom: 10px;
+}
+
+.demo-choice p {
+  font-size: 1.2rem;
+  color: #ccc;
+  margin-bottom: 30px;
+}
+
+.demo-choice-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.demo-login-btn {
+  padding: 12px;
+  background: #333;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.demo-login-btn:hover {
+  background: #444;
+}
+
+/* ========================= */
+/* DEMO GATEWAY SCREEN       */
+/* ========================= */
+
+.demo-choice {
+  text-align: center;
+  padding: 80px 20px;
+  animation: fadeIn 0.4s ease;
+}
+
+.demo-title {
+  font-size: 2.6rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #ffffff;
+  transition: color 0.3s ease;
+}
+
+.demo-title:hover {
+  color: #4a90e2;
+}
+
+.demo-home-image {
+  width: 260px;
+  max-width: 80%;
+  margin: 20px auto;
+  display: block;
+  border-radius: 12px;
+}
+
+.demo-subtitle {
+  font-size: 1.3rem;
+  color: #cccccc;
+  margin-bottom: 30px;
+  transition: color 0.3s ease;
+}
+
+.demo-subtitle:hover {
+  color: #4a90e2;
+}
+
+.demo-choice-buttons-row {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.demo-btn {
+  padding: 12px 22px;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  transition: background 0.25s ease, color 0.25s ease, transform 0.2s ease;
+}
+
+.demo-btn:hover {
+  transform: scale(1.05);
+}
+
+.demo-btn-demo {
+  background: #4a90e2;
+  color: white;
+}
+
+.demo-btn-demo:hover {
+  background: #6ab0ff;
+}
+
+.demo-btn-create {
+  background: #27ae60;
+  color: white;
+}
+
+.demo-btn-create:hover {
+  background: #2ecc71;
+}
+
+.demo-btn-login {
+  background: #333;
+  color: white;
+}
+
+.demo-btn-login:hover {
+  background: #555;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
