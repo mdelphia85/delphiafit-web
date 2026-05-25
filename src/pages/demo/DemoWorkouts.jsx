@@ -24,11 +24,11 @@ export default function DemoWorkouts() {
             <h3 style={{ margin: 0 }}>{workout.name}</h3>
 
             <p style={{ margin: "6px 0" }}>
-              <strong>Duration:</strong> {workout.duration} mins
+              <strong>Duration:</strong> {workout.duration}
             </p>
 
             <p style={{ margin: "6px 0" }}>
-              <strong>Difficulty:</strong> {workout.difficulty}
+              <strong>Intensity:</strong> {workout.intensity}
             </p>
 
             <p style={{ marginTop: 10 }}>
@@ -37,9 +37,15 @@ export default function DemoWorkouts() {
 
             <ul>
               {workout.exercises.map((ex, idx) => (
-                <li key={idx}>{ex}</li>
+                <li key={idx}>
+                  {ex.name} — {ex.sets} sets × {ex.reps} reps
+                </li>
               ))}
             </ul>
+
+            {workout.notes && (
+              <p style={{ marginTop: 10, color: "#444" }}>{workout.notes}</p>
+            )}
           </div>
         ))}
       </div>
