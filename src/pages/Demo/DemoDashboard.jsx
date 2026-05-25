@@ -19,27 +19,22 @@ const Demo = () => {
   const [selectedDivision, setSelectedDivision] = useState(null);
   const [showProgress, setShowProgress] = useState(false);
 
-  // ⭐ Gateway choice state
   const [hasChosenPath, setHasChosenPath] = useState(false);
 
-  // ⭐ Guided walkthrough state
   const [guideStep, setGuideStep] = useState(1);
   const [showGuide, setShowGuide] = useState(false);
 
-  // ⭐ Enable walkthrough ONLY after demo starts
   useEffect(() => {
     if (hasChosenPath) {
       setShowGuide(true);
     }
   }, [hasChosenPath]);
 
-  // ⭐ Refs for auto-scroll
   const workoutRef = useRef(null);
   const mealRef = useRef(null);
   const tacticalRef = useRef(null);
   const progressRef = useRef(null);
 
-  // ⭐ Auto-scroll logic
   useEffect(() => {
     if (!showGuide) return;
 
@@ -51,7 +46,6 @@ const Demo = () => {
     if (guideStep === 5 && progressRef.current) progressRef.current.scrollIntoView(scrollOptions);
   }, [guideStep, showGuide]);
 
-  // ⭐ Highlight logic
   const getHighlightClass = (card) => {
     if (!showGuide) return "";
     if (guideStep === 2 && card === "workout") return "highlight-card";
@@ -65,7 +59,6 @@ const Demo = () => {
     <div className="demo-container">
       <DemoBanner />
 
-      {/* ⭐ Gateway Screen */}
       {!hasChosenPath && (
         <div className="demo-choice">
           <h1 className="demo-title">Welcome to DelphiaFit</h1>
@@ -103,7 +96,6 @@ const Demo = () => {
         </div>
       )}
 
-      {/* ⭐ Demo content AFTER choosing demo mode */}
       {hasChosenPath && (
         <>
           {showGuide && (
@@ -114,7 +106,6 @@ const Demo = () => {
             />
           )}
 
-          {/* HERO SECTION */}
           <div className="demo-hero">
             <h1>Explore DelphiaFit</h1>
             <p>Try the platform in read‑only demo mode.</p>
@@ -127,7 +118,6 @@ const Demo = () => {
             </button>
           </div>
 
-          {/* DASHBOARD PREVIEW */}
           <div className="demo-dashboard">
             <h2>Dashboard Preview</h2>
 
@@ -173,7 +163,6 @@ const Demo = () => {
             </div>
           </div>
 
-          {/* FEATURES */}
           <div className="demo-features">
             <h2>What You Get</h2>
             <ul>
@@ -185,7 +174,6 @@ const Demo = () => {
             </ul>
           </div>
 
-          {/* CTA */}
           <div className="demo-cta">
             <h2>Ready to start your training</h2>
             <button
@@ -196,7 +184,6 @@ const Demo = () => {
             </button>
           </div>
 
-          {/* MODALS */}
           {selectedWorkout && (
             <DemoWorkoutModal
               workout={selectedWorkout}
@@ -236,4 +223,3 @@ const Demo = () => {
 };
 
 export default Demo;
-
