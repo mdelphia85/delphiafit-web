@@ -27,10 +27,18 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import DailyLog from "./pages/DailyLog.jsx";
 
-// ⭐ NEW DEMO MODE SCREENS
+// ⭐ DEMO MODE SCREENS
 import Landing from "./pages/Landing.jsx";
 import DemoDashboard from "./pages/demo/DemoDashboard.jsx";
+import DemoWorkouts from "./pages/demo/DemoWorkouts.jsx";
+import DemoMeals from "./pages/demo/DemoMeals.jsx";
+import DemoTactical from "./pages/demo/DemoTactical.jsx";
+import DemoProgress from "./pages/demo/DemoProgress.jsx";
 
+import DemoFirefighter from "./pages/demo/DemoFirefighter.jsx";
+import DemoEMS from "./pages/demo/DemoEMS.jsx";
+import DemoMilitary from "./pages/demo/DemoMilitary.jsx";
+import DemoPolice from "./pages/demo/DemoPolice.jsx";
 
 // ADMIN SCREENS
 import AdminLogin from "./Admin/Login.jsx";
@@ -41,7 +49,7 @@ import AdminLogs from "./Admin/Logs.jsx";
 import AdminMessages from "./Admin/Messages.jsx";
 import AdminUsers from "./Admin/Users.jsx";
 
-// TACTICAL SCREENS
+// TACTICAL SCREENS (REAL APP)
 import Firefighters from "./pages/Firefighters.jsx";
 import EMS from "./pages/EMS.jsx";
 import Military from "./pages/Military.jsx";
@@ -141,11 +149,21 @@ function AppWithMenu() {
 
       {/* ⭐ ROUTES */}
       <Routes>
+
         {/* ⭐ NEW HOMEPAGE → DEMO GATEWAY */}
         <Route path="/" element={<Landing />} />
 
-        {/* ⭐ DEMO MODE */}
-        <Route path="/demo" element={<DemoDashboard />} />
+        {/* ⭐ DEMO SUBSYSTEM (FULLY ISOLATED) */}
+        <Route path="/demo/dashboard" element={<DemoDashboard />} />
+        <Route path="/demo/workouts" element={<DemoWorkouts />} />
+        <Route path="/demo/meals" element={<DemoMeals />} />
+        <Route path="/demo/tactical" element={<DemoTactical />} />
+        <Route path="/demo/progress" element={<DemoProgress />} />
+
+        <Route path="/demo/firefighter" element={<DemoFirefighter />} />
+        <Route path="/demo/ems" element={<DemoEMS />} />
+        <Route path="/demo/military" element={<DemoMilitary />} />
+        <Route path="/demo/police" element={<DemoPolice />} />
 
         {/* AUTH */}
         <Route path="/register" element={<Register />} />
@@ -176,7 +194,7 @@ function AppWithMenu() {
         <Route path="/about" element={<About />} />
         <Route path="/daily-log" element={<DailyLog />} />
 
-        {/* TACTICAL */}
+        {/* TACTICAL (REAL APP) */}
         <Route path="/tactical/firefighters" element={<Firefighters />} />
         <Route path="/tactical/ems" element={<EMS />} />
         <Route path="/tactical/military" element={<Military />} />
@@ -191,6 +209,7 @@ function AppWithMenu() {
         <Route path="/admin/logs" element={<AdminLogs />} />
         <Route path="/admin/messages" element={<AdminMessages />} />
         <Route path="/admin/users" element={<AdminUsers />} />
+
       </Routes>
     </div>
   );
