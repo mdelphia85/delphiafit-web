@@ -154,6 +154,7 @@ function AppWithMenu() {
         <Route path="/" element={<Landing />} />
 
         {/* ⭐ DEMO SUBSYSTEM (FULLY ISOLATED) */}
+        <Route path="/demo" element={<DemoDashboard />} />
         <Route path="/demo/dashboard" element={<DemoDashboard />} />
         <Route path="/demo/workouts" element={<DemoWorkouts />} />
         <Route path="/demo/meals" element={<DemoMeals />} />
