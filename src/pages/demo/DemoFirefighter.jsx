@@ -34,12 +34,25 @@ export default function DemoFirefighter() {
           >
             <h3 style={{ margin: 0 }}>{drill.name}</h3>
 
-            <p style={{ marginTop: 10, color: "#444" }}>
-              This is a sample firefighter tactical drill used for demo preview mode.
+            <p style={{ margin: "6px 0" }}>
+              <strong>Duration:</strong> {drill.duration}
             </p>
+
+            <p style={{ margin: "6px 0" }}>
+              <strong>Level:</strong> {drill.level}
+            </p>
+
+            <p style={{ margin: "6px 0" }}>
+              <strong>Category:</strong> {drill.category}
+            </p>
+
+            {drill.notes && (
+              <p style={{ marginTop: 10, color: "#444" }}>{drill.notes}</p>
+            )}
           </div>
         ))}
       </div>
     </div>
   );
 }
+
