@@ -57,7 +57,66 @@ export default function Login() {
     }
   }
 
-  // ⭐ AFTER LOGIN → HOME SCREEN
+ import { useNavigate } from "react-router-dom";
+import { useState, useContext } from "react";
+import homescreen from "../assets/homescreen.png";
+import menuIcon from "../assets/menu.png";
+import { MenuContext } from "../context/MenuContext.jsx";
+
+export default function Login() {
+  const navigate = useNavigate();
+  const { menuOpen, setMenuOpen } = useContext(MenuContext);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [status, setStatus] = useState("idle");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  async function handleLogin() {
+    if (!email.includes("@") || password.length < 1) {
+      setStatus("error");
+      setErrorMessage("Invalid email or password.");
+      return;
+    }
+
+    setStatus("loading");
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!res.ok) {
+        setStatus("error");
+        setErrorMessage("Invalid email or password.");
+        return;
+      }
+
+      const data = await res.json();
+
+      // ⭐ Save JWT + email + login state (FIX ADDED HERE)
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("userEmail", email);
+      localStorage.setItem("loggedIn", "true");
+
+      setStatus("success");
+
+      setTimeout(() => {
+        // ⭐ Redirect to home screen inside Login.jsx
+        setIsLoggedIn(true);
+      }, 600);
+
+    } catch (err) {
+      setStatus("error");
+      setErrorMessage("Server error. Please try again.");
+    }
+  }
+
+  // ⭐ AFTER LOGIN → HOME SCREEN (KEEPING THIS EXACTLY AS YOU BUILT IT)
   if (isLoggedIn) {
     return (
       <div

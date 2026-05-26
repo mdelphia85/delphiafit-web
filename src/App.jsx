@@ -27,20 +27,19 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import DailyLog from "./pages/DailyLog.jsx";
 
-// ⭐ DEMO MODE SCREENS
+// DEMO
 import Landing from "./pages/Landing.jsx";
 import DemoDashboard from "./pages/demo/DemoDashboard.jsx";
 import DemoWorkouts from "./pages/demo/DemoWorkouts.jsx";
 import DemoMeals from "./pages/demo/DemoMeals.jsx";
 import DemoTactical from "./pages/demo/DemoTactical.jsx";
 import DemoProgress from "./pages/demo/DemoProgress.jsx";
-
 import DemoFirefighter from "./pages/demo/DemoFirefighter.jsx";
 import DemoEMS from "./pages/demo/DemoEMS.jsx";
 import DemoMilitary from "./pages/demo/DemoMilitary.jsx";
 import DemoPolice from "./pages/demo/DemoPolice.jsx";
 
-// ADMIN SCREENS
+// ADMIN
 import AdminLogin from "./Admin/Login.jsx";
 import AdminDashboard from "./Admin/Dashboard.jsx";
 import AdminAnalytics from "./Admin/Analytics.jsx";
@@ -49,7 +48,7 @@ import AdminLogs from "./Admin/Logs.jsx";
 import AdminMessages from "./Admin/Messages.jsx";
 import AdminUsers from "./Admin/Users.jsx";
 
-// TACTICAL SCREENS (REAL APP)
+// TACTICAL REAL APP
 import Firefighters from "./pages/Firefighters.jsx";
 import EMS from "./pages/EMS.jsx";
 import Military from "./pages/Military.jsx";
@@ -74,17 +73,17 @@ function AppWithMenu() {
     setMenuOpen(false);
   }
 
+  // ⭐ FIXED LOGOUT
   function logout() {
-    localStorage.removeItem("token");
+    localStorage.removeItem("loggedIn");
     localStorage.removeItem("userEmail");
+    localStorage.removeItem("token");
     setMenuOpen(false);
     navigate("/login");
   }
 
   return (
     <div style={{ position: "relative" }}>
-
-      {/* ⭐ GLOBAL MENU OVERLAY */}
       {menuOpen && (
         <div
           style={{
@@ -109,7 +108,6 @@ function AppWithMenu() {
           <MenuItem label="Meals" onClick={() => go("/meals")} />
           <MenuItem label="Daily Log" onClick={() => go("/daily-log")} />
 
-          {/* NEW SCREENS */}
           <MenuItem label="Supplements" onClick={() => go("/supplements")} />
           <MenuItem label="Workouts" onClick={() => go("/workouts")} />
           <MenuItem label="Sports" onClick={() => go("/sports")} />
@@ -124,13 +122,11 @@ function AppWithMenu() {
           <MenuItem label="Streaks" onClick={() => go("/streaks")} />
           <MenuItem label="About" onClick={() => go("/about")} />
 
-          {/* TACTICAL */}
           <MenuItem label="Firefighters" onClick={() => go("/tactical/firefighters")} />
           <MenuItem label="EMS" onClick={() => go("/tactical/ems")} />
           <MenuItem label="Military" onClick={() => go("/tactical/military")} />
           <MenuItem label="Police" onClick={() => go("/tactical/police")} />
 
-          {/* LOG OUT */}
           <div
             onClick={logout}
             style={{
@@ -147,20 +143,15 @@ function AppWithMenu() {
         </div>
       )}
 
-      {/* ⭐ ROUTES */}
       <Routes>
-
-        {/* ⭐ NEW HOMEPAGE → DEMO GATEWAY */}
+        {/* DEMO MODE */}
         <Route path="/" element={<Landing />} />
-
-        {/* ⭐ DEMO SUBSYSTEM (FULLY ISOLATED) */}
         <Route path="/demo" element={<DemoDashboard />} />
         <Route path="/demo/dashboard" element={<DemoDashboard />} />
         <Route path="/demo/workouts" element={<DemoWorkouts />} />
         <Route path="/demo/meals" element={<DemoMeals />} />
         <Route path="/demo/tactical" element={<DemoTactical />} />
         <Route path="/demo/progress" element={<DemoProgress />} />
-
         <Route path="/demo/firefighter" element={<DemoFirefighter />} />
         <Route path="/demo/ems" element={<DemoEMS />} />
         <Route path="/demo/military" element={<DemoMilitary />} />
@@ -172,7 +163,7 @@ function AppWithMenu() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
-        {/* MAIN APP */}
+        {/* REAL APP */}
         <Route path="/protein" element={<Protein />} />
         <Route path="/water" element={<Water />} />
         <Route path="/meals" element={<Meals />} />
@@ -195,7 +186,7 @@ function AppWithMenu() {
         <Route path="/about" element={<About />} />
         <Route path="/daily-log" element={<DailyLog />} />
 
-        {/* TACTICAL (REAL APP) */}
+        {/* TACTICAL */}
         <Route path="/tactical/firefighters" element={<Firefighters />} />
         <Route path="/tactical/ems" element={<EMS />} />
         <Route path="/tactical/military" element={<Military />} />
@@ -210,7 +201,6 @@ function AppWithMenu() {
         <Route path="/admin/logs" element={<AdminLogs />} />
         <Route path="/admin/messages" element={<AdminMessages />} />
         <Route path="/admin/users" element={<AdminUsers />} />
-
       </Routes>
     </div>
   );
@@ -233,3 +223,4 @@ function MenuItem({ label, onClick }) {
 }
 
 export default App;
+
