@@ -1,14 +1,24 @@
-const demoProgress = {
-  weekly: [
-    { day: "Monday", score: "Completed Workout" },
-    { day: "Tuesday", score: "Completed Meal Plan" },
-    { day: "Wednesday", score: "Rest Day" },
-    { day: "Thursday", score: "Completed Tactical Drill" },
-    { day: "Friday", score: "Completed Workout" },
-    { day: "Saturday", score: "Active Recovery" },
-    { day: "Sunday", score: "Rest Day" },
-  ],
-  notes: "Solid week of training with consistent effort and balanced recovery.",
-};
+const demoProgress = [
+  {
+    metric: "Workouts Completed",
+    value: 5,
+    trend: "Up"
+  },
+  {
+    metric: "Meals Logged",
+    value: 18,
+    trend: "Stable"
+  },
+  {
+    metric: "Tactical Drills Completed",
+    value: 3,
+    trend: "Up"
+  },
+  {
+    metric: "Current Streak",
+    value: "7 days",
+    trend: "Up"
+  }
+];
 
 export default demoProgress;
