@@ -1,89 +1,53 @@
 import { useContext } from "react";
+import carbon from "../assets/carbon.png";
 import { MenuContext } from "../context/MenuContext.jsx";
 
 export default function Firefighters() {
   const { setMenuOpen } = useContext(MenuContext);
 
-  const containerStyle = {
-    minHeight: "100vh",
-    backgroundColor: "#f5f5f5",
-    padding: "30px 20px",
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    color: "#111",
+  const accent = "#ff4d00";
+
+  const panel = {
+    backgroundColor: "rgba(0,0,0,0.55)",
+    border: `3px solid ${accent}`,
+    borderRadius: "10px",
+    padding: "18px",
+    marginBottom: "22px",
   };
 
-  const headerStyle = {
-    maxWidth: "900px",
-    margin: "0 auto 24px auto",
-  };
-
-  const titleStyle = {
-    fontSize: "28px",
+  const text = {
+    color: accent,
+    fontSize: "20px",
     fontWeight: "700",
-    marginBottom: "12px",
+    marginBottom: "8px",
   };
 
-  const controlsRow = {
-    display: "flex",
-    gap: "12px",
-    marginTop: "8px",
-    marginBottom: "24px",
-  };
-
-  const primaryButton = {
-    padding: "10px 18px",
-    borderRadius: "6px",
-    border: "none",
-    backgroundColor: "#2563eb",
-    color: "white",
-    fontSize: "14px",
-    fontWeight: "600",
-    cursor: "pointer",
-  };
-
-  const sectionsWrapper = {
-    maxWidth: "900px",
-    margin: "0 auto",
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-  };
-
-  const sectionCard = {
-    backgroundColor: "white",
-    borderRadius: "8px",
-    padding: "16px 18px",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-    border: "1px solid #e5e7eb",
-  };
-
-  const sectionTitle = {
-    fontSize: "18px",
-    fontWeight: "600",
-    marginBottom: "4px",
-  };
-
-  const sectionSub = {
-    fontSize: "14px",
-    color: "#6b7280",
+  const sub = {
+    color: accent,
+    fontSize: "16px",
     marginBottom: "10px",
+    opacity: 0.8,
   };
 
-  const addButton = {
-    ...primaryButton,
-    padding: "8px 14px",
-    fontSize: "13px",
+  const link = {
+    color: accent,
+    fontSize: "20px",
+    textDecoration: "underline",
+    cursor: "pointer",
+    fontWeight: "800",
+    textShadow: "0 0 8px black",
   };
 
-  const returnToMenuStyle = {
+  const returnBtn = {
     position: "fixed",
     right: "20px",
     bottom: "20px",
-    fontSize: "14px",
-    color: "#2563eb",
+    color: accent,
+    fontSize: "20px",
     textDecoration: "underline",
     cursor: "pointer",
-    fontWeight: "600",
+    fontWeight: "800",
+    textShadow: "0 0 8px black",
   };
 
   const sections = [
@@ -96,30 +60,37 @@ export default function Firefighters() {
   ];
 
   return (
-    <div style={containerStyle}>
-      <div style={headerStyle}>
-        <h1 style={titleStyle}>Firefighters Tactical Drills</h1>
+    <div
+      style={{
+        minHeight: "100vh",
+        backgroundImage: `url(${carbon})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        padding: "40px 20px",
+        position: "relative",
+      }}
+    >
+      <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.75)" }} />
 
-        <div style={controlsRow}>
-          <button style={primaryButton}>Manual Entry</button>
-          <button style={primaryButton}>Generator</button>
+      <div style={{ position: "relative", zIndex: 2, maxWidth: "900px", margin: "0 auto" }}>
+
+        {/* Manual + Generator */}
+        <div style={{ display: "flex", gap: "30px", marginBottom: "35px" }}>
+          <div style={link}>Manual Entry</div>
+          <div style={link}>Generator</div>
         </div>
-      </div>
 
-      <div style={sectionsWrapper}>
-        {sections.map((name) => (
-          <div key={name} style={sectionCard}>
-            <div style={sectionTitle}>{name}</div>
-            <div style={sectionSub}>No drills yet.</div>
-            <button style={addButton}>Add Drill</button>
+        {/* Drill Sections */}
+        {sections.map((s) => (
+          <div key={s} style={panel}>
+            <div style={text}>{s}</div>
+            <div style={sub}>No drills yet.</div>
+            <div style={link}>Add Drill</div>
           </div>
         ))}
       </div>
 
-      <div
-        style={returnToMenuStyle}
-        onClick={() => setMenuOpen(true)}
-      >
+      <div style={returnBtn} onClick={() => setMenuOpen(true)}>
         Return to Menu
       </div>
     </div>

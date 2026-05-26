@@ -73,7 +73,6 @@ function AppWithMenu() {
     setMenuOpen(false);
   }
 
-  // ⭐ FIXED LOGOUT
   function logout() {
     localStorage.removeItem("loggedIn");
     localStorage.removeItem("userEmail");
@@ -83,11 +82,11 @@ function AppWithMenu() {
   }
 
   return (
-    <div style={{ position: "relative" }}>
+    <>
       {menuOpen && (
         <div
           style={{
-            position: "absolute",
+            position: "fixed",   // ⭐ FIXED (was absolute)
             top: "100px",
             left: "20px",
             backgroundColor: "black",
@@ -202,7 +201,7 @@ function AppWithMenu() {
         <Route path="/admin/messages" element={<AdminMessages />} />
         <Route path="/admin/users" element={<AdminUsers />} />
       </Routes>
-    </div>
+    </>
   );
 }
 
@@ -223,4 +222,3 @@ function MenuItem({ label, onClick }) {
 }
 
 export default App;
-

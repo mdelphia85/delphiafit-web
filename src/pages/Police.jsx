@@ -1,124 +1,103 @@
 import { useContext } from "react";
+import carbon from "../assets/carbon.png";
 import { MenuContext } from "../context/MenuContext.jsx";
 
 export default function Police() {
   const { setMenuOpen } = useContext(MenuContext);
 
-  const containerStyle = {
-    minHeight: "100vh",
-    backgroundColor: "#f5f5f5",
-    padding: "30px 20px",
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    color: "#111",
+  const blue = "#1e90ff";
+  const red = "#ff2b2b";
+
+  const panel = {
+    backgroundColor: "rgba(0,0,0,0.55)",
+    border: `3px solid ${blue}`,
+    borderRadius: "10px",
+    padding: "18px",
+    marginBottom: "22px",
   };
 
-  const headerStyle = {
-    maxWidth: "900px",
-    margin: "0 auto 24px auto",
-  };
-
-  const titleStyle = {
-    fontSize: "28px",
+  const text = {
+    color: blue,
+    fontSize: "20px",
     fontWeight: "700",
-    marginBottom: "12px",
+    marginBottom: "8px",
   };
 
-  const controlsRow = {
-    display: "flex",
-    gap: "12px",
-    marginTop: "8px",
-    marginBottom: "24px",
-  };
-
-  const primaryButton = {
-    padding: "10px 18px",
-    borderRadius: "6px",
-    border: "none",
-    backgroundColor: "#2563eb",
-    color: "white",
-    fontSize: "14px",
-    fontWeight: "600",
-    cursor: "pointer",
-  };
-
-  const sectionsWrapper = {
-    maxWidth: "900px",
-    margin: "0 auto",
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-  };
-
-  const sectionCard = {
-    backgroundColor: "white",
-    borderRadius: "8px",
-    padding: "16px 18px",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-    border: "1px solid #e5e7eb",
-  };
-
-  const sectionTitle = {
-    fontSize: "18px",
-    fontWeight: "600",
-    marginBottom: "4px",
-  };
-
-  const sectionSub = {
-    fontSize: "14px",
-    color: "#6b7280",
+  const sub = {
+    color: blue,
+    fontSize: "16px",
     marginBottom: "10px",
+    opacity: 0.8,
   };
 
-  const addButton = {
-    ...primaryButton,
-    padding: "8px 14px",
-    fontSize: "13px",
+  const linkBlue = {
+    color: blue,
+    fontSize: "20px",
+    textDecoration: "underline",
+    cursor: "pointer",
+    fontWeight: "800",
+    textShadow: "0 0 8px black",
   };
 
-  const returnToMenuStyle = {
+  const linkRed = {
+    color: red,
+    fontSize: "20px",
+    textDecoration: "underline",
+    cursor: "pointer",
+    fontWeight: "800",
+    textShadow: "0 0 8px black",
+  };
+
+  const returnBtn = {
     position: "fixed",
     right: "20px",
     bottom: "20px",
-    fontSize: "14px",
-    color: "#2563eb",
+    color: blue,
+    fontSize: "20px",
     textDecoration: "underline",
     cursor: "pointer",
-    fontWeight: "600",
+    fontWeight: "800",
+    textShadow: "0 0 8px black",
   };
 
   const sections = [
-    { name: "Patrol Skills", button: "Add Drill to Patrol Skills" },
-    { name: "Traffic Stops", button: "Add Drill to Traffic Stops" },
-    { name: "Use of Force", button: "Add Drill to Use of Force" },
-    { name: "Building Search", button: "Add Drill to Building Search" },
-    { name: "Tactical Movement", button: "Add Drill to Tactical Movement" },
+    { name: "Patrol Skills", btn: "Add Drill to Patrol Skills" },
+    { name: "Traffic Stops", btn: "Add Drill to Traffic Stops" },
+    { name: "Use of Force", btn: "Add Drill to Use of Force" },
+    { name: "Building Search", btn: "Add Drill to Building Search" },
+    { name: "Tactical Movement", btn: "Add Drill to Tactical Movement" },
   ];
 
   return (
-    <div style={containerStyle}>
-      <div style={headerStyle}>
-        <h1 style={titleStyle}>Police Tactical Drills</h1>
+    <div
+      style={{
+        minHeight: "100vh",
+        backgroundImage: `url(${carbon})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        padding: "40px 20px",
+        position: "relative",
+      }}
+    >
+      <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.75)" }} />
 
-        <div style={controlsRow}>
-          <button style={primaryButton}>Manual Entry</button>
-          <button style={primaryButton}>Generator</button>
+      <div style={{ position: "relative", zIndex: 2, maxWidth: "900px", margin: "0 auto" }}>
+
+        <div style={{ display: "flex", gap: "30px", marginBottom: "35px" }}>
+          <div style={linkBlue}>Manual Entry</div>
+          <div style={linkBlue}>Generator</div>
         </div>
-      </div>
 
-      <div style={sectionsWrapper}>
         {sections.map((s) => (
-          <div key={s.name} style={sectionCard}>
-            <div style={sectionTitle}>{s.name}</div>
-            <div style={sectionSub}>No drills yet.</div>
-            <button style={addButton}>{s.button}</button>
+          <div key={s.name} style={panel}>
+            <div style={text}>{s.name}</div>
+            <div style={sub}>No drills yet.</div>
+            <div style={linkRed}>{s.btn}</div>
           </div>
         ))}
       </div>
 
-      <div
-        style={returnToMenuStyle}
-        onClick={() => setMenuOpen(true)}
-      >
+      <div style={returnBtn} onClick={() => setMenuOpen(true)}>
         Return to Menu
       </div>
     </div>
