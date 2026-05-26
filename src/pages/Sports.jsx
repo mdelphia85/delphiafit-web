@@ -17,44 +17,29 @@ export default function Sports() {
 
   const token = localStorage.getItem("token");
 
-  // Verify token + load sports
+  // ⭐ Local token check only (NO backend verification)
   useEffect(() => {
-    async function verifyAndLoad() {
-      if (!token) {
-        navigate("/login");
-        return;
-      }
+    if (!token) navigate("/login");
+  }, [navigate, token]);
 
-      try {
-        const verify = await fetch(
-          "https://delphiafit-backend-production.up.railway.app/auth/me",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+  // ⭐ Load sports list
+  useEffect(() => {
+    async function loadSports() {
+      if (!token) return;
 
-        if (!verify.ok) {
-          navigate("/login");
-          return;
+      const res = await fetch(
+        "https://delphiafit-backend-production.up.railway.app/sports",
+        {
+          headers: { Authorization: `Bearer ${token}` },
         }
+      );
 
-        // Load sports list
-        const res = await fetch(
-          "https://delphiafit-backend-production.up.railway.app/sports",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        const data = await res.json();
-        setSportsList(data.sports || []);
-      } catch (err) {
-        navigate("/login");
-      }
+      const data = await res.json();
+      setSportsList(data.sports || []);
     }
 
-    verifyAndLoad();
-  }, [token, navigate]);
+    loadSports();
+  }, [token]);
 
   // Load categories when sport changes
   useEffect(() => {
@@ -104,7 +89,7 @@ export default function Sports() {
     if (!sport || !category || !level) return;
 
     const res = await fetch(
-      `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/${level}/drills`,
+      `https://delphiafit-backend-production-up.railway.app/sports/${sport}/${category}/${level}/drills`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -234,39 +219,19 @@ export default function Sports() {
         </button>
       )}
 
-      {/* OUTPUT */}
+      {/* DRILL RESULT */}
       {drill && (
         <div
-          className="output-box"
           style={{
-            marginTop: "30px",
+            marginTop: "20px",
             padding: "15px",
             backgroundColor: "#111",
             borderRadius: "6px",
             border: `1px solid ${ACCENT}`,
-            width: "100%",
-            boxSizing: "border-box",
           }}
         >
-          <h3
-            style={{
-              color: ACCENT,
-              margin: 0,
-              padding: 0,
-            }}
-          >
-            Drill
-          </h3>
-
-          <p
-            style={{
-              color: ACCENT,
-              marginTop: "8px",
-              marginBottom: 0,
-            }}
-          >
-            {drill}
-          </p>
+          <h3 style={{ color: ACCENT }}>Drill</h3>
+          <p>{drill}</p>
         </div>
       )}
 
@@ -274,13 +239,11 @@ export default function Sports() {
       <div
         onClick={openMenu}
         style={{
-          position: "absolute",
-          bottom: "20px",
-          right: "20px",
-          color: ACCENT,
+          marginTop: "40px",
           textDecoration: "underline",
-          fontSize: "18px",
+          color: ACCENT,
           cursor: "pointer",
+          textAlign: "center",
         }}
       >
         Return to Menu

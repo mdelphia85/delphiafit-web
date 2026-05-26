@@ -89,8 +89,8 @@ export default function Login() {
             position: "absolute",
             top: "40px",
             left: "20px",
-            width: "40px",
-            height: "40px",
+            width: "72px",
+            height: "72px",
             zIndex: 3,
             cursor: "pointer"
           }}

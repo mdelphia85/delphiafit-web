@@ -24,34 +24,21 @@ export default function Profile() {
 
   const [avatar, setAvatar] = useState(null);
 
-  // ⭐ VERIFY TOKEN + LOAD PROFILE
+  // ⭐ LOCAL TOKEN CHECK ONLY — NO BACKEND VERIFY
   useEffect(() => {
-    async function verifyAndLoad() {
-      if (!token) {
-        navigate("/login");
-        return;
-      }
+    if (!token) navigate("/login");
+  }, [navigate, token]);
+
+  // ⭐ LOAD PROFILE (NO AUTH VERIFY)
+  useEffect(() => {
+    async function loadProfile() {
+      if (!token) return;
 
       try {
-        const verify = await fetch(
-          "https://delphiafit-backend-production.up.railway.app/auth/me",
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
-
-        if (!verify.ok) {
-          navigate("/login");
-          return;
-        }
-
-        // Load profile
         const res = await fetch(
           "https://delphiafit-backend-production.up.railway.app/profile/get",
           {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
+            headers: { Authorization: `Bearer ${token}` }
           }
         );
 
@@ -68,12 +55,12 @@ export default function Profile() {
           setHeight(data.height || "");
         }
       } catch (err) {
-        navigate("/login");
+        console.log("Profile load error:", err);
       }
     }
 
-    verifyAndLoad();
-  }, [token, navigate]);
+    loadProfile();
+  }, [token]);
 
   // AUTO CALCULATIONS
   const totalChanged =
@@ -126,7 +113,7 @@ export default function Profile() {
     setAvatar(null);
   }
 
-  // ⭐ SAVE PROFILE
+  // ⭐ SAVE PROFILE (NO REDIRECT TO LOGIN)
   async function saveProfile() {
     const payload = {
       name,
@@ -156,7 +143,6 @@ export default function Profile() {
 
       if (data.success) {
         console.log("Profile saved");
-        navigate("/login");
       } else {
         console.log("Profile save failed:", data.message);
       }
@@ -244,6 +230,7 @@ export default function Profile() {
           </p>
         </div>
 
+        {/* RETURN TO MENU */}
         <div
           onClick={openMenu}
           style={{
@@ -383,7 +370,7 @@ function Display({ label, value, color }) {
           border: `2px solid ${color}`,
           backgroundColor: "#111",
           fontSize: "18px",
-          color: color,
+          color,
           fontWeight: "600"
         }}
       >

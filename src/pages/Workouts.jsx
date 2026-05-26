@@ -65,29 +65,11 @@ export default function Workouts() {
   const token = localStorage.getItem("token");
 
   // ⭐ Token verification
-  useEffect(() => {
-    async function verify() {
-      if (!token) {
-        navigate("/login");
-        return;
-      }
+ useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) navigate("/login");
+}, []);
 
-      try {
-        const res = await fetch(
-          "https://delphiafit-backend-production.up.railway.app/auth/me",
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
-
-        if (!res.ok) navigate("/login");
-      } catch {
-        navigate("/login");
-      }
-    }
-
-    verify();
-  }, [token, navigate]);
 
   // Cleanup on unmount
   useEffect(() => {

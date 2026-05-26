@@ -23,32 +23,10 @@ export default function FreeTraining() {
 
   const token = localStorage.getItem("token");
 
-  // Verify token on load
+  // ⭐ Local token check only — NO backend verification
   useEffect(() => {
-    async function verify() {
-      if (!token) {
-        navigate("/login");
-        return;
-      }
-
-      try {
-        const res = await fetch(
-          "https://delphiafit-backend-production.up.railway.app/auth/me",
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
-
-        if (!res.ok) {
-          navigate("/login");
-        }
-      } catch (err) {
-        navigate("/login");
-      }
-    }
-
-    verify();
-  }, [token, navigate]);
+    if (!token) navigate("/login");
+  }, [navigate, token]);
 
   function updateField(key, value) {
     setFields({ ...fields, [key]: value });
