@@ -89,7 +89,7 @@ export default function Sports() {
     if (!sport || !category || !level) return;
 
     const res = await fetch(
-      `https://delphiafit-backend-production-up.railway.app/sports/${sport}/${category}/${level}/drills`,
+      `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/${level}/drills`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
