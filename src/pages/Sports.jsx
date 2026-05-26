@@ -116,9 +116,6 @@ export default function Sports() {
         position: "relative",
       }}
     >
-      <h1 style={{ color: ACCENT, marginBottom: "20px" }}>
-        Sports Training
-      </h1>
 
       {/* SPORT SELECTOR */}
       <div className="section" style={{ marginBottom: "20px" }}>
