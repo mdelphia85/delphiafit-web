@@ -20,7 +20,6 @@ export default function Workouts() {
   const WHITE = "rgb(255,255,255)";
   const DISABLED_GRAY = "rgb(90,90,90)";
 
-  // ⭐ NEW: Manual / Generator mode
   const [mode, setMode] = useState("generator");
 
   const [workoutType, setWorkoutType] = useState("");
@@ -65,15 +64,18 @@ export default function Workouts() {
     cooldown: "3"
   });
 
+  // ⭐ Manual builder state
+  const [manualExercises, setManualExercises] = useState([
+    { name: "", sets: "", reps: "", weight: "" }
+  ]);
+
   const token = localStorage.getItem("token");
 
-  // Token verification
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) navigate("/login");
-  }, []);
+  }, [navigate]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (timerRef.current) {
@@ -83,7 +85,6 @@ export default function Workouts() {
     };
   }, []);
 
-  // Timer logic
   useEffect(() => {
     if (!currentBlock) return;
 
@@ -185,28 +186,60 @@ export default function Workouts() {
     }
   }
 
-  function handleSave() {
-    if (!saveEnabled || !cooldownStarted) return;
-
-    console.log("Workout saved:", {
-      workoutType,
-      duration,
-      weightUnit,
-      weightValue,
-      plan,
-      blockElapsed
+  // ⭐ Manual builder handlers
+  function handleManualChange(index, field, value) {
+    setManualExercises(prev => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], [field]: value };
+      return copy;
     });
+  }
 
-    setSaveEnabled(false);
-    setCurrentBlock(null);
+  function handleAddManualRow() {
+    setManualExercises(prev => [
+      ...prev,
+      { name: "", sets: "", reps: "", weight: "" }
+    ]);
+  }
 
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+  function handleRemoveManualRow(index) {
+    setManualExercises(prev => prev.filter((_, i) => i !== index));
+  }
+
+  function handleSave() {
+    if (mode === "generator") {
+      if (!saveEnabled || !cooldownStarted) return;
+
+      console.log("Workout saved (generator):", {
+        workoutType,
+        duration,
+        weightUnit,
+        weightValue,
+        plan,
+        blockElapsed
+      });
+
+      setSaveEnabled(false);
+      setCurrentBlock(null);
+
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    } else {
+      // Manual mode save
+      const cleaned = manualExercises.filter(
+        ex => ex.name || ex.sets || ex.reps || ex.weight
+      );
+
+      if (cleaned.length === 0) return;
+
+      console.log("Workout saved (manual):", {
+        exercises: cleaned
+      });
     }
   }
 
-  // Styles
   const container = {
     width: "100vw",
     height: "100vh",
@@ -297,9 +330,27 @@ export default function Workouts() {
   };
 
   const saveStyle = {
-    color: saveEnabled ? SILVER : DISABLED_GRAY,
+    color:
+      mode === "generator"
+        ? saveEnabled && cooldownStarted
+          ? SILVER
+          : DISABLED_GRAY
+        : manualExercises.some(
+            ex => ex.name || ex.sets || ex.reps || ex.weight
+          )
+        ? SILVER
+        : DISABLED_GRAY,
     fontSize: "18px",
-    cursor: saveEnabled ? "pointer" : "default"
+    cursor:
+      mode === "generator"
+        ? saveEnabled && cooldownStarted
+          ? "pointer"
+          : "default"
+        : manualExercises.some(
+            ex => ex.name || ex.sets || ex.reps || ex.weight
+          )
+        ? "pointer"
+        : "default"
   };
 
   const returnStyle = {
@@ -312,8 +363,7 @@ export default function Workouts() {
   return (
     <div style={container}>
       <div style={inner}>
-
-        {/* ⭐ MODE TOGGLE */}
+        {/* MODE TOGGLE */}
         <div style={{ display: "flex", gap: "20px", marginBottom: "20px" }}>
           <div
             onClick={() => setMode("generator")}
@@ -338,7 +388,7 @@ export default function Workouts() {
           </div>
         </div>
 
-        {/* ⭐ GENERATOR MODE */}
+        {/* GENERATOR MODE */}
         {mode === "generator" && (
           <>
             {/* Workout Type */}
@@ -573,9 +623,9 @@ export default function Workouts() {
           </>
         )}
 
-        {/* ⭐ MANUAL MODE */}
+        {/* MANUAL MODE */}
         {mode === "manual" && (
-          <div style={{ marginTop: "20px" }}>
+          <div style={{ marginTop: "8px" }}>
             <div
               style={{
                 color: WHITE,
@@ -586,10 +636,94 @@ export default function Workouts() {
               Manual Workout Builder
             </div>
 
-            <p style={{ color: SILVER }}>
-              Manual builder UI goes here — add exercises, sets, reps, weight,
-              equipment, and save manually.
-            </p>
+            {manualExercises.map((ex, index) => (
+              <div
+                key={index}
+                style={{
+                  borderBottom: `1px solid ${SILVER}`,
+                  paddingBottom: "8px",
+                  marginBottom: "8px"
+                }}
+              >
+                <div style={label}>Exercise Name</div>
+                <input
+                  style={{ ...field, width: "100%" }}
+                  value={ex.name}
+                  onChange={e =>
+                    handleManualChange(index, "name", e.target.value)
+                  }
+                  placeholder="e.g. Bench Press"
+                />
+
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "8px",
+                    marginTop: "8px"
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <div style={label}>Sets</div>
+                    <input
+                      style={{ ...field, width: "100%" }}
+                      value={ex.sets}
+                      onChange={e =>
+                        handleManualChange(index, "sets", e.target.value)
+                      }
+                      placeholder="e.g. 3"
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={label}>Reps</div>
+                    <input
+                      style={{ ...field, width: "100%" }}
+                      value={ex.reps}
+                      onChange={e =>
+                        handleManualChange(index, "reps", e.target.value)
+                      }
+                      placeholder="e.g. 10"
+                    />
+                  </div>
+                </div>
+
+                <div style={{ marginTop: "8px" }}>
+                  <div style={label}>Weight</div>
+                  <input
+                    style={{ ...field, width: "100%" }}
+                    value={ex.weight}
+                    onChange={e =>
+                      handleManualChange(index, "weight", e.target.value)
+                    }
+                    placeholder="e.g. 135 lbs"
+                  />
+                </div>
+
+                <div
+                  style={{
+                    marginTop: "8px",
+                    color: SILVER,
+                    fontSize: "14px",
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                    textAlign: "right"
+                  }}
+                  onClick={() => handleRemoveManualRow(index)}
+                >
+                  Remove Exercise
+                </div>
+              </div>
+            ))}
+
+            <div
+              style={{
+                ...clickable,
+                fontSize: "16px",
+                marginTop: "8px"
+              }}
+              onClick={handleAddManualRow}
+            >
+              Add Exercise
+            </div>
           </div>
         )}
       </div>

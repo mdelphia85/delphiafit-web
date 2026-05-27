@@ -17,89 +17,92 @@ export default function Sports() {
 
   const token = localStorage.getItem("token");
 
-  // ⭐ Local token check only (NO backend verification)
   useEffect(() => {
     if (!token) navigate("/login");
   }, [navigate, token]);
 
-  // ⭐ Load sports list
   useEffect(() => {
     async function loadSports() {
       if (!token) return;
-
-      const res = await fetch(
-        "https://delphiafit-backend-production.up.railway.app/sports",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      const data = await res.json();
-      setSportsList(data.sports || []);
+      try {
+        const res = await fetch(
+          "https://delphiafit-backend-production.up.railway.app/sports",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const data = await res.json();
+        setSportsList(data.sports || []);
+      } catch (err) {
+        console.error("Error loading sports:", err);
+        setSportsList([]);
+      }
     }
-
     loadSports();
   }, [token]);
 
-  // Load categories when sport changes
   useEffect(() => {
     async function loadCategories() {
-      if (!sport) return;
-
-      const res = await fetch(
-        `https://delphiafit-backend-production.up.railway.app/sports/${sport}/skills`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      const data = await res.json();
-      setCategories(data.skills || []);
-      setCategory("");
-      setLevel("");
-      setDrill(null);
+      if (!sport || !token) return;
+      try {
+        const res = await fetch(
+          `https://delphiafit-backend-production.up.railway.app/sports/${sport}/skills`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const data = await res.json();
+        setCategories(data.skills || []);
+        setCategory("");
+        setLevel("");
+        setDrill(null);
+      } catch (err) {
+        console.error("Error loading categories:", err);
+        setCategories([]);
+      }
     }
-
     loadCategories();
   }, [sport, token]);
 
-  // Load levels when category changes
   useEffect(() => {
     async function loadLevels() {
-      if (!sport || !category) return;
+      if (!sport || !category || !token) return;
+      try {
+        const res = await fetch(
+          `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/levels`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        const data = await res.json();
+        setLevels(data.levels || []);
+        setLevel("");
+        setDrill(null);
+      } catch (err) {
+        console.error("Error loading levels:", err);
+        setLevels([]);
+      }
+    }
+    loadLevels();
+  }, [category, sport, token]);
 
+  async function handleGenerate() {
+    if (!sport || !category || !level || !token) return;
+    try {
       const res = await fetch(
-        `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/levels`,
+        `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/${level}/drills`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
       const data = await res.json();
-      setLevels(data.levels || []);
-      setLevel("");
+      setDrill(data.drill || null);
+    } catch (err) {
+      console.error("Error loading drill:", err);
       setDrill(null);
     }
-
-    loadLevels();
-  }, [category, sport, token]);
-
-  // Load drill when level selected
-  async function handleGenerate() {
-    if (!sport || !category || !level) return;
-
-    const res = await fetch(
-      `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/${level}/drills`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-
-    const data = await res.json();
-    setDrill(data.drill || null);
   }
 
-  // Colors
   const BACKGROUND = "#000000";
   const TEXT = "#FFFFFF";
   const ACCENT = "#B3FF00";
@@ -116,7 +119,6 @@ export default function Sports() {
         position: "relative",
       }}
     >
-
       {/* SPORT SELECTOR */}
       <div className="section" style={{ marginBottom: "20px" }}>
         <label style={{ color: ACCENT }}>Sport</label>
@@ -227,7 +229,7 @@ export default function Sports() {
             border: `1px solid ${ACCENT}`,
           }}
         >
-          <h3 style={{ color: ACCENT }}>Drill</h3>
+          <p style={{ color: ACCENT, marginBottom: "8px" }}>Drill</p>
           <p>{drill}</p>
         </div>
       )}
@@ -248,3 +250,4 @@ export default function Sports() {
     </div>
   );
 }
+
