@@ -21,6 +21,9 @@ export default function Sports() {
     if (!token) navigate("/login");
   }, [navigate, token]);
 
+  // -----------------------------
+  // LOAD SPORTS
+  // -----------------------------
   useEffect(() => {
     async function loadSports() {
       if (!token) return;
@@ -41,12 +44,15 @@ export default function Sports() {
     loadSports();
   }, [token]);
 
+  // -----------------------------
+  // LOAD CATEGORIES
+  // -----------------------------
   useEffect(() => {
     async function loadCategories() {
       if (!sport || !token) return;
       try {
         const res = await fetch(
-          `https://delphiafit-backend-production.up.railway.app/sports/${sport}/skills`,
+          `https://delphiafit-backend-production.up.railway.app/sports/${sport}/skills/`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -64,12 +70,15 @@ export default function Sports() {
     loadCategories();
   }, [sport, token]);
 
+  // -----------------------------
+  // LOAD LEVELS
+  // -----------------------------
   useEffect(() => {
     async function loadLevels() {
       if (!sport || !category || !token) return;
       try {
         const res = await fetch(
-          `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/levels`,
+          `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/levels/`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -86,11 +95,14 @@ export default function Sports() {
     loadLevels();
   }, [category, sport, token]);
 
+  // -----------------------------
+  // GENERATE DRILL
+  // -----------------------------
   async function handleGenerate() {
     if (!sport || !category || !level || !token) return;
     try {
       const res = await fetch(
-        `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/${level}/drills`,
+        `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/${level}/drills/`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -250,4 +262,3 @@ export default function Sports() {
     </div>
   );
 }
-
