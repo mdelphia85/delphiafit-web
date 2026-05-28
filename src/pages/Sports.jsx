@@ -64,7 +64,7 @@ export default function Sports() {
 
       try {
         const res = await fetch(
-          `https://delphiafit-backend-production.up.railway.app/sports/${sport}/skills/`,
+          `https://api.delphiafit.com/sports/${sport}/skills/`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -93,7 +93,7 @@ export default function Sports() {
 
       try {
         const res = await fetch(
-          `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/levels/`,
+          `https://api.delphiafit.com/sports/${sport}/${category}/levels/`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -120,7 +120,7 @@ export default function Sports() {
 
     try {
       const res = await fetch(
-        `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/${level}/drills/`,
+        `https://api.delphiafit.com/sports/${sport}/${category}/${level}/drills/`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
