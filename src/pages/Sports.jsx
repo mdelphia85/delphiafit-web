@@ -17,9 +17,34 @@ export default function Sports() {
 
   const token = localStorage.getItem("token");
 
+  // -----------------------------
+  // VALIDATE TOKEN
+  // -----------------------------
   useEffect(() => {
-    if (!token) navigate("/login");
-  }, [navigate, token]);
+    async function validateToken() {
+      if (!token) return navigate("/login");
+
+      try {
+        const res = await fetch(
+          "https://delphiafit-backend-production.up.railway.app/auth/me",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (!res.ok) {
+          localStorage.removeItem("token");
+          return navigate("/login");
+        }
+      } catch (err) {
+        console.error("Token validation error:", err);
+        localStorage.removeItem("token");
+        navigate("/login");
+      }
+    }
+
+    validateToken();
+  }, [token, navigate]);
 
   // -----------------------------
   // LOAD SPORTS
@@ -27,6 +52,7 @@ export default function Sports() {
   useEffect(() => {
     async function loadSports() {
       if (!token) return;
+
       try {
         const res = await fetch(
           "https://delphiafit-backend-production.up.railway.app/sports/",
@@ -34,13 +60,21 @@ export default function Sports() {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+
         const data = await res.json();
-        setSportsList(data.sports || []);
+        console.log("SPORTS API RESPONSE:", data);
+
+        if (data?.sports?.length > 0) {
+          setSportsList(data.sports);
+        } else {
+          setSportsList([]);
+        }
       } catch (err) {
         console.error("Error loading sports:", err);
         setSportsList([]);
       }
     }
+
     loadSports();
   }, [token]);
 
@@ -50,6 +84,7 @@ export default function Sports() {
   useEffect(() => {
     async function loadCategories() {
       if (!sport || !token) return;
+
       try {
         const res = await fetch(
           `https://delphiafit-backend-production.up.railway.app/sports/${sport}/skills/`,
@@ -57,7 +92,10 @@ export default function Sports() {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+
         const data = await res.json();
+        console.log("CATEGORIES RESPONSE:", data);
+
         setCategories(data.skills || []);
         setCategory("");
         setLevel("");
@@ -67,6 +105,7 @@ export default function Sports() {
         setCategories([]);
       }
     }
+
     loadCategories();
   }, [sport, token]);
 
@@ -76,6 +115,7 @@ export default function Sports() {
   useEffect(() => {
     async function loadLevels() {
       if (!sport || !category || !token) return;
+
       try {
         const res = await fetch(
           `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/levels/`,
@@ -83,7 +123,10 @@ export default function Sports() {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+
         const data = await res.json();
+        console.log("LEVELS RESPONSE:", data);
+
         setLevels(data.levels || []);
         setLevel("");
         setDrill(null);
@@ -92,6 +135,7 @@ export default function Sports() {
         setLevels([]);
       }
     }
+
     loadLevels();
   }, [category, sport, token]);
 
@@ -100,6 +144,7 @@ export default function Sports() {
   // -----------------------------
   async function handleGenerate() {
     if (!sport || !category || !level || !token) return;
+
     try {
       const res = await fetch(
         `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/${level}/drills/`,
@@ -107,7 +152,10 @@ export default function Sports() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
       const data = await res.json();
+      console.log("DRILL RESPONSE:", data);
+
       setDrill(data.drill || null);
     } catch (err) {
       console.error("Error loading drill:", err);
@@ -148,11 +196,15 @@ export default function Sports() {
           }}
         >
           <option value="">Select Sport</option>
-          {sportsList.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
+          {sportsList.length > 0 ? (
+            sportsList.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))
+          ) : (
+            <option disabled>No sports available</option>
+          )}
         </select>
       </div>
 
@@ -174,11 +226,15 @@ export default function Sports() {
             }}
           >
             <option value="">Select Category</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
+            {categories.length > 0 ? (
+              categories.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))
+            ) : (
+              <option disabled>No categories available</option>
+            )}
           </select>
         </div>
       )}
@@ -201,11 +257,15 @@ export default function Sports() {
             }}
           >
             <option value="">Select Level</option>
-            {levels.map((lvl) => (
-              <option key={lvl} value={lvl}>
-                {lvl}
-              </option>
-            ))}
+            {levels.length > 0 ? (
+              levels.map((lvl) => (
+                <option key={lvl} value={lvl}>
+                  {lvl}
+                </option>
+              ))
+            ) : (
+              <option disabled>No levels available</option>
+            )}
           </select>
         </div>
       )}
