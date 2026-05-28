@@ -33,7 +33,7 @@ export default function Sports() {
 
       try {
         const res = await fetch(
-          "https://delphiafit-backend-production.up.railway.app/sports/",
+          "https://api.delphiafit.com/sports",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
