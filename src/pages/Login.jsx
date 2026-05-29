@@ -13,6 +13,8 @@ export default function Login() {
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   async function handleLogin() {
     if (!email.includes("@") || password.length < 1) {
       setStatus("error");
@@ -44,15 +46,65 @@ export default function Login() {
 
       setStatus("success");
 
-      // ⭐ FIXED: Redirect to Sports screen after login
+      // ⭐ FIX: NO REDIRECT — Login screen becomes Home screen
       setTimeout(() => {
-        navigate("/sports");
+        setIsLoggedIn(true);
       }, 600);
 
     } catch (err) {
       setStatus("error");
       setErrorMessage("Server error. Please try again.");
     }
+  }
+
+  // ⭐ AFTER LOGIN → HOME SCREEN (NO REDIRECT)
+  if (isLoggedIn) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          backgroundImage: `url(${homescreen})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          color: "white",
+          padding: "40px 20px",
+          textAlign: "center",
+          position: "relative"
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.72)",
+            zIndex: 1
+          }}
+        ></div>
+
+        <img
+          src={menuIcon}
+          alt="menu"
+          onClick={() => setMenuOpen(!menuOpen)}
+          style={{
+            position: "absolute",
+            top: "40px",
+            left: "20px",
+            width: "120px",
+            height: "120px",
+            zIndex: 3,
+            cursor: "pointer"
+          }}
+        />
+
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <h1 style={{ fontSize: "40px", fontWeight: "700" }}>Home</h1>
+          <p style={{ fontSize: "22px", marginTop: "20px" }}>
+            Welcome back!
+          </p>
+        </div>
+      </div>
+    );
   }
 
   // ⭐ BEFORE LOGIN → LOGIN FORM
