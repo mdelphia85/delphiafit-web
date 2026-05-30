@@ -25,251 +25,107 @@ export default function Sports() {
   }, [token, navigate]);
 
   // -----------------------------
-  // LOAD SPORTS
-  // -----------------------------
-  useEffect(() => {
-    async function loadSports() {
-      if (!token) return;
-
-      try {
-        const res = await fetch("https://api.delphiafit.com/sports", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const data = await res.json();
-        setSportsList(data.sports || []);
-      } catch (err) {
-        console.error("Error loading sports:", err);
-        setSportsList([]);
-      }
-    }
-
-    loadSports();
-  }, [token]);
-
-  // -----------------------------
-  // LOAD CATEGORIES
-  // -----------------------------
-  useEffect(() => {
-    async function loadCategories() {
-      if (!sport || !token) return;
-
-      try {
-        const res = await fetch(
-          `https://api.delphiafit.com/sports/${sport}/skills`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        const data = await res.json();
-        setCategories(data.skills || []);
-        setCategory("");
-        setLevel("");
-        setDrill(null);
-      } catch (err) {
-        console.error("Error loading categories:", err);
-        setCategories([]);
-      }
-    }
-
-    loadCategories();
-  }, [sport, token]);
-
-  // -----------------------------
-  // LOAD LEVELS
-  // -----------------------------
-  useEffect(() => {
-    async function loadLevels() {
-      if (!sport || !category || !token) return;
-
-      try {
-        const res = await fetch(
-          `https://api.delphiafit.com/sports/${sport}/${category}/levels`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        const data = await res.json();
-        setLevels(data.levels || []);
-        setLevel("");
-        setDrill(null);
-      } catch (err) {
-        console.error("Error loading levels:", err);
-        setLevels([]);
-      }
-    }
-
-    loadLevels();
-  }, [category, sport, token]);
-
-  // -----------------------------
-  // GENERATE DRILL
-  // -----------------------------
-  async function handleGenerate() {
-    if (!sport || !category || !level || !token) return;
+// LOAD SPORTS
+// -----------------------------
+useEffect(() => {
+  async function loadSports() {
+    if (!token) return;
 
     try {
       const res = await fetch(
-        `https://api.delphiafit.com/sports/${sport}/${category}/${level}/drills`,
+        "https://api.delphiafit.com/sports",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
       const data = await res.json();
-      setDrill(data.drill || null);
+      setSportsList(data.sports || []);
     } catch (err) {
-      console.error("Error loading drill:", err);
-      setDrill(null);
+      console.error("Error loading sports:", err);
+      setSportsList([]);
     }
   }
 
-  const BACKGROUND = "#000000";
-  const TEXT = "#FFFFFF";
-  const ACCENT = "#B3FF00";
+  loadSports();
+}, [token]);
 
-  return (
-    <div
-      className="sports-screen"
-      style={{
-        backgroundColor: BACKGROUND,
-        minHeight: "100vh",
-        padding: "20px",
-        color: TEXT,
-        fontFamily: "sans-serif",
-        position: "relative",
-      }}
-    >
-      {/* SPORT SELECTOR */}
-      <div className="section" style={{ marginBottom: "20px" }}>
-        <label style={{ color: ACCENT }}>Sport</label>
-        <select
-          value={sport}
-          onChange={(e) => setSport(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "10px",
-            marginTop: "8px",
-            backgroundColor: "#111",
-            color: ACCENT,
-            border: `1px solid ${ACCENT}`,
-            borderRadius: "6px",
-          }}
-        >
-          <option value="">Select Sport</option>
-          {sportsList.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
-      </div>
+// -----------------------------
+// LOAD CATEGORIES
+// -----------------------------
+useEffect(() => {
+  async function loadCategories() {
+    if (!sport || !token) return;
 
-      {/* CATEGORY SELECTOR */}
-      {sport && (
-        <div className="section" style={{ marginBottom: "20px" }}>
-          <label style={{ color: ACCENT }}>Category</label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "10px",
-              marginTop: "8px",
-              backgroundColor: "#111",
-              color: ACCENT,
-              border: `1px solid ${ACCENT}`,
-              borderRadius: "6px",
-            }}
-          >
-            <option value="">Select Category</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+    try {
+      const res = await fetch(
+        `https://api.delphiafit.com/sports/${sport}/skills`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-      {/* LEVEL SELECTOR */}
-      {category && (
-        <div className="section" style={{ marginBottom: "20px" }}>
-          <label style={{ color: ACCENT }}>Skill Level</label>
-          <select
-            value={level}
-            onChange={(e) => setLevel(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "10px",
-              marginTop: "8px",
-              backgroundColor: "#111",
-              color: ACCENT,
-              border: `1px solid ${ACCENT}`,
-              borderRadius: "6px",
-            }}
-          >
-            <option value="">Select Level</option>
-            {levels.map((lvl) => (
-              <option key={lvl} value={lvl}>
-                {lvl}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+      const data = await res.json();
+      setCategories(data.skills || []);
+      setCategory("");
+      setLevel("");
+      setDrill(null);
+    } catch (err) {
+      console.error("Error loading categories:", err);
+      setCategories([]);
+    }
+  }
 
-      {/* GENERATE BUTTON */}
-      {level && (
-        <button
-          className="generate-btn"
-          onClick={handleGenerate}
-          style={{
-            width: "100%",
-            padding: "12px",
-            backgroundColor: ACCENT,
-            color: BACKGROUND,
-            border: "none",
-            borderRadius: "6px",
-            fontWeight: "bold",
-            marginTop: "10px",
-          }}
-        >
-          Generate Drill
-        </button>
-      )}
+  loadCategories();
+}, [sport, token]);
 
-      {/* DRILL RESULT */}
-      {drill && (
-        <div
-          style={{
-            marginTop: "20px",
-            padding: "15px",
-            backgroundColor: "#111",
-            borderRadius: "6px",
-            border: `1px solid ${ACCENT}`,
-          }}
-        >
-          <p style={{ color: ACCENT, marginBottom: "8px" }}>Drill</p>
-          <p>{drill}</p>
-        </div>
-      )}
+// -----------------------------
+// LOAD LEVELS
+// -----------------------------
+useEffect(() => {
+  async function loadLevels() {
+    if (!sport || !category || !token) return;
 
-      {/* RETURN TO MENU */}
-      <div
-        onClick={openMenu}
-        style={{
-          marginTop: "40px",
-          textDecoration: "underline",
-          color: ACCENT,
-          cursor: "pointer",
-          textAlign: "center",
-        }}
-      >
-        Return to Menu
-      </div>
-    </div>
-  );
+    try {
+      const res = await fetch(
+        `https://api.delphiafit.com/sports/${sport}/${category}/levels`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = await res.json();
+      setLevels(data.levels || []);
+      setLevel("");
+      setDrill(null);
+    } catch (err) {
+      console.error("Error loading levels:", err);
+      setLevels([]);
+    }
+  }
+
+  loadLevels();
+}, [category, sport, token]);
+
+// -----------------------------
+// GENERATE DRILL
+// -----------------------------
+async function handleGenerate() {
+  if (!sport || !category || !level || !token) return;
+
+  try {
+    const res = await fetch(
+      `https://api.delphiafit.com/sports/${sport}/${category}/${level}/drills`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    const data = await res.json();
+    setDrill(data.drill || null);
+  } catch (err) {
+    console.error("Error loading drill:", err);
+    setDrill(null);
+  }
+}
 }
