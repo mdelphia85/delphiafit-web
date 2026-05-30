@@ -13,14 +13,46 @@ export default function AdminLogin() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  function handleLogin() {
+  async function handleLogin() {
     if (!email.trim() || !password.trim()) return;
 
-    // ⭐ Frontend-only: store a fake admin token
-    localStorage.setItem("adminToken", "ADMIN_TOKEN_PLACEHOLDER");
+    setLoading(true);
 
-    navigate("/admin/dashboard");
+    try {
+      const res = await fetch(
+        "https://delphiafit-backend-production.up.railway.app/admin/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: new URLSearchParams({
+            username: email,
+            password: password
+          })
+        }
+      );
+
+      if (!res.ok) {
+        alert("Invalid admin credentials");
+        setLoading(false);
+        return;
+      }
+
+      const data = await res.json();
+
+      // ⭐ Save REAL admin token
+      localStorage.setItem("adminToken", data.access_token);
+
+      navigate("/admin/dashboard");
+    } catch (err) {
+      console.error(err);
+      alert("Server error — unable to log in");
+    }
+
+    setLoading(false);
   }
 
   const container = {
@@ -72,7 +104,8 @@ export default function AdminLogin() {
     color: "white",
     fontSize: "16px",
     cursor: "pointer",
-    marginTop: "10px"
+    marginTop: "10px",
+    opacity: loading ? 0.6 : 1
   };
 
   const subtitle = {
@@ -102,8 +135,8 @@ export default function AdminLogin() {
           onChange={e => setPassword(e.target.value)}
         />
 
-        <button style={button} onClick={handleLogin}>
-          Login
+        <button style={button} onClick={handleLogin} disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
         </button>
       </div>
     </div>
