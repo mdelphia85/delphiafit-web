@@ -32,20 +32,12 @@ export default function Sports() {
       if (!token) return;
 
       try {
-        const res = await fetch(
-          "https://api.delphiafit.com/sports",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const res = await fetch("https://api.delphiafit.com/sports", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         const data = await res.json();
-
-        if (Array.isArray(data.sports)) {
-          setSportsList(data.sports);
-        } else {
-          setSportsList([]);
-        }
+        setSportsList(data.sports || []);
       } catch (err) {
         console.error("Error loading sports:", err);
         setSportsList([]);
@@ -64,7 +56,7 @@ export default function Sports() {
 
       try {
         const res = await fetch(
-          `https://api.delphiafit.com/sports/${sport}/skills/`,
+          `https://api.delphiafit.com/sports/${sport}/skills`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -93,7 +85,7 @@ export default function Sports() {
 
       try {
         const res = await fetch(
-          `https://api.delphiafit.com/sports/${sport}/${category}/levels/`,
+          `https://api.delphiafit.com/sports/${sport}/${category}/levels`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -120,7 +112,7 @@ export default function Sports() {
 
     try {
       const res = await fetch(
-        `https://api.delphiafit.com/sports/${sport}/${category}/${level}/drills/`,
+        `https://api.delphiafit.com/sports/${sport}/${category}/${level}/drills`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
