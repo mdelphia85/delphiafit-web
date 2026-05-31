@@ -1,6 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { API } from "../config/api";
 
 export default function AdminLayout({ children }) {
   const navigate = useNavigate();
@@ -19,9 +18,12 @@ export default function AdminLayout({ children }) {
       if (!token) return navigate("/admin/login");
 
       try {
-        const res = await fetch(`${API}/admin/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await fetch(
+          "https://delphiafit-backend-production.up.railway.app/me",
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
 
         if (!res.ok) {
           localStorage.removeItem("adminToken");
