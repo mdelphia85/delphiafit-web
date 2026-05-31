@@ -1,8 +1,10 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { API } from "../config/api";
 
 export default function AdminLayout({ children }) {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const BG = "rgb(0,0,0)";
   const SIDEBAR_BG = "rgb(15,15,15)";
@@ -10,11 +12,37 @@ export default function AdminLayout({ children }) {
   const TEXT = "rgb(240,240,240)";
   const ACCENT = "rgb(128,0,128)";
 
-  // ⭐ Admin token check (frontend only)
+  // ⭐ Validate admin token on mount
   useEffect(() => {
-    const token = localStorage.getItem("adminToken");
-    if (!token) navigate("/admin/login");
+    async function validate() {
+      const token = localStorage.getItem("adminToken");
+      if (!token) return navigate("/admin/login");
+
+      try {
+        const res = await fetch(`${API}/admin/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+          localStorage.removeItem("adminToken");
+          navigate("/admin/login");
+        }
+      } catch (err) {
+        console.error("Admin auth check failed:", err);
+        localStorage.removeItem("adminToken");
+        navigate("/admin/login");
+      }
+    }
+
+    validate();
   }, [navigate]);
+
+  // ⭐ Active link highlighting
+  function isActive(path) {
+    return location.pathname === path
+      ? { color: ACCENT, fontWeight: "600" }
+      : {};
+  }
 
   const layout = {
     display: "flex",
@@ -47,7 +75,8 @@ export default function AdminLayout({ children }) {
     fontSize: "16px",
     cursor: "pointer",
     color: TEXT,
-    padding: "6px 0"
+    padding: "6px 0",
+    transition: "0.2s"
   };
 
   const content = {
@@ -71,15 +100,55 @@ export default function AdminLayout({ children }) {
       <div style={sidebar}>
         <div style={header}>Admin Panel</div>
 
-        <div style={link} onClick={() => go("/admin/analytics")}>Analytics</div>
-        <div style={link} onClick={() => go("/admin/announcements")}>Announcements</div>
-        <div style={link} onClick={() => go("/admin/dashboard")}>Dashboard</div>
-        <div style={link} onClick={() => go("/admin/logs")}>Logs</div>
-        <div style={link} onClick={() => go("/admin/messages")}>Messages</div>
-        <div style={link} onClick={() => go("/admin/users")}>Users</div>
+        <div
+          style={{ ...link, ...isActive("/admin/analytics") }}
+          onClick={() => go("/admin/analytics")}
+        >
+          Analytics
+        </div>
 
         <div
-          style={{ ...link, marginTop: "20px", color: ACCENT }}
+          style={{ ...link, ...isActive("/admin/announcements") }}
+          onClick={() => go("/admin/announcements")}
+        >
+          Announcements
+        </div>
+
+        <div
+          style={{ ...link, ...isActive("/admin/dashboard") }}
+          onClick={() => go("/admin/dashboard")}
+        >
+          Dashboard
+        </div>
+
+        <div
+          style={{ ...link, ...isActive("/admin/logs") }}
+          onClick={() => go("/admin/logs")}
+        >
+          Logs
+        </div>
+
+        <div
+          style={{ ...link, ...isActive("/admin/messages") }}
+          onClick={() => go("/admin/messages")}
+        >
+          Messages
+        </div>
+
+        <div
+          style={{ ...link, ...isActive("/admin/users") }}
+          onClick={() => go("/admin/users")}
+        >
+          Users
+        </div>
+
+        <div
+          style={{
+            ...link,
+            marginTop: "20px",
+            color: ACCENT,
+            fontWeight: "600"
+          }}
           onClick={logout}
         >
           Log Out

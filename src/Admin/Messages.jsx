@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AdminLayout from "./Admin.jsx";
 
 export default function AdminMessages() {
@@ -9,46 +9,75 @@ export default function AdminMessages() {
   const TEXT_MUTED = "rgb(160,160,160)";
   const ACCENT = "rgb(128,0,128)";
 
-  // ⭐ Static UI-only messages (NOT backend)
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john@example.com",
-      message: "I love the app! Could you add more sports options?",
-      date: "2026-05-11",
-      resolved: false
-    },
-    {
-      id: 2,
-      name: "Sarah Smith",
-      email: "sarah@example.com",
-      message: "My daily log didn’t save yesterday.",
-      date: "2026-05-10",
-      resolved: true
-    },
-    {
-      id: 3,
-      name: "Mike Johnson",
-      email: "mike@example.com",
-      message: "How do I reset my password?",
-      date: "2026-05-09",
-      resolved: false
-    }
-  ]);
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  function toggleResolved(id) {
+  // ⭐ Fetch REAL messages from backend
+  useEffect(() => {
+    async function loadMessages() {
+      try {
+        const token = localStorage.getItem("adminToken");
+
+        const res = await fetch(
+          "https://delphiafit-backend-production.up.railway.app/admin/messages",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        const json = await res.json();
+        setMessages(json.messages || json);
+      } catch (err) {
+        console.error("Failed to load messages:", err);
+      }
+
+      setLoading(false);
+    }
+
+    loadMessages();
+  }, []);
+
+  // ⭐ Mark message resolved/unresolved (REAL backend)
+  async function toggleResolved(id, current) {
+    const token = localStorage.getItem("adminToken");
+
+    await fetch(
+      `https://delphiafit-backend-production.up.railway.app/admin/messages/${id}/resolve`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
     setMessages(prev =>
       prev.map(m =>
-        m.id === id ? { ...m, resolved: !m.resolved } : m
+        m.id === id ? { ...m, resolved: !current } : m
       )
     );
   }
 
-  function deleteMessage(id) {
+  // ⭐ Delete message (REAL backend)
+  async function deleteMessage(id) {
+    const token = localStorage.getItem("adminToken");
+
+    await fetch(
+      `https://delphiafit-backend-production.up.railway.app/admin/messages/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
     setMessages(prev => prev.filter(m => m.id !== id));
   }
 
+  // ⭐ Styles
   const container = {
     width: "100%",
     height: "100%",
@@ -137,6 +166,14 @@ export default function AdminMessages() {
     fontSize: "13px"
   };
 
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div style={{ padding: "20px", color: TEXT_MAIN }}>Loading messages...</div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout>
       <div style={container}>
@@ -152,11 +189,13 @@ export default function AdminMessages() {
             <div key={msg.id} style={messageCard}>
               <div style={messageHeader}>
                 <div>
-                  <div style={nameStyle}>{msg.name}</div>
+                  <div style={nameStyle}>{msg.name || "Unknown User"}</div>
                   <div style={emailStyle}>{msg.email}</div>
                 </div>
 
-                <div style={dateStyle}>{msg.date}</div>
+                <div style={dateStyle}>
+                  {msg.created_at?.split("T")[0] || "—"}
+                </div>
               </div>
 
               <div style={messageBody}>{msg.message}</div>
@@ -164,7 +203,7 @@ export default function AdminMessages() {
               <div style={actionsRow}>
                 <div
                   style={resolveBtn(msg.resolved)}
-                  onClick={() => toggleResolved(msg.id)}
+                  onClick={() => toggleResolved(msg.id, msg.resolved)}
                 >
                   {msg.resolved ? "Mark as Unresolved" : "Mark as Resolved"}
                 </div>

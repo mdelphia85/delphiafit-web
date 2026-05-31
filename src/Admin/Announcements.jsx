@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AdminLayout from "./Admin.jsx";
 
 export default function AdminAnnouncements() {
@@ -9,44 +9,87 @@ export default function AdminAnnouncements() {
   const TEXT_MUTED = "rgb(160,160,160)";
   const ACCENT = "rgb(128,0,128)";
 
-  // ⭐ Static UI-only announcements (NOT backend)
-  const [announcements, setAnnouncements] = useState([
-    {
-      id: 1,
-      title: "Welcome to the new DelphiaFit Admin Dashboard",
-      body: "This is where you can manage users, logs, analytics, and more.",
-      date: "2026-05-10"
-    },
-    {
-      id: 2,
-      title: "New Workout Categories Added",
-      body: "Strength, Sports, Free Training, and more are now live.",
-      date: "2026-05-11"
-    }
-  ]);
+  const [announcements, setAnnouncements] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [titleInput, setTitleInput] = useState("");
   const [bodyInput, setBodyInput] = useState("");
 
-  function createAnnouncement() {
+  // ⭐ Fetch REAL announcements from backend
+  useEffect(() => {
+    async function loadAnnouncements() {
+      try {
+        const token = localStorage.getItem("adminToken");
+
+        const res = await fetch(
+          "https://delphiafit-backend-production.up.railway.app/admin/announcements",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        const json = await res.json();
+        setAnnouncements(json.announcements || json);
+      } catch (err) {
+        console.error("Failed to load announcements:", err);
+      }
+
+      setLoading(false);
+    }
+
+    loadAnnouncements();
+  }, []);
+
+  // ⭐ Create announcement (REAL backend)
+  async function createAnnouncement() {
     if (!titleInput.trim() || !bodyInput.trim()) return;
 
-    const newAnnouncement = {
-      id: Date.now(),
-      title: titleInput,
-      body: bodyInput,
-      date: new Date().toISOString().split("T")[0]
-    };
+    const token = localStorage.getItem("adminToken");
 
+    const res = await fetch(
+      "https://delphiafit-backend-production.up.railway.app/admin/announcements",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          title: titleInput,
+          body: bodyInput
+        })
+      }
+    );
+
+    const newAnnouncement = await res.json();
+
+    // Add new announcement to UI
     setAnnouncements(prev => [newAnnouncement, ...prev]);
+
     setTitleInput("");
     setBodyInput("");
   }
 
-  function deleteAnnouncement(id) {
+  // ⭐ Delete announcement (REAL backend)
+  async function deleteAnnouncement(id) {
+    const token = localStorage.getItem("adminToken");
+
+    await fetch(
+      `https://delphiafit-backend-production.up.railway.app/admin/announcements/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
     setAnnouncements(prev => prev.filter(a => a.id !== id));
   }
 
+  // ⭐ Styles
   const container = {
     width: "100%",
     height: "100%",
@@ -141,6 +184,16 @@ export default function AdminAnnouncements() {
     width: "fit-content"
   };
 
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div style={{ padding: "20px", color: TEXT_MAIN }}>
+          Loading announcements...
+        </div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout>
       <div style={container}>
@@ -185,7 +238,9 @@ export default function AdminAnnouncements() {
             <div key={a.id} style={announcementCard}>
               <div style={announcementTitle}>{a.title}</div>
               <div style={announcementBody}>{a.body}</div>
-              <div style={announcementDate}>Posted on {a.date}</div>
+              <div style={announcementDate}>
+                Posted on {a.created_at?.split("T")[0] || a.date}
+              </div>
 
               <div style={deleteBtn} onClick={() => deleteAnnouncement(a.id)}>
                 Delete

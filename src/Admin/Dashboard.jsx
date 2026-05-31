@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import AdminLayout from "./Admin.jsx";
 
 export default function AdminDashboard() {
@@ -8,27 +9,76 @@ export default function AdminDashboard() {
   const TEXT_MUTED = "rgb(160,160,160)";
   const ACCENT = "rgb(128,0,128)";
 
-  // ⭐ Static UI-only data (NOT backend)
-  const stats = {
-    totalUsers: 1284,
-    newUsers24h: 12,
-    logs24h: 421,
-    messagesUnread: 7
-  };
+  const [dashboard, setDashboard] = useState(null);
+  const [system, setSystem] = useState(null);
+  const [actions, setActions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const systemStatus = {
-    api: "Operational",
-    database: "Healthy",
-    uptime: "99.98%",
-    errors24h: 1
-  };
+  // ⭐ Fetch ALL real-time admin data
+  useEffect(() => {
+    async function load() {
+      try {
+        const token = localStorage.getItem("adminToken");
 
-  const recentAdminActions = [
-    { id: 1, action: "Deleted user account", admin: "admin1", time: "10 min ago" },
-    { id: 2, action: "Published announcement", admin: "admin2", time: "1 hr ago" },
-    { id: 3, action: "Reviewed login logs", admin: "admin1", time: "3 hrs ago" }
-  ];
+        const headers = { Authorization: `Bearer ${token}` };
 
+        // Dashboard stats
+        const dashRes = await fetch(
+          "https://delphiafit-backend-production.up.railway.app/admin/dashboard",
+          { headers }
+        );
+        const dashJson = await dashRes.json();
+        setDashboard(dashJson);
+
+        // System health
+        const sysRes = await fetch(
+          "https://delphiafit-backend-production.up.railway.app/admin/system/health",
+          { headers }
+        );
+        const sysJson = await sysRes.json();
+        setSystem(sysJson);
+
+        // Recent admin actions
+        const actRes = await fetch(
+          "https://delphiafit-backend-production.up.railway.app/admin/actions/recent",
+          { headers }
+        );
+        const actJson = await actRes.json();
+        setActions(actJson.actions || actJson);
+
+      } catch (err) {
+        console.error("Dashboard load error:", err);
+      }
+
+      setLoading(false);
+    }
+
+    load();
+  }, []);
+
+  // ⭐ Loading screen
+  if (loading || !dashboard || !system) {
+    return (
+      <AdminLayout>
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            backgroundColor: BG,
+            color: TEXT_MAIN,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            fontSize: "18px"
+          }}
+        >
+          Loading dashboard...
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  // ⭐ Styles
   const container = {
     width: "100%",
     height: "100%",
@@ -42,15 +92,8 @@ export default function AdminDashboard() {
     overflow: "auto"
   };
 
-  const title = {
-    fontSize: "26px",
-    fontWeight: "600"
-  };
-
-  const subtitle = {
-    fontSize: "14px",
-    color: TEXT_MUTED
-  };
+  const title = { fontSize: "26px", fontWeight: "600" };
+  const subtitle = { fontSize: "14px", color: TEXT_MUTED };
 
   const grid = {
     display: "grid",
@@ -97,74 +140,76 @@ export default function AdminDashboard() {
         {/* HEADER */}
         <div>
           <div style={title}>Admin Dashboard</div>
-          <div style={subtitle}>Overview of system activity, health, and admin actions.</div>
+          <div style={subtitle}>Live system activity, health, and admin actions.</div>
         </div>
 
-        {/* QUICK STATS */}
+        {/* QUICK STATS (LIVE DATA) */}
         <div style={grid}>
           <div style={card}>
             <div style={cardLabel}>Total Users</div>
-            <div style={cardValue}>{stats.totalUsers}</div>
+            <div style={cardValue}>{dashboard.total_users}</div>
           </div>
 
           <div style={card}>
-            <div style={cardLabel}>New Users (24h)</div>
-            <div style={cardValue}>{stats.newUsers24h}</div>
-          </div>
-
-          <div style={card}>
-            <div style={cardLabel}>Logs Created (24h)</div>
-            <div style={cardValue}>{stats.logs24h}</div>
+            <div style={cardLabel}>New Users (7 days)</div>
+            <div style={cardValue}>{dashboard.new_users_last_7_days}</div>
           </div>
 
           <div style={card}>
             <div style={cardLabel}>Unread Messages</div>
-            <div style={cardValue}>{stats.messagesUnread}</div>
+            <div style={cardValue}>{dashboard.unread_messages}</div>
+          </div>
+
+          <div style={card}>
+            <div style={cardLabel}>Total Logs</div>
+            <div style={cardValue}>{dashboard.total_logs}</div>
           </div>
         </div>
 
-        {/* SYSTEM STATUS */}
+        {/* SYSTEM STATUS (LIVE) */}
         <div style={card}>
           <div style={sectionTitle}>System Status</div>
 
           <div style={listItem}>
             <span>API</span>
-            <span style={{ color: ACCENT }}>{systemStatus.api}</span>
+            <span style={{ color: ACCENT }}>{system.api_status}</span>
           </div>
 
           <div style={listItem}>
             <span>Database</span>
-            <span style={{ color: ACCENT }}>{systemStatus.database}</span>
+            <span style={{ color: ACCENT }}>{system.database_status}</span>
           </div>
 
           <div style={listItem}>
             <span>Uptime</span>
-            <span style={{ color: ACCENT }}>{systemStatus.uptime}</span>
+            <span style={{ color: ACCENT }}>{system.uptime}</span>
           </div>
 
           <div style={listItem}>
             <span>Errors (24h)</span>
-            <span style={{ color: ACCENT }}>{systemStatus.errors24h}</span>
+            <span style={{ color: ACCENT }}>{system.errors_24h}</span>
           </div>
         </div>
 
-        {/* RECENT ADMIN ACTIONS */}
+        {/* RECENT ADMIN ACTIONS (LIVE) */}
         <div style={card}>
           <div style={sectionTitle}>Recent Admin Actions</div>
 
-          {recentAdminActions.map(a => (
-            <div key={a.id} style={listItem}>
-              <div>
-                <div style={{ fontSize: "14px" }}>{a.action}</div>
-                <div style={{ fontSize: "12px", color: TEXT_MUTED }}>
-                  {a.admin} • {a.time}
+          {actions.length > 0 ? (
+            actions.map(a => (
+              <div key={a.id} style={listItem}>
+                <div>
+                  <div style={{ fontSize: "14px" }}>{a.action}</div>
+                  <div style={{ fontSize: "12px", color: TEXT_MUTED }}>
+                    {a.admin} • {a.timestamp}
+                  </div>
                 </div>
               </div>
+            ))
+          ) : (
+            <div style={{ fontSize: "14px", color: TEXT_MUTED }}>
+              No recent admin actions.
             </div>
-          ))}
-
-          {recentAdminActions.length === 0 && (
-            <div style={{ fontSize: "14px", color: TEXT_MUTED }}>No recent actions.</div>
           )}
         </div>
       </div>

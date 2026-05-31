@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AdminLayout from "./Admin.jsx";
 
 export default function AdminUsers() {
@@ -9,46 +9,75 @@ export default function AdminUsers() {
   const TEXT_MUTED = "rgb(160,160,160)";
   const ACCENT = "rgb(128,0,128)";
 
-  // ⭐ Static UI-only users (NOT backend)
-  const [users, setUsers] = useState([
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john@example.com",
-      created: "2026-04-01",
-      lastLogin: "2026-05-12 14:22",
-      isAdmin: false
-    },
-    {
-      id: 2,
-      name: "Sarah Smith",
-      email: "sarah@example.com",
-      created: "2026-03-18",
-      lastLogin: "2026-05-12 11:10",
-      isAdmin: true
-    },
-    {
-      id: 3,
-      name: "Mike Johnson",
-      email: "mike@example.com",
-      created: "2026-02-10",
-      lastLogin: "2026-05-11 19:45",
-      isAdmin: false
-    }
-  ]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  function toggleAdmin(id) {
+  // ⭐ Fetch REAL users from backend
+  useEffect(() => {
+    async function loadUsers() {
+      try {
+        const token = localStorage.getItem("adminToken");
+
+        const res = await fetch(
+          "https://delphiafit-backend-production.up.railway.app/admin/users",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        );
+
+        const json = await res.json();
+        setUsers(json.users || json);
+      } catch (err) {
+        console.error("Failed to load users:", err);
+      }
+
+      setLoading(false);
+    }
+
+    loadUsers();
+  }, []);
+
+  // ⭐ Promote / demote admin (REAL backend)
+  async function toggleAdmin(id, current) {
+    const token = localStorage.getItem("adminToken");
+
+    await fetch(
+      `https://delphiafit-backend-production.up.railway.app/admin/users/${id}/admin`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
     setUsers(prev =>
       prev.map(u =>
-        u.id === id ? { ...u, isAdmin: !u.isAdmin } : u
+        u.id === id ? { ...u, is_admin: !current } : u
       )
     );
   }
 
-  function deleteUser(id) {
+  // ⭐ Delete user (REAL backend)
+  async function deleteUser(id) {
+    const token = localStorage.getItem("adminToken");
+
+    await fetch(
+      `https://delphiafit-backend-production.up.railway.app/admin/users/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
+
     setUsers(prev => prev.filter(u => u.id !== id));
   }
 
+  // ⭐ Styles
   const container = {
     width: "100%",
     height: "100%",
@@ -119,6 +148,14 @@ export default function AdminUsers() {
     textAlign: "center"
   };
 
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div style={{ padding: "20px", color: TEXT_MAIN }}>Loading users...</div>
+      </AdminLayout>
+    );
+  }
+
   return (
     <AdminLayout>
       <div style={container}>
@@ -141,16 +178,16 @@ export default function AdminUsers() {
 
           {users.map(user => (
             <div key={user.id} style={tableRow}>
-              <div>{user.name}</div>
+              <div>{user.name || "N/A"}</div>
               <div>{user.email}</div>
-              <div>{user.created}</div>
-              <div>{user.lastLogin}</div>
+              <div>{user.created_at?.split("T")[0] || "—"}</div>
+              <div>{user.last_login || "—"}</div>
 
               <div
-                style={adminBtn(user.isAdmin)}
-                onClick={() => toggleAdmin(user.id)}
+                style={adminBtn(user.is_admin)}
+                onClick={() => toggleAdmin(user.id, user.is_admin)}
               >
-                {user.isAdmin ? "Revoke" : "Promote"}
+                {user.is_admin ? "Revoke" : "Promote"}
               </div>
 
               <div

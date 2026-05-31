@@ -22,14 +22,14 @@ export default function AdminLogin() {
 
     try {
       const res = await fetch(
-        "https://delphiafit-backend-production.up.railway.app/admin/login",
+        "https://delphiafit-backend-production.up.railway.app/login",
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
+            "Content-Type": "application/json"
           },
-          body: new URLSearchParams({
-            username: email,
+          body: JSON.stringify({
+            email: email,
             password: password
           })
         }
@@ -43,7 +43,7 @@ export default function AdminLogin() {
 
       const data = await res.json();
 
-      // ⭐ Save REAL admin token
+      // Save admin token
       localStorage.setItem("adminToken", data.access_token);
 
       navigate("/admin/dashboard");
