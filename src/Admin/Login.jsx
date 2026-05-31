@@ -22,7 +22,7 @@ export default function AdminLogin() {
 
     try {
       const res = await fetch(
-        "https://delphiafit-backend-production.up.railway.app/login",
+        "https://delphiafit-backend-production.up.railway.app/admin/login",
         {
           method: "POST",
           headers: {
