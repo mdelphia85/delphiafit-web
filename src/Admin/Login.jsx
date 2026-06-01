@@ -22,7 +22,7 @@ export default function AdminLogin() {
 
     try {
       const res = await fetch(
-        "https://delphiafit-backend-production.up.railway.app/admin/login",
+        `${import.meta.env.VITE_API_URL}/admin/login`,
         {
           method: "POST",
           headers: {
