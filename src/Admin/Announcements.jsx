@@ -22,7 +22,8 @@ export default function AdminAnnouncements() {
         const token = localStorage.getItem("adminToken");
 
         const res = await fetch(
-          "https://delphiafit-backend-production.up.railway.app/admin/announcements",
+          `${import.meta.env.VITE_API_URL}/admin/announcements`
+,
           {
             headers: {
               Authorization: `Bearer ${token}`

@@ -24,7 +24,7 @@ export default function AdminDashboard() {
 
         // Dashboard stats
         const dashRes = await fetch(
-          "https://delphiafit-backend-production.up.railway.app/admin/dashboard",
+          `${import.meta.env.VITE_API_URL}/admin/dashboard`,
           { headers }
         );
         const dashJson = await dashRes.json();
@@ -32,7 +32,7 @@ export default function AdminDashboard() {
 
         // System health
         const sysRes = await fetch(
-          "https://delphiafit-backend-production.up.railway.app/admin/system/health",
+          `${import.meta.env.VITE_API_URL}/admin/system/health`,
           { headers }
         );
         const sysJson = await sysRes.json();
@@ -40,7 +40,7 @@ export default function AdminDashboard() {
 
         // Recent admin actions
         const actRes = await fetch(
-          "https://delphiafit-backend-production.up.railway.app/admin/actions/recent",
+          `${import.meta.env.VITE_API_URL}/admin/actions/recent`,
           { headers }
         );
         const actJson = await actRes.json();

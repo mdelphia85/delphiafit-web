@@ -19,7 +19,7 @@ export default function AdminUsers() {
         const token = localStorage.getItem("adminToken");
 
         const res = await fetch(
-          "https://delphiafit-backend-production.up.railway.app/admin/users",
+          `${import.meta.env.VITE_API_URL}/admin/users`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -44,7 +44,7 @@ export default function AdminUsers() {
     const token = localStorage.getItem("adminToken");
 
     await fetch(
-      `https://delphiafit-backend-production.up.railway.app/admin/users/${id}/admin`,
+      `${import.meta.env.VITE_API_URL}/admin/users/${id}/admin`,
       {
         method: "PATCH",
         headers: {
@@ -65,7 +65,7 @@ export default function AdminUsers() {
     const token = localStorage.getItem("adminToken");
 
     await fetch(
-      `https://delphiafit-backend-production.up.railway.app/admin/users/${id}`,
+      `${import.meta.env.VITE_API_URL}/admin/users/${id}`,
       {
         method: "DELETE",
         headers: {
