@@ -19,7 +19,8 @@ export default function AdminLayout({ children }) {
 
       try {
         const res = await fetch(
-          "https://delphiafit-backend-production.up.railway.app/me",
+          "https://delphiafit-backend-production.up.railway.app/admin/me"
+,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
