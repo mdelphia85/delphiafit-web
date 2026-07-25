@@ -27,7 +27,6 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import DailyLog from "./pages/DailyLog.jsx";
 
-
 // DEMO
 import Landing from "./pages/Landing.jsx";
 import DemoDashboard from "./pages/demo/DemoDashboard.jsx";
@@ -48,9 +47,9 @@ import AdminAnnouncements from "./Admin/Announcements.jsx";
 import AdminLogs from "./Admin/Logs.jsx";
 import AdminMessages from "./Admin/Messages.jsx";
 import AdminUsers from "./Admin/Users.jsx";
-import Settings from "./Admin/Settings.jsx";
 
-
+// SETTINGS (moved out of admin)
+import Settings from "./pages/Settings.jsx";
 
 // TACTICAL REAL APP
 import Firefighters from "./pages/Firefighters.jsx";
@@ -69,7 +68,7 @@ function App() {
   );
 }
 
-/* ---------------- MENU OVERLAY (NOW OUTSIDE ROUTES) ---------------- */
+/* ---------------- MENU OVERLAY ---------------- */
 
 function MenuOverlay() {
   const { menuOpen, setMenuOpen } = useContext(MenuContext);
@@ -105,8 +104,6 @@ function MenuOverlay() {
         gap: "12px",
         minWidth: "260px",
         border: "2px solid white",
-
-        // ⭐ FULL HEIGHT SCROLLABLE MENU
         maxHeight: "80vh",
         overflowY: "auto",
         boxSizing: "border-box"
@@ -137,7 +134,9 @@ function MenuOverlay() {
       <MenuItem label="EMS" onClick={() => go("/tactical/ems")} />
       <MenuItem label="Military" onClick={() => go("/tactical/military")} />
       <MenuItem label="Police" onClick={() => go("/tactical/police")} />
-      <MenuItem label="Admin Settings" onClick={() => go("/admin/settings")} />
+
+      {/* UPDATED SETTINGS ROUTE */}
+      <MenuItem label="Settings" onClick={() => go("/settings")} />
 
       <div
         onClick={logout}
@@ -161,7 +160,7 @@ function MenuOverlay() {
 function AppWithMenu() {
   return (
     <Routes>
-      {/* DEMO MODE */}
+      {/* DEMO */}
       <Route path="/" element={<Landing />} />
       <Route path="/demo" element={<DemoDashboard />} />
       <Route path="/demo/dashboard" element={<DemoDashboard />} />
@@ -218,8 +217,9 @@ function AppWithMenu() {
       <Route path="/admin/logs" element={<AdminLogs />} />
       <Route path="/admin/messages" element={<AdminMessages />} />
       <Route path="/admin/users" element={<AdminUsers />} />
-      <Route path="/admin/settings" element={<Settings />} />
 
+      {/* UPDATED SETTINGS ROUTE */}
+      <Route path="/settings" element={<Settings />} />
     </Routes>
   );
 }
