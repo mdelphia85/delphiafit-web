@@ -26,6 +26,7 @@ import About from "./pages/About.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import DailyLog from "./pages/DailyLog.jsx";
+import Settings from "./Admin/settings.jsx";
 
 // DEMO
 import Landing from "./pages/Landing.jsx";
@@ -133,6 +134,7 @@ function MenuOverlay() {
       <MenuItem label="EMS" onClick={() => go("/tactical/ems")} />
       <MenuItem label="Military" onClick={() => go("/tactical/military")} />
       <MenuItem label="Police" onClick={() => go("/tactical/police")} />
+      <MenuItem label="Admin Settings" onClick={() => go("/admin/settings")} />
 
       <div
         onClick={logout}
@@ -213,6 +215,8 @@ function AppWithMenu() {
       <Route path="/admin/logs" element={<AdminLogs />} />
       <Route path="/admin/messages" element={<AdminMessages />} />
       <Route path="/admin/users" element={<AdminUsers />} />
+      <Route path="/admin/settings" element={<Settings />} />
+
     </Routes>
   );
 }
