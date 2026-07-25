@@ -19,9 +19,7 @@ export default function AdminLayout({ children }) {
 
       try {
         const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/admin/me`
-
-,
+          `${import.meta.env.VITE_API_URL}/admin/me`,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
@@ -144,6 +142,14 @@ export default function AdminLayout({ children }) {
           onClick={() => go("/admin/users")}
         >
           Users
+        </div>
+
+        {/* ⭐ CLEAN SETTINGS LINK */}
+        <div
+          style={{ ...link, ...isActive("/admin/settings") }}
+          onClick={() => go("/admin/settings")}
+        >
+          Settings
         </div>
 
         <div
