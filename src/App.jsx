@@ -26,7 +26,7 @@ import About from "./pages/About.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import DailyLog from "./pages/DailyLog.jsx";
-import Settings from "./Admin/settings.jsx";
+
 
 // DEMO
 import Landing from "./pages/Landing.jsx";
@@ -48,6 +48,7 @@ import AdminAnnouncements from "./Admin/Announcements.jsx";
 import AdminLogs from "./Admin/Logs.jsx";
 import AdminMessages from "./Admin/Messages.jsx";
 import AdminUsers from "./Admin/Users.jsx";
+import Settings from "./admin/settings.jsx";
 
 // TACTICAL REAL APP
 import Firefighters from "./pages/Firefighters.jsx";
