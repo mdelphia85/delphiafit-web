@@ -48,7 +48,8 @@ import AdminAnnouncements from "./Admin/Announcements.jsx";
 import AdminLogs from "./Admin/Logs.jsx";
 import AdminMessages from "./Admin/Messages.jsx";
 import AdminUsers from "./Admin/Users.jsx";
-import Settings from "./admin/settings.jsx";
+import Settings from "./Admin/Settings.jsx";
+
 
 // TACTICAL REAL APP
 import Firefighters from "./pages/Firefighters.jsx";
