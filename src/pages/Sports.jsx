@@ -146,7 +146,6 @@ export default function Sports() {
   // -----------------------------
   return (
     <div
-      className="sports-screen"
       style={{
         backgroundColor: BACKGROUND,
         minHeight: "100vh",
@@ -158,7 +157,7 @@ export default function Sports() {
     >
       {/* MODE TOGGLE */}
       <div style={{ display: "flex", marginBottom: "20px" }}>
-        <button
+        <div
           onClick={() => setMode("manual")}
           style={{
             flex: 1,
@@ -168,12 +167,14 @@ export default function Sports() {
             border: `1px solid ${ACCENT}`,
             borderRadius: "6px 0 0 6px",
             fontWeight: "bold",
+            textAlign: "center",
+            cursor: "pointer",
           }}
         >
           Manual
-        </button>
+        </div>
 
-        <button
+        <div
           onClick={() => setMode("generator")}
           style={{
             flex: 1,
@@ -183,10 +184,12 @@ export default function Sports() {
             border: `1px solid ${ACCENT}`,
             borderRadius: "0 6px 6px 0",
             fontWeight: "bold",
+            textAlign: "center",
+            cursor: "pointer",
           }}
         >
           Generator
-        </button>
+        </div>
       </div>
 
       {/* ----------------------------- */}
@@ -238,20 +241,21 @@ export default function Sports() {
             }}
           />
 
-          <button
+          <div
             style={{
               width: "100%",
               padding: "12px",
               backgroundColor: ACCENT,
               color: BACKGROUND,
-              border: "none",
               borderRadius: "6px",
               fontWeight: "bold",
               marginTop: "15px",
+              textAlign: "center",
+              cursor: "pointer",
             }}
           >
             Log Activity
-          </button>
+          </div>
         </div>
       )}
 
@@ -261,7 +265,7 @@ export default function Sports() {
       {mode === "generator" && (
         <>
           {/* SPORT SELECTOR */}
-          <div className="section" style={{ marginBottom: "20px" }}>
+          <div style={{ marginBottom: "20px" }}>
             <label style={{ color: ACCENT }}>Sport</label>
             <select
               value={sport}
@@ -287,7 +291,7 @@ export default function Sports() {
 
           {/* CATEGORY SELECTOR */}
           {sport && (
-            <div className="section" style={{ marginBottom: "20px" }}>
+            <div style={{ marginBottom: "20px" }}>
               <label style={{ color: ACCENT }}>Category</label>
               <select
                 value={category}
@@ -314,7 +318,7 @@ export default function Sports() {
 
           {/* LEVEL SELECTOR */}
           {category && (
-            <div className="section" style={{ marginBottom: "20px" }}>
+            <div style={{ marginBottom: "20px" }}>
               <label style={{ color: ACCENT }}>Skill Level</label>
               <select
                 value={level}
@@ -339,24 +343,24 @@ export default function Sports() {
             </div>
           )}
 
-          {/* GENERATE BUTTON */}
+          {/* GENERATE DRILL */}
           {level && (
-            <button
-              className="generate-btn"
+            <div
               onClick={handleGenerate}
               style={{
                 width: "100%",
                 padding: "12px",
                 backgroundColor: ACCENT,
                 color: BACKGROUND,
-                border: "none",
                 borderRadius: "6px",
                 fontWeight: "bold",
                 marginTop: "10px",
+                textAlign: "center",
+                cursor: "pointer",
               }}
             >
               Generate Drill
-            </button>
+            </div>
           )}
 
           {/* DRILL RESULT */}
@@ -391,24 +395,21 @@ export default function Sports() {
         Return to Menu
       </div>
 
-      {/* SAVE WORKOUT BUTTON */}
-      <button
+      {/* SAVE WORKOUT (CLICKABLE TEXT) */}
+      <div
         onClick={() => console.log("TODO: Save Workout")}
         style={{
           position: "absolute",
           bottom: "20px",
           left: "20px",
-          backgroundColor: "#4CAF50",
-          color: "white",
-          padding: "10px 20px",
-          borderRadius: "8px",
-          border: "none",
+          color: ACCENT,
           cursor: "pointer",
-          fontSize: "16px",
+          textDecoration: "underline",
+          fontSize: "18px",
         }}
       >
         Save Workout
-      </button>
+      </div>
     </div>
   );
 }
