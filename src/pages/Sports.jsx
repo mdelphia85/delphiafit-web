@@ -6,7 +6,7 @@ export default function Sports() {
   const navigate = useNavigate();
   const { openMenu } = useContext(MenuContext);
 
-  const [mode, setMode] = useState("generator"); // manual or generator
+  const [mode, setMode] = useState("generator");
 
   const [sportsList, setSportsList] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -390,7 +390,25 @@ export default function Sports() {
       >
         Return to Menu
       </div>
+
+      {/* SAVE WORKOUT BUTTON */}
+      <button
+        onClick={() => console.log("TODO: Save Workout")}
+        style={{
+          position: "absolute",
+          bottom: "20px",
+          left: "20px",
+          backgroundColor: "#4CAF50",
+          color: "white",
+          padding: "10px 20px",
+          borderRadius: "8px",
+          border: "none",
+          cursor: "pointer",
+          fontSize: "16px",
+        }}
+      >
+        Save Workout
+      </button>
     </div>
   );
 }
-
