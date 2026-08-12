@@ -16,9 +16,12 @@ export default function Sports() {
   const [sport, setSport] = useState("");
   const [category, setCategory] = useState("");
   const [level, setLevel] = useState("");
+  const [duration, setDuration] = useState("");
+  const [notes, setNotes] = useState("");
 
   const [manualSport, setManualSport] = useState("");
   const [manualDuration, setManualDuration] = useState("");
+  const [manualNotes, setManualNotes] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -135,6 +138,57 @@ export default function Sports() {
   }
 
   // -----------------------------
+  // SAVE WORKOUT (REAL IMPLEMENTATION)
+  // -----------------------------
+  async function handleSaveWorkout() {
+    if (!token) return;
+
+    const payload =
+      mode === "manual"
+        ? {
+            mode: "manual",
+            sport: manualSport,
+            duration: manualDuration,
+            notes: manualNotes,
+            timestamp: new Date().toISOString(),
+          }
+        : {
+            mode: "generator",
+            sport,
+            category,
+            level,
+            drill,
+            duration,
+            notes,
+            timestamp: new Date().toISOString(),
+          };
+
+    try {
+      const res = await fetch(
+        "https://delphiafit-backend-production.up.railway.app/workouts",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!res.ok) {
+        console.error("Failed to save workout");
+        return;
+      }
+
+      const data = await res.json();
+      console.log("Workout saved:", data);
+    } catch (err) {
+      console.error("Error saving workout:", err);
+    }
+  }
+
+  // -----------------------------
   // UI COLORS
   // -----------------------------
   const BACKGROUND = "#000000";
@@ -193,12 +247,11 @@ export default function Sports() {
       </div>
 
       {/* ----------------------------- */}
-      {/* MANUAL MODE */}
+      {/* MANUAL MODE (A) */}
       {/* ----------------------------- */}
       {mode === "manual" && (
         <div
           style={{
-            marginTop: "10px",
             padding: "15px",
             backgroundColor: "#111",
             borderRadius: "6px",
@@ -241,26 +294,29 @@ export default function Sports() {
             }}
           />
 
-          <div
+          <label style={{ color: ACCENT, marginTop: "15px", display: "block" }}>
+            Notes
+          </label>
+          <textarea
+            value={manualNotes}
+            onChange={(e) => setManualNotes(e.target.value)}
+            placeholder="Optional notes about the workout"
             style={{
               width: "100%",
-              padding: "12px",
-              backgroundColor: ACCENT,
-              color: BACKGROUND,
+              padding: "10px",
+              marginTop: "8px",
+              backgroundColor: "#000",
+              color: ACCENT,
+              border: `1px solid ${ACCENT}`,
               borderRadius: "6px",
-              fontWeight: "bold",
-              marginTop: "15px",
-              textAlign: "center",
-              cursor: "pointer",
+              minHeight: "80px",
             }}
-          >
-            Log Activity
-          </div>
+          />
         </div>
       )}
 
       {/* ----------------------------- */}
-      {/* GENERATOR MODE */}
+      {/* GENERATOR MODE (C) */}
       {/* ----------------------------- */}
       {mode === "generator" && (
         <>
@@ -378,28 +434,58 @@ export default function Sports() {
               <p>{drill}</p>
             </div>
           )}
+
+          {/* DURATION */}
+          {drill && (
+            <div style={{ marginTop: "20px" }}>
+              <label style={{ color: ACCENT }}>Duration (minutes)</label>
+              <input
+                type="number"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                placeholder="e.g., 30"
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  marginTop: "8px",
+                  backgroundColor: "#000",
+                  color: ACCENT,
+                  border: `1px solid ${ACCENT}`,
+                  borderRadius: "6px",
+                }}
+              />
+            </div>
+          )}
+
+          {/* NOTES */}
+          {drill && (
+            <div style={{ marginTop: "20px" }}>
+              <label style={{ color: ACCENT }}>Notes</label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Optional notes about the workout"
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  marginTop: "8px",
+                  backgroundColor: "#000",
+                  color: ACCENT,
+                  border: `1px solid ${ACCENT}`,
+                  borderRadius: "6px",
+                  minHeight: "80px",
+                }}
+              />
+            </div>
+          )}
         </>
       )}
 
-      {/* RETURN TO MENU */}
+      {/* SAVE WORKOUT (BOTTOM LEFT) */}
       <div
-        onClick={openMenu}
+        onClick={handleSaveWorkout}
         style={{
-          marginTop: "40px",
-          textDecoration: "underline",
-          color: ACCENT,
-          cursor: "pointer",
-          textAlign: "center",
-        }}
-      >
-        Return to Menu
-      </div>
-
-      {/* SAVE WORKOUT (CLICKABLE TEXT) */}
-      <div
-        onClick={() => console.log("TODO: Save Workout")}
-        style={{
-          position: "absolute",
+          position: "fixed",
           bottom: "20px",
           left: "20px",
           color: ACCENT,
@@ -409,6 +495,22 @@ export default function Sports() {
         }}
       >
         Save Workout
+      </div>
+
+      {/* RETURN TO MENU (BOTTOM RIGHT) */}
+      <div
+        onClick={openMenu}
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          color: ACCENT,
+          cursor: "pointer",
+          textDecoration: "underline",
+          fontSize: "18px",
+        }}
+      >
+        Return to Menu
       </div>
     </div>
   );
