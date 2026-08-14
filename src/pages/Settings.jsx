@@ -8,10 +8,38 @@ export default function Settings() {
       ? JSON.parse(saved)
       : {
           username: localStorage.getItem("username") || "User",
+
+          // Phase 3: Themes
           theme: "light",
+
+          // Phase 3: Layout Density
+          layoutDensity: "comfortable",
+
+          // Phase 3: Default Modes
+          defaultWorkoutMode: "generator",
+          defaultSportsMode: "generator",
+          defaultMealsMode: "manual",
+
+          // Phase 3: Notifications
           notifications: true,
           notificationFrequency: "daily",
-          privacyMode: false
+
+          // Phase 3: Privacy
+          privacyMode: false,
+
+          // Phase 3: Affiliate Program
+          referrals: 0,
+          earnings: 0,
+
+          // Phase 3: Referral Analytics
+          clicks: 0,
+          signups: 0,
+          conversionRate: "0%",
+
+          // Phase 3: Email Automation
+          emailSummaries: false,
+          emailReports: false,
+          emailFrequency: "weekly"
         };
   });
 
@@ -35,13 +63,34 @@ export default function Settings() {
   }
 
   function sendPasswordResetLink() {
-    // Backend integration later
     alert("A password reset link has been sent to your email.");
     setShowPasswordModal(false);
   }
 
+  // Apply theme + density to this screen only (Phase 3 scope)
+  const themeStyles = {
+    light: { backgroundColor: "#f5f5f5", color: "#000" },
+    dark: { backgroundColor: "#000", color: "#fff" },
+    highContrast: { backgroundColor: "#000", color: "#ff0" },
+    blue: { backgroundColor: "#001f3f", color: "#fff" },
+    red: { backgroundColor: "#3f0000", color: "#fff" }
+  };
+
+  const densityPadding =
+    settings.layoutDensity === "compact"
+      ? "6px"
+      : settings.layoutDensity === "spacious"
+      ? "20px"
+      : "12px";
+
   return (
-    <div style={{ padding: "20px", color: "white" }}>
+    <div
+      style={{
+        padding: densityPadding,
+        minHeight: "100vh",
+        ...themeStyles[settings.theme]
+      }}
+    >
       <h1>User Settings</h1>
 
       {/* ACCOUNT */}
@@ -56,7 +105,10 @@ export default function Settings() {
           Change Username
         </button>
 
-        <button style={{ ...btn, marginTop: "10px" }} onClick={() => setShowPasswordModal(true)}>
+        <button
+          style={{ ...btn, marginTop: "10px" }}
+          onClick={() => setShowPasswordModal(true)}
+        >
           Reset Password
         </button>
       </section>
@@ -71,13 +123,83 @@ export default function Settings() {
               onClick={() => updateSetting("theme", option)}
               style={{
                 ...btn,
-                backgroundColor: settings.theme === option ? "white" : "#333",
+                backgroundColor:
+                  settings.theme === option ? "white" : "#333",
                 color: settings.theme === option ? "black" : "white"
               }}
             >
               {option}
             </button>
           ))}
+        </div>
+      </section>
+
+      {/* LAYOUT DENSITY */}
+      <section style={{ marginTop: "30px" }}>
+        <h2>Layout Density</h2>
+        <div style={{ display: "flex", gap: "10px" }}>
+          {["compact", "comfortable", "spacious"].map(option => (
+            <button
+              key={option}
+              onClick={() => updateSetting("layoutDensity", option)}
+              style={{
+                ...btn,
+                backgroundColor:
+                  settings.layoutDensity === option ? "white" : "#333",
+                color:
+                  settings.layoutDensity === option ? "black" : "white"
+              }}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* DEFAULT MODES */}
+      <section style={{ marginTop: "30px" }}>
+        <h2>Default Modes</h2>
+
+        <div style={{ marginTop: "10px" }}>
+          <strong>Workouts:</strong>
+          <select
+            value={settings.defaultWorkoutMode}
+            onChange={e =>
+              updateSetting("defaultWorkoutMode", e.target.value)
+            }
+            style={input}
+          >
+            <option value="generator">Generator</option>
+            <option value="manual">Manual</option>
+          </select>
+        </div>
+
+        <div style={{ marginTop: "10px" }}>
+          <strong>Sports:</strong>
+          <select
+            value={settings.defaultSportsMode}
+            onChange={e =>
+              updateSetting("defaultSportsMode", e.target.value)
+            }
+            style={input}
+          >
+            <option value="generator">Generator</option>
+            <option value="manual">Manual</option>
+          </select>
+        </div>
+
+        <div style={{ marginTop: "10px" }}>
+          <strong>Meals:</strong>
+          <select
+            value={settings.defaultMealsMode}
+            onChange={e =>
+              updateSetting("defaultMealsMode", e.target.value)
+            }
+            style={input}
+          >
+            <option value="manual">Manual</option>
+            <option value="generator">Generator</option>
+          </select>
         </div>
       </section>
 
@@ -99,7 +221,9 @@ export default function Settings() {
             <strong>Frequency:</strong>
             <select
               value={settings.notificationFrequency}
-              onChange={e => updateSetting("notificationFrequency", e.target.value)}
+              onChange={e =>
+                updateSetting("notificationFrequency", e.target.value)
+              }
               style={{
                 marginLeft: "10px",
                 padding: "6px",
@@ -127,20 +251,85 @@ export default function Settings() {
         </label>
       </section>
 
-      {/* FUTURE FEATURES */}
+      {/* AFFILIATE PROGRAM */}
       <section style={{ marginTop: "40px" }}>
-        <h2>Coming Soon</h2>
+        <h2>Affiliate Program</h2>
 
         <div style={{ marginTop: "10px" }}>
-          <strong>Connected Devices:</strong> Smart watches, heart rate monitors, hydration sensors
+          <strong>Your Referral Link:</strong>
+          <div
+            style={{
+              marginTop: "6px",
+              padding: "10px",
+              background: "#333",
+              borderRadius: "6px"
+            }}
+          >
+            https://delphiafit.com/ref/{settings.username}
+          </div>
         </div>
 
         <div style={{ marginTop: "10px" }}>
-          <strong>Workout Preferences:</strong> Customize workout tracking defaults
+          <strong>Referrals:</strong> {settings.referrals}
         </div>
 
         <div style={{ marginTop: "10px" }}>
-          <strong>Meal Tracking Preferences:</strong> Auto‑log macros, preferred meal types
+          <strong>Earnings:</strong> ${settings.earnings}
+        </div>
+      </section>
+
+      {/* REFERRAL ANALYTICS */}
+      <section style={{ marginTop: "40px" }}>
+        <h2>Referral Analytics</h2>
+
+        <div style={{ marginTop: "10px" }}>
+          <strong>Clicks:</strong> {settings.clicks}
+        </div>
+
+        <div style={{ marginTop: "10px" }}>
+          <strong>Signups:</strong> {settings.signups}
+        </div>
+
+        <div style={{ marginTop: "10px" }}>
+          <strong>Conversion Rate:</strong> {settings.conversionRate}
+        </div>
+      </section>
+
+      {/* EMAIL AUTOMATION */}
+      <section style={{ marginTop: "40px" }}>
+        <h2>Email Automation</h2>
+
+        <label style={{ display: "block", marginTop: "10px" }}>
+          <input
+            type="checkbox"
+            checked={settings.emailSummaries}
+            onChange={e => updateSetting("emailSummaries", e.target.checked)}
+          />
+          Send Workout Summaries
+        </label>
+
+        <label style={{ display: "block", marginTop: "10px" }}>
+          <input
+            type="checkbox"
+            checked={settings.emailReports}
+            onChange={e => updateSetting("emailReports", e.target.checked)}
+          />
+          Send Weekly Progress Reports
+        </label>
+
+        <div style={{ marginTop: "10px" }}>
+          <strong>Frequency:</strong>
+          <select
+            value={settings.emailFrequency}
+            onChange={e =>
+              updateSetting("emailFrequency", e.target.value)
+            }
+            style={input}
+          >
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
         </div>
       </section>
 
@@ -153,8 +342,12 @@ export default function Settings() {
             onChange={e => setNewUsername(e.target.value)}
             style={input}
           />
-          <button style={btn} onClick={saveUsername}>Save</button>
-          <button style={btn} onClick={() => setShowUsernameModal(false)}>Cancel</button>
+          <button style={btn} onClick={saveUsername}>
+            Save
+          </button>
+          <button style={btn} onClick={() => setShowUsernameModal(false)}>
+            Cancel
+          </button>
         </Modal>
       )}
 
@@ -170,7 +363,10 @@ export default function Settings() {
             Send Reset Link
           </button>
 
-          <button style={{ ...btn, marginTop: "10px" }} onClick={() => setShowPasswordModal(false)}>
+          <button
+            style={{ ...btn, marginTop: "10px" }}
+            onClick={() => setShowPasswordModal(false)}
+          >
             Cancel
           </button>
         </Modal>
