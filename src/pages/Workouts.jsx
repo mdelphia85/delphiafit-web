@@ -26,7 +26,7 @@ export default function Workouts() {
   const [manualDuration, setManualDuration] = useState("");
   const [manualNotes, setManualNotes] = useState("");
 
-  // ⭐ GENERATOR MODE STATE (UNCHANGED)
+  // ⭐ GENERATOR MODE STATE
   const [workoutType, setWorkoutType] = useState("");
   const [duration, setDuration] = useState("30 min");
 
@@ -187,8 +187,32 @@ export default function Workouts() {
     }
   }
 
-  function handleSave() {
+  // ⭐ GENERATOR SAVE HANDLER (STRUCTURED WORKOUT)
+  async function handleSave() {
     if (!saveEnabled || !cooldownStarted) return;
+
+    await fetch("http://localhost:8000/workouts/save", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`
+      },
+      body: JSON.stringify({
+        mode: "structured",
+        workout_type: workoutType,
+        duration_minutes: Number(duration.replace(" min", "")),
+        weight_unit: weightUnit,
+        weight_value: weightValue ? Number(weightValue) : null,
+        plan_json: plan,
+        block_durations_json: {
+          warmup: Number(blockDurations.warmup),
+          main: Number(blockDurations.main),
+          finisher: Number(blockDurations.finisher),
+          cooldown: Number(blockDurations.cooldown)
+        },
+        equipment_json: plan.equipment
+      })
+    });
 
     setSaveEnabled(false);
     setCurrentBlock(null);
@@ -200,13 +224,21 @@ export default function Workouts() {
   }
 
   // ⭐ MANUAL SAVE HANDLER
-  function handleManualSave() {
+  async function handleManualSave() {
     if (!manualName || !manualDuration) return;
 
-    console.log("Manual workout saved:", {
-      name: manualName,
-      duration: manualDuration,
-      notes: manualNotes
+    await fetch("http://localhost:8000/workouts/save", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`
+      },
+      body: JSON.stringify({
+        mode: "manual",
+        manual_name: manualName,
+        manual_notes: manualNotes,
+        duration_minutes: Number(manualDuration)
+      })
     });
 
     setManualName("");
@@ -348,7 +380,7 @@ export default function Workouts() {
           </div>
         </div>
 
-        {/* ⭐ GENERATOR MODE (UNCHANGED) */}
+        {/* ⭐ GENERATOR MODE */}
         {mode === "generator" && (
           <>
             <div>
