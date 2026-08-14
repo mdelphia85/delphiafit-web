@@ -596,17 +596,35 @@ export default function Workouts() {
         )}
       </div>
 
-      {/* ⭐ FIXED FOOTER — EXACTLY LIKE YOUR OTHER PAGE */}
+      
+      {/* SAVE WORKOUT (BOTTOM LEFT) */}
       <div
-        style={saveStyle}
-        onClick={saveEnabled ? handleSave : undefined}
+        onClick={handleSaveWorkout}
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          left: "20px",
+          color: ACCENT,
+          cursor: "pointer",
+          textDecoration: "underline",
+          fontSize: "18px",
+        }}
       >
-        Save
+        Save Workout
       </div>
 
+      {/* RETURN TO MENU (BOTTOM RIGHT) */}
       <div
-        style={returnStyle}
         onClick={openMenu}
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          color: ACCENT,
+          cursor: "pointer",
+          textDecoration: "underline",
+          fontSize: "18px",
+        }}
       >
         Return to Menu
       </div>
