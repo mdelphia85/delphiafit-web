@@ -18,6 +18,15 @@ export default function Workouts() {
   const WHITE = "rgb(255,255,255)";
   const DISABLED_GRAY = "rgb(90,90,90)";
 
+  // ⭐ MODE TOGGLE
+  const [mode, setMode] = useState("generator"); // "generator" | "manual"
+
+  // ⭐ MANUAL MODE STATE
+  const [manualName, setManualName] = useState("");
+  const [manualDuration, setManualDuration] = useState("");
+  const [manualNotes, setManualNotes] = useState("");
+
+  // ⭐ GENERATOR MODE STATE (UNCHANGED)
   const [workoutType, setWorkoutType] = useState("");
   const [duration, setDuration] = useState("30 min");
 
@@ -70,32 +79,27 @@ export default function Workouts() {
   }, []);
 
   useEffect(() => {
-  // Always clear any existing timer when currentBlock changes
-  if (timerRef.current) {
-    clearInterval(timerRef.current);
-    timerRef.current = null;
-  }
-
-  // If no block is active, stop here
-  if (!currentBlock) return;
-
-  // Start new timer for the new block
-  timerRef.current = setInterval(() => {
-    setBlockElapsed(prev => ({
-      ...prev,
-      [currentBlock]: prev[currentBlock] + 1
-    }));
-  }, 1000);
-
-  // Cleanup ALWAYS clears the interval
-  return () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-  };
-}, [currentBlock]);
 
+    if (!currentBlock) return;
+
+    timerRef.current = setInterval(() => {
+      setBlockElapsed(prev => ({
+        ...prev,
+        [currentBlock]: prev[currentBlock] + 1
+      }));
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [currentBlock]);
 
   function formatTimer(sec) {
     const mm = String(Math.floor(sec / 60)).padStart(2, "0");
@@ -169,21 +173,19 @@ export default function Workouts() {
   }
 
   function handleStartBlock(key) {
-  // Clear any existing timer before switching blocks
-  if (timerRef.current) {
-    clearInterval(timerRef.current);
-    timerRef.current = null;
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    setCurrentBlock(key);
+    setBlockElapsed(prev => ({ ...prev, [key]: 0 }));
+
+    if (key === "cooldown") {
+      setCooldownStarted(true);
+      setSaveEnabled(true);
+    }
   }
-
-  setCurrentBlock(key);
-  setBlockElapsed(prev => ({ ...prev, [key]: 0 }));
-
-  if (key === "cooldown") {
-    setCooldownStarted(true);
-    setSaveEnabled(true);
-  }
-}
-
 
   function handleSave() {
     if (!saveEnabled || !cooldownStarted) return;
@@ -197,6 +199,22 @@ export default function Workouts() {
     }
   }
 
+  // ⭐ MANUAL SAVE HANDLER
+  function handleManualSave() {
+    if (!manualName || !manualDuration) return;
+
+    console.log("Manual workout saved:", {
+      name: manualName,
+      duration: manualDuration,
+      notes: manualNotes
+    });
+
+    setManualName("");
+    setManualDuration("");
+    setManualNotes("");
+  }
+
+  // ⭐ STYLES (UNCHANGED)
   const container = {
     width: "100vw",
     height: "100vh",
@@ -302,231 +320,328 @@ export default function Workouts() {
   return (
     <div style={container}>
       <div style={inner}>
-        <div>
-          <div style={label}>Workout Type</div>
-          <select
-            value={workoutType}
-            onChange={e => handleWorkoutTypeSelect(e.target.value)}
-            style={{ ...field, width: "100%" }}
+
+        {/* ⭐ MODE TOGGLE */}
+        <div style={{ display: "flex", gap: "16px", marginBottom: "8px" }}>
+          <div
+            style={{
+              color: mode === "generator" ? WHITE : SILVER,
+              textDecoration: "underline",
+              cursor: "pointer",
+              fontSize: "18px"
+            }}
+            onClick={() => setMode("generator")}
           >
-            <option value="">Select Workout Type</option>
-            {UI_MAIN_CATEGORIES.map(main => (
-              <optgroup key={main} label={main}>
-                {UI_SUBCATEGORY_MAP[main].map(sub => (
-                  <option key={sub} value={sub}>
-                    {sub}
-                  </option>
+            Generator Mode
+          </div>
+
+          <div
+            style={{
+              color: mode === "manual" ? WHITE : SILVER,
+              textDecoration: "underline",
+              cursor: "pointer",
+              fontSize: "18px"
+            }}
+            onClick={() => setMode("manual")}
+          >
+            Manual Mode
+          </div>
+        </div>
+
+        {/* ⭐ GENERATOR MODE (UNCHANGED) */}
+        {mode === "generator" && (
+          <>
+            <div>
+              <div style={label}>Workout Type</div>
+              <select
+                value={workoutType}
+                onChange={e => handleWorkoutTypeSelect(e.target.value)}
+                style={{ ...field, width: "100%" }}
+              >
+                <option value="">Select Workout Type</option>
+                {UI_MAIN_CATEGORIES.map(main => (
+                  <optgroup key={main} label={main}>
+                    {UI_SUBCATEGORY_MAP[main].map(sub => (
+                      <option key={sub} value={sub}>
+                        {sub}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
-              </optgroup>
-            ))}
-          </select>
-        </div>
+              </select>
+            </div>
 
-        <div>
-          <div style={label}>Duration</div>
-          <select
-            value={duration}
-            onChange={e => setDuration(e.target.value)}
-            style={{ ...field, width: "100%" }}
-          >
-            <option value="20 min">20 min</option>
-            <option value="30 min">30 min</option>
-            <option value="45 min">45 min</option>
-            <option value="60 min">60 min</option>
-          </select>
-        </div>
+            <div>
+              <div style={label}>Duration</div>
+              <select
+                value={duration}
+                onChange={e => setDuration(e.target.value)}
+                style={{ ...field, width: "100%" }}
+              >
+                <option value="20 min">20 min</option>
+                <option value="30 min">30 min</option>
+                <option value="45 min">45 min</option>
+                <option value="60 min">60 min</option>
+              </select>
+            </div>
 
-        {weightSectionEnabled && (
-          <div>
-            <div style={label}>Weight Unit</div>
-            <select
-              value={weightUnit}
-              onChange={e => setWeightUnit(e.target.value)}
-              style={{ ...field, width: "100%" }}
+            {weightSectionEnabled && (
+              <div>
+                <div style={label}>Weight Unit</div>
+                <select
+                  value={weightUnit}
+                  onChange={e => setWeightUnit(e.target.value)}
+                  style={{ ...field, width: "100%" }}
+                >
+                  <option value="lbs">lbs</option>
+                  <option value="kg">kg</option>
+                </select>
+
+                <div style={{ ...label, marginTop: "8px" }}>Weight</div>
+                <input
+                  style={{ ...field, width: "100%" }}
+                  placeholder="Enter weight"
+                  value={weightValue}
+                  onChange={e => setWeightValue(e.target.value)}
+                />
+              </div>
+            )}
+
+            <div style={clickable} onClick={handleGenerate}>
+              Generate Workout
+            </div>
+
+            <div
+              style={{
+                maxHeight: "50vh",
+                overflowY: "auto"
+              }}
             >
-              <option value="lbs">lbs</option>
-              <option value="kg">kg</option>
-            </select>
+              <div style={{ paddingRight: "16px", paddingBottom: "12px" }}>
+                {workoutType && (
+                  <div
+                    style={{ color: WHITE, fontSize: "16px", marginBottom: "6px" }}
+                  >
+                    {`${CATEGORY_MAP[workoutType] || workoutType} → ${workoutType} | ${duration}${
+                      weightSectionEnabled && weightValue
+                        ? ` | ${weightValue}${weightUnit}`
+                        : ""
+                    }`}
+                  </div>
+                )}
 
-            <div style={{ ...label, marginTop: "8px" }}>Weight</div>
-            <input
-              style={{ ...field, width: "100%" }}
-              placeholder="Enter weight"
-              value={weightValue}
-              onChange={e => setWeightValue(e.target.value)}
-            />
+                {/* Warm-up */}
+                {plan.warmup.length > 0 && (
+                  <>
+                    <div style={sectionHeader}>Warm-up</div>
+                    <div style={timerRow}>
+                      <div style={timerLabel}>
+                        {formatTimer(blockElapsed.warmup)}
+                      </div>
+                      <input
+                        style={durationInput}
+                        value={blockDurations.warmup}
+                        onChange={e =>
+                          setBlockDurations(prev => ({
+                            ...prev,
+                            warmup: e.target.value
+                          }))
+                        }
+                      />
+                      <div
+                        style={{ ...clickable, fontSize: "14px" }}
+                        onClick={() => handleStartBlock("warmup")}
+                      >
+                        Start
+                      </div>
+                    </div>
+                    {plan.warmup.map((ex, i) => (
+                      <div key={i} style={exerciseText}>
+                        • {ex}
+                      </div>
+                    ))}
+                  </>
+                )}
+
+                {/* Main */}
+                {plan.main.length > 0 && (
+                  <>
+                    <div style={sectionHeader}>Main</div>
+                    <div style={timerRow}>
+                      <div style={timerLabel}>
+                        {formatTimer(blockElapsed.main)}
+                      </div>
+                      <input
+                        style={durationInput}
+                        value={blockDurations.main}
+                        onChange={e =>
+                          setBlockDurations(prev => ({
+                            ...prev,
+                            main: e.target.value
+                          }))
+                        }
+                      />
+                      <div
+                        style={{ ...clickable, fontSize: "14px" }}
+                        onClick={() => handleStartBlock("main")}
+                      >
+                        Start
+                      </div>
+                    </div>
+                    {plan.main.map((ex, i) => (
+                      <div key={i} style={exerciseText}>
+                        • {ex}
+                      </div>
+                    ))}
+                  </>
+                )}
+
+                {/* Finisher */}
+                {plan.finisher.length > 0 && (
+                  <>
+                    <div style={sectionHeader}>Finisher</div>
+                    <div style={timerRow}>
+                      <div style={timerLabel}>
+                        {formatTimer(blockElapsed.finisher)}
+                      </div>
+                      <input
+                        style={durationInput}
+                        value={blockDurations.finisher}
+                        onChange={e =>
+                          setBlockDurations(prev => ({
+                            ...prev,
+                            finisher: e.target.value
+                          }))
+                        }
+                      />
+                      <div
+                        style={{ ...clickable, fontSize: "14px" }}
+                        onClick={() => handleStartBlock("finisher")}
+                      >
+                        Start
+                      </div>
+                    </div>
+                    {plan.finisher.map((ex, i) => (
+                      <div key={i} style={exerciseText}>
+                        • {ex}
+                      </div>
+                    ))}
+                  </>
+                )}
+
+                {/* Cool-down */}
+                {plan.cooldown.length > 0 && (
+                  <>
+                    <div style={sectionHeader}>Cool-down</div>
+                    <div style={timerRow}>
+                      <div style={timerLabel}>
+                        {formatTimer(blockElapsed.cooldown)}
+                      </div>
+                      <input
+                        style={durationInput}
+                        value={blockDurations.cooldown}
+                        onChange={e =>
+                          setBlockDurations(prev => ({
+                            ...prev,
+                            cooldown: e.target.value
+                          }))
+                        }
+                      />
+                      <div
+                        style={{ ...clickable, fontSize: "14px" }}
+                        onClick={() => handleStartBlock("cooldown")}
+                      >
+                        Start
+                      </div>
+                    </div>
+                    {plan.cooldown.map((ex, i) => (
+                      <div key={i} style={exerciseText}>
+                        • {ex}
+                      </div>
+                    ))}
+                  </>
+                )}
+
+                {plan.equipment.length > 0 && (
+                  <div style={{ color: SILVER, fontSize: "14px", marginTop: "8px" }}>
+                    Equipment: {plan.equipment.join(", ")}
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* ⭐ MANUAL MODE */}
+        {mode === "manual" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            
+            <div>
+              <div style={label}>Workout Name</div>
+              <input
+                style={{ ...field, width: "100%" }}
+                placeholder="Enter workout name"
+                value={manualName}
+                onChange={e => setManualName(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <div style={label}>Duration</div>
+              <input
+                style={{ ...field, width: "100%" }}
+                placeholder="Enter duration (e.g., 45 min)"
+                value={manualDuration}
+                onChange={e => setManualDuration(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <div style={label}>Notes</div>
+              <textarea
+                style={{
+                  ...field,
+                  width: "100%",
+                  height: "100px",
+                  resize: "none"
+                }}
+                placeholder="Enter notes"
+                value={manualNotes}
+                onChange={e => setManualNotes(e.target.value)}
+              />
+            </div>
+
+            <div
+              style={{
+                color: SILVER,
+                fontSize: "18px",
+                textDecoration: "underline",
+                textAlign: "center",
+                cursor: "pointer"
+              }}
+              onClick={handleManualSave}
+            >
+              Save Manual Workout
+            </div>
+
           </div>
         )}
 
-        <div style={clickable} onClick={handleGenerate}>
-          Generate Workout
-        </div>
-
-        {/* ⭐ UPDATED SCROLL AREA WITH INNER PADDING FIX */}
-        <div
-          style={{
-            maxHeight: "50vh",
-            overflowY: "auto"
-          }}
-        >
-          <div style={{ paddingRight: "16px", paddingBottom: "12px" }}>
-            {workoutType && (
-              <div
-                style={{ color: WHITE, fontSize: "16px", marginBottom: "6px" }}
-              >
-                {`${CATEGORY_MAP[workoutType] || workoutType} → ${workoutType} | ${duration}${
-                  weightSectionEnabled && weightValue
-                    ? ` | ${weightValue}${weightUnit}`
-                    : ""
-                }`}
-              </div>
-            )}
-
-            {/* Warm-up */}
-            {plan.warmup.length > 0 && (
-              <>
-                <div style={sectionHeader}>Warm-up</div>
-                <div style={timerRow}>
-                  <div style={timerLabel}>
-                    {formatTimer(blockElapsed.warmup)}
-                  </div>
-                  <input
-                    style={durationInput}
-                    value={blockDurations.warmup}
-                    onChange={e =>
-                      setBlockDurations(prev => ({
-                        ...prev,
-                        warmup: e.target.value
-                      }))
-                    }
-                  />
-                  <div
-                    style={{ ...clickable, fontSize: "14px" }}
-                    onClick={() => handleStartBlock("warmup")}
-                  >
-                    Start
-                  </div>
-                </div>
-                {plan.warmup.map((ex, i) => (
-                  <div key={i} style={exerciseText}>
-                    • {ex}
-                  </div>
-                ))}
-              </>
-            )}
-
-            {/* Main */}
-            {plan.main.length > 0 && (
-              <>
-                <div style={sectionHeader}>Main</div>
-                <div style={timerRow}>
-                  <div style={timerLabel}>
-                    {formatTimer(blockElapsed.main)}
-                  </div>
-                  <input
-                    style={durationInput}
-                    value={blockDurations.main}
-                    onChange={e =>
-                      setBlockDurations(prev => ({
-                        ...prev,
-                        main: e.target.value
-                      }))
-                    }
-                  />
-                  <div
-                    style={{ ...clickable, fontSize: "14px" }}
-                    onClick={() => handleStartBlock("main")}
-                  >
-                    Start
-                  </div>
-                </div>
-                {plan.main.map((ex, i) => (
-                  <div key={i} style={exerciseText}>
-                    • {ex}
-                  </div>
-                ))}
-              </>
-            )}
-
-            {/* Finisher */}
-            {plan.finisher.length > 0 && (
-              <>
-                <div style={sectionHeader}>Finisher</div>
-                <div style={timerRow}>
-                  <div style={timerLabel}>
-                    {formatTimer(blockElapsed.finisher)}
-                  </div>
-                  <input
-                    style={durationInput}
-                    value={blockDurations.finisher}
-                    onChange={e =>
-                      setBlockDurations(prev => ({
-                        ...prev,
-                        finisher: e.target.value
-                      }))
-                    }
-                  />
-                  <div
-                    style={{ ...clickable, fontSize: "14px" }}
-                    onClick={() => handleStartBlock("finisher")}
-                  >
-                    Start
-                  </div>
-                </div>
-                {plan.finisher.map((ex, i) => (
-                  <div key={i} style={exerciseText}>
-                    • {ex}
-                  </div>
-                ))}
-              </>
-            )}
-
-            {/* Cool-down */}
-            {plan.cooldown.length > 0 && (
-              <>
-                <div style={sectionHeader}>Cool-down</div>
-                <div style={timerRow}>
-                  <div style={timerLabel}>
-                    {formatTimer(blockElapsed.cooldown)}
-                  </div>
-                  <input
-                    style={durationInput}
-                    value={blockDurations.cooldown}
-                    onChange={e =>
-                      setBlockDurations(prev => ({
-                        ...prev,
-                        cooldown: e.target.value
-                      }))
-                    }
-                  />
-                  <div
-                    style={{ ...clickable, fontSize: "14px" }}
-                    onClick={() => handleStartBlock("cooldown")}
-                  >
-                    Start
-                  </div>
-                </div>
-                {plan.cooldown.map((ex, i) => (
-                  <div key={i} style={exerciseText}>
-                    • {ex}
-                  </div>
-                ))}
-              </>
-            )}
-
-            {plan.equipment.length > 0 && (
-              <div style={{ color: SILVER, fontSize: "14px", marginTop: "8px" }}>
-                Equipment: {plan.equipment.join(", ")}
-              </div>
-            )}
-          </div>
-        </div>
       </div>
 
       <div style={footer}>
-        <div style={saveStyle} onClick={handleSave}>
-          Save Workout
-        </div>
+        {mode === "generator" && (
+          <div style={saveStyle} onClick={handleSave}>
+            Save Workout
+          </div>
+        )}
+
+        {mode === "manual" && (
+          <div style={{ color: SILVER, fontSize: "18px" }}>
+            Manual Mode Active
+          </div>
+        )}
+
         <div style={{ flex: 1 }} />
         <div style={returnStyle} onClick={openMenu}>
           Return to Menu
