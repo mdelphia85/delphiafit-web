@@ -18,15 +18,17 @@ export default function Workouts() {
   const WHITE = "rgb(255,255,255)";
   const DISABLED_GRAY = "rgb(90,90,90)";
 
-  // ⭐ MODE TOGGLE
-  const [mode, setMode] = useState("generator"); // "generator" | "manual"
+  const token = localStorage.getItem("token");
 
-  // ⭐ MANUAL MODE STATE
+  // MODE
+  const [mode, setMode] = useState("generator");
+
+  // MANUAL MODE
   const [manualName, setManualName] = useState("");
   const [manualDuration, setManualDuration] = useState("");
   const [manualNotes, setManualNotes] = useState("");
 
-  // ⭐ GENERATOR MODE STATE (UNCHANGED)
+  // GENERATOR MODE
   const [workoutType, setWorkoutType] = useState("");
   const [duration, setDuration] = useState("30 min");
 
@@ -69,6 +71,7 @@ export default function Workouts() {
     cooldown: "3"
   });
 
+  // CLEANUP TIMER
   useEffect(() => {
     return () => {
       if (timerRef.current) {
@@ -78,6 +81,7 @@ export default function Workouts() {
     };
   }, []);
 
+  // TIMER UPDATE
   useEffect(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -187,8 +191,85 @@ export default function Workouts() {
     }
   }
 
-  function handleSave() {
+  // ⭐ SAVE EXACTLY LIKE SPORTS — MANUAL MODE
+  async function handleManualSave() {
+    if (!manualName || !manualDuration) return;
+
+    const payload = {
+      mode: "manual",
+      sport: manualName,
+      duration: manualDuration,
+      notes: manualNotes,
+      timestamp: new Date().toISOString()
+    };
+
+    try {
+      const res = await fetch(
+        "https://delphiafit-backend-production.up.railway.app/workouts",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      if (!res.ok) {
+        console.error("Failed to save workout");
+        return;
+      }
+
+      const data = await res.json();
+      console.log("Workout saved:", data);
+    } catch (err) {
+      console.error("Error saving workout:", err);
+    }
+
+    setManualName("");
+    setManualDuration("");
+    setManualNotes("");
+  }
+
+  // ⭐ SAVE EXACTLY LIKE SPORTS — GENERATOR MODE
+  async function handleSave() {
     if (!saveEnabled || !cooldownStarted) return;
+
+    const payload = {
+      mode: "generator",
+      sport: workoutType,
+      category: CATEGORY_MAP[workoutType] || "",
+      level: "N/A",
+      drill: plan,
+      duration: duration,
+      notes: "",
+      timestamp: new Date().toISOString()
+    };
+
+    try {
+      const res = await fetch(
+        "https://delphiafit-backend-production.up.railway.app/workouts",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      if (!res.ok) {
+        console.error("Failed to save workout");
+        return;
+      }
+
+      const data = await res.json();
+      console.log("Workout saved:", data);
+    } catch (err) {
+      console.error("Error saving workout:", err);
+    }
 
     setSaveEnabled(false);
     setCurrentBlock(null);
@@ -199,22 +280,7 @@ export default function Workouts() {
     }
   }
 
-  // ⭐ MANUAL SAVE HANDLER
-  function handleManualSave() {
-    if (!manualName || !manualDuration) return;
-
-    console.log("Manual workout saved:", {
-      name: manualName,
-      duration: manualDuration,
-      notes: manualNotes
-    });
-
-    setManualName("");
-    setManualDuration("");
-    setManualNotes("");
-  }
-
-  // ⭐ STYLES (UNCHANGED)
+  // UI STYLES
   const container = {
     width: "100vw",
     height: "100vh",
@@ -321,7 +387,7 @@ export default function Workouts() {
     <div style={container}>
       <div style={inner}>
 
-        {/* ⭐ MODE TOGGLE */}
+        {/* MODE TOGGLE */}
         <div style={{ display: "flex", gap: "16px", marginBottom: "8px" }}>
           <div
             style={{
@@ -348,7 +414,7 @@ export default function Workouts() {
           </div>
         </div>
 
-        {/* ⭐ GENERATOR MODE (UNCHANGED) */}
+        {/* GENERATOR MODE */}
         {mode === "generator" && (
           <>
             <div>
@@ -572,80 +638,62 @@ export default function Workouts() {
           </>
         )}
 
-        {/* ⭐ MANUAL MODE */}
-        {mode === "manual" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        
+        {/* MANUAL MODE */}
+{mode === "manual" && (
+  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             
-            <div>
-              <div style={label}>Workout Name</div>
-              <input
-                style={{ ...field, width: "100%" }}
-                placeholder="Enter workout name"
-                value={manualName}
-                onChange={e => setManualName(e.target.value)}
-              />
-            </div>
+    <div>
+      <div style={label}>Workout Name</div>
+      <input
+        style={{ ...field, width: "100%" }}
+        placeholder="Enter workout name"
+        value={manualName}
+        onChange={e => setManualName(e.target.value)}
+      />
+    </div>
 
-            <div>
-              <div style={label}>Duration</div>
-              <input
-                style={{ ...field, width: "100%" }}
-                placeholder="Enter duration (e.g., 45 min)"
-                value={manualDuration}
-                onChange={e => setManualDuration(e.target.value)}
-              />
-            </div>
+    <div>
+      <div style={label}>Duration</div>
+      <input
+        style={{ ...field, width: "100%" }}
+        placeholder="Enter duration (e.g., 45)"
+        value={manualDuration}
+        onChange={e => setManualDuration(e.target.value)}
+      />
+    </div>
 
-            <div>
-              <div style={label}>Notes</div>
-              <textarea
-                style={{
-                  ...field,
-                  width: "100%",
-                  height: "100px",
-                  resize: "none"
-                }}
-                placeholder="Enter notes"
-                value={manualNotes}
-                onChange={e => setManualNotes(e.target.value)}
-              />
-            </div>
+    <div>
+      <div style={label}>Notes</div>
+      <textarea
+        style={{
+          ...field,
+          width: "100%",
+          height: "100px",
+          resize: "none"
+        }}
+        placeholder="Enter notes"
+        value={manualNotes}
+        onChange={e => setManualNotes(e.target.value)}
+      />
+    </div>
 
-            <div
-              style={{
-                color: SILVER,
-                fontSize: "18px",
-                textDecoration: "underline",
-                textAlign: "center",
-                cursor: "pointer"
-              }}
-              onClick={handleManualSave}
-            >
-              Save Manual Workout
-            </div>
+    <div
+      style={{
+        color: SILVER,
+        fontSize: "18px",
+        textDecoration: "underline",
+        textAlign: "center",
+        cursor: "pointer"
+      }}
+      onClick={handleManualSave}
+    >
+      Save Manual Workout
+    </div>
 
-          </div>
-        )}
+  </div>
+)}
 
-      </div>
-
-      <div style={footer}>
-        {mode === "generator" && (
-          <div style={saveStyle} onClick={handleSave}>
-            Save Workout
-          </div>
-        )}
-
-        {mode === "manual" && (
-          <div style={{ color: SILVER, fontSize: "18px" }}>
-            Manual Mode Active
-          </div>
-        )}
-
-        <div style={{ flex: 1 }} />
-        <div style={returnStyle} onClick={openMenu}>
-          Return to Menu
-        </div>
       </div>
     </div>
   );
