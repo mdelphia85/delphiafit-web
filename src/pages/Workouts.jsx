@@ -1,238 +1,174 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.jsx";
 
-import {
-  UI_MAIN_CATEGORIES,
-  UI_SUBCATEGORY_MAP,
-  STRENGTH_TYPES,
-  CATEGORY_MAP
-} from "../generators/workoutTaxonomy.js";
-
-import { generateWorkout } from "../generators/workoutGenerator.js";
-
-// ⭐ PHASE 4 — AI ENGINE IMPORTS
-import { smartAdjust } from "../ai/smartMode";
+// ⭐ Phase 4 AI imports
 import { updatePersonalizationEngine } from "../ai/personalizationEngine";
 import { updateBehavior } from "../ai/behaviorEngine";
 
-export default function Workouts() {
+export default function Sports() {
+  const navigate = useNavigate();
   const { openMenu } = useContext(MenuContext);
 
-  const BLACK = "rgb(0,0,0)";
-  const SILVER = "rgb(220,220,220)";
-  const WHITE = "rgb(255,255,255)";
-  const DISABLED_GRAY = "rgb(90,90,90)";
-
-  const token = localStorage.getItem("token");
-
-  // MODE
   const [mode, setMode] = useState("generator");
 
-  // MANUAL MODE
-  const [manualName, setManualName] = useState("");
+  const [sportsList, setSportsList] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [levels, setLevels] = useState([]);
+  const [drill, setDrill] = useState(null);
+
+  const [sport, setSport] = useState("");
+  const [category, setCategory] = useState("");
+  const [level, setLevel] = useState("");
+  const [duration, setDuration] = useState("");
+  const [notes, setNotes] = useState("");
+
+  const [manualSport, setManualSport] = useState("");
   const [manualDuration, setManualDuration] = useState("");
   const [manualNotes, setManualNotes] = useState("");
 
-  // GENERATOR MODE
-  const [workoutType, setWorkoutType] = useState("");
-  const [duration, setDuration] = useState("30 min");
+  const token = localStorage.getItem("token");
 
-  const [weightUnit, setWeightUnit] = useState("lbs");
-  const [weightValue, setWeightValue] = useState("");
-  const [weightSectionEnabled, setWeightSectionEnabled] = useState(false);
-
-  const [plan, setPlan] = useState({
-    warmup: [],
-    main: [],
-    finisher: [],
-    cooldown: [],
-    equipment: []
-  });
-
-  const [blockElapsed, setBlockElapsed] = useState({
-    warmup: 0,
-    main: 0,
-    finisher: 0,
-    cooldown: 0
-  });
-
-  const [currentBlock, setCurrentBlock] = useState(null);
-  const [cooldownStarted, setCooldownStarted] = useState(false);
-  const [saveEnabled, setSaveEnabled] = useState(false);
-
-  const timerRef = useRef(null);
-
-  const blockDefaultMinutes = {
-    warmup: 3,
-    main: 20,
-    finisher: 5,
-    cooldown: 3
-  };
-
-  const [blockDurations, setBlockDurations] = useState({
-    warmup: "3",
-    main: "20",
-    finisher: "5",
-    cooldown: "3"
-  });
-
-  // CLEANUP TIMER
+  // -----------------------------
+  // TOKEN CHECK
+  // -----------------------------
   useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, []);
+    if (!token) navigate("/login");
+  }, [token, navigate]);
 
-  // TIMER UPDATE
+  // -----------------------------
+  // LOAD SPORTS
+  // -----------------------------
   useEffect(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
+    async function loadSports() {
+      if (!token) return;
 
-    if (!currentBlock) return;
+      try {
+        const res = await fetch(
+          "https://delphiafit-backend-production.up.railway.app/sports",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
-    timerRef.current = setInterval(() => {
-      setBlockElapsed(prev => ({
-        ...prev,
-        [currentBlock]: prev[currentBlock] + 1
-      }));
-    }, 1000);
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
+        const data = await res.json();
+        setSportsList(data.sports || []);
+      } catch (err) {
+        console.error("Error loading sports:", err);
+        setSportsList([]);
       }
-    };
-  }, [currentBlock]);
+    }
 
-  function formatTimer(sec) {
-    const mm = String(Math.floor(sec / 60)).padStart(2, "0");
-    const ss = String(sec % 60).padStart(2, "0");
-    return `${mm}:${ss}`;
-  }
+    loadSports();
+  }, [token]);
 
-  function resetTimers() {
-    setBlockElapsed({
-      warmup: 0,
-      main: 0,
-      finisher: 0,
-      cooldown: 0
-    });
-    setCurrentBlock(null);
-    setCooldownStarted(false);
-    setSaveEnabled(false);
+  // -----------------------------
+  // LOAD CATEGORIES
+  // -----------------------------
+  useEffect(() => {
+    async function loadCategories() {
+      if (!sport || !token) return;
 
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+      try {
+        const res = await fetch(
+          `https://delphiafit-backend-production.up.railway.app/sports/${sport}/skills`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const data = await res.json();
+        setCategories(data.skills || []);
+        setCategory("");
+        setLevel("");
+        setDrill(null);
+      } catch (err) {
+        console.error("Error loading categories:", err);
+        setCategories([]);
+      }
+    }
+
+    loadCategories();
+  }, [sport, token]);
+
+  // -----------------------------
+  // LOAD LEVELS
+  // -----------------------------
+  useEffect(() => {
+    async function loadLevels() {
+      if (!sport || !category || !token) return;
+
+      try {
+        const res = await fetch(
+          `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/levels`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const data = await res.json();
+        setLevels(data.levels || []);
+        setLevel("");
+        setDrill(null);
+      } catch (err) {
+        console.error("Error loading levels:", err);
+        setLevels([]);
+      }
+    }
+
+    loadLevels();
+  }, [category, sport, token]);
+
+  // -----------------------------
+  // GENERATE DRILL
+  // -----------------------------
+  async function handleGenerate() {
+    if (!sport || !category || !level || !token) return;
+
+    try {
+      const res = await fetch(
+        `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/${level}/drills`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = await res.json();
+      setDrill(data.drill || null);
+    } catch (err) {
+      console.error("Error loading drill:", err);
+      setDrill(null);
     }
   }
 
-  function handleWorkoutTypeSelect(sub) {
-    setWorkoutType(sub);
-    if (STRENGTH_TYPES.includes(sub)) {
-      setWeightSectionEnabled(true);
-    } else {
-      setWeightSectionEnabled(false);
-      setWeightValue("");
-    }
-  }
+  // -----------------------------
+  // SAVE WORKOUT (FULL PHASE 4 IMPLEMENTATION)
+  // -----------------------------
+  async function handleSaveWorkout() {
+    if (!token) return;
 
-  function handleGenerate() {
-    resetTimers();
-
-    if (!workoutType) {
-      setPlan({
-        warmup: ["Please select a workout type."],
-        main: [],
-        finisher: [],
-        cooldown: [],
-        equipment: []
-      });
-      return;
-    }
-
-    const mainCategory = CATEGORY_MAP[workoutType] || workoutType;
-
-    const generated = generateWorkout({
-      category_label: mainCategory,
-      duration_label: duration,
-      equipment_available: null
-    });
-
-    setPlan({
-      warmup: generated.warmup || [],
-      main: generated.main || [],
-      finisher: generated.finisher || [],
-      cooldown: generated.cooldown || [],
-      equipment: generated.equipment || []
-    });
-
-    setBlockDurations({
-      warmup: String(blockDefaultMinutes.warmup),
-      main: String(blockDefaultMinutes.main),
-      finisher: String(blockDefaultMinutes.finisher),
-      cooldown: String(blockDefaultMinutes.cooldown)
-    });
-  }
-
-  // ⭐ SMART MODE INTEGRATION
-  function handleStartBlock(key) {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-
-    const plannedMinutes = Number(blockDurations[key]);
-    const elapsedSeconds = blockElapsed[key];
-
-    const decision = smartAdjust(key, elapsedSeconds, plannedMinutes);
-
-    if (decision === "shorten") {
-      setBlockDurations(prev => ({
-        ...prev,
-        [key]: String(plannedMinutes - 2)
-      }));
-    } else if (decision === "extend") {
-      setBlockDurations(prev => ({
-        ...prev,
-        [key]: String(plannedMinutes + 2)
-      }));
-    }
-
-    setCurrentBlock(key);
-    setBlockElapsed(prev => ({ ...prev, [key]: 0 }));
-
-    if (key === "cooldown") {
-      setCooldownStarted(true);
-      setSaveEnabled(true);
-    }
-  }
-
-  // ⭐ MANUAL MODE SAVE
-  async function handleManualSave() {
-    if (!manualName || !manualDuration) return;
+    const basePayload =
+      mode === "manual"
+        ? {
+            mode: "manual",
+            sport: manualSport,
+            duration: manualDuration,
+            notes: manualNotes,
+          }
+        : {
+            mode: "generator",
+            sport,
+            category,
+            level,
+            drill,
+            duration,
+            notes,
+          };
 
     const payload = {
-      mode: "manual",
-      sport: manualName,
-      duration: manualDuration,
-      notes: manualNotes,
+      ...basePayload,
       timestamp: new Date().toISOString(),
       completed: true,
-      intensityScore: 0.5,
-      durationAccuracy: 0.9,
-      blockCompletion: {
-        warmup: 1,
-        main: 1,
-        finisher: 0,
-        cooldown: 1
-      }
     };
 
     try {
@@ -242,9 +178,9 @@ export default function Workouts() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         }
       );
 
@@ -256,362 +192,349 @@ export default function Workouts() {
       const data = await res.json();
       console.log("Workout saved:", data);
 
-      updatePersonalizationEngine(payload);
-      updateBehavior(payload);
-
-    } catch (err) {
-      console.error("Error saving workout:", err);
-    }
-
-    setManualName("");
-    setManualDuration("");
-    setManualNotes("");
-  }
-
-  // ⭐ GENERATOR MODE SAVE — PHASE 4 COMPLETE
-  async function handleSave() {
-    if (!saveEnabled || !cooldownStarted) return;
-
-    const payload = {
-      mode: "generator",
-      sport: workoutType,
-      category: CATEGORY_MAP[workoutType] || "",
-      level: "N/A",
-      drill: plan,
-      duration: duration,
-      notes: "",
-      timestamp: new Date().toISOString(),
-      completed: true
-    };
-
-    try {
-      const res = await fetch(
-        "https://delphiafit-backend-production.up.railway.app/workouts",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify(payload)
-        }
-      );
-
-      if (!res.ok) {
-        console.error("Failed to save workout");
-        return;
-      }
-
-      const data = await res.json();
-      console.log("Workout saved:", data);
-
-      // ⭐ AI LEARNING PAYLOAD
+      // ⭐ Phase 4 AI learning payload
       const workoutForAI = {
         ...payload,
+        intensityScore: 0.5,
+        durationAccuracy: 0.9,
         blockCompletion: {
-          warmup: blockElapsed.warmup > 0 ? 1 : 0,
-          main: blockElapsed.main > 0 ? 1 : 0,
-          finisher: blockElapsed.finisher > 0 ? 1 : 0,
-          cooldown: blockElapsed.cooldown > 0 ? 1 : 0
+          warmup: 1,
+          main: 1,
+          finisher: 0,
+          cooldown: 1,
         },
-        intensityScore: weightValue ? 0.7 : 0.4,
-        durationAccuracy: 0.8
       };
 
       updatePersonalizationEngine(workoutForAI);
       updateBehavior(workoutForAI);
-
     } catch (err) {
       console.error("Error saving workout:", err);
     }
-
-    setSaveEnabled(false);
-    setCurrentBlock(null);
-
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
   }
 
-  // ⭐ FULL UI BELOW — COMPLETE
-  const container = {
-    width: "100vw",
-    height: "100vh",
-    background: BLACK,
-    padding: "16px",
-    boxSizing: "border-box",
-    overflowY: "auto",
-    display: "flex",
-    justifyContent: "center"
-  };
+  // -----------------------------
+  // UI COLORS
+  // -----------------------------
+  const BACKGROUND = "#000000";
+  const TEXT = "#FFFFFF";
+  const ACCENT = "#B3FF00";
 
-  const inner = {
-    width: "360px",
-    maxWidth: "100%",
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px"
-  };
-
-  const label = {
-    color: SILVER,
-    fontSize: "16px",
-    marginBottom: "4px"
-  };
-
-  const field = {
-    background: BLACK,
-    color: SILVER,
-    border: "none",
-    borderBottom: `1px solid ${SILVER}`,
-    padding: "8px 4px",
-    fontSize: "16px",
-    outline: "none"
-  };
-
-  const clickable = {
-    color: SILVER,
-    fontSize: "18px",
-    textDecoration: "underline",
-    textAlign: "center",
-    cursor: "pointer"
-  };
-
-  const sectionHeader = {
-    color: SILVER,
-    fontSize: "18px",
-    marginTop: "8px",
-    marginBottom: "4px"
-  };
-
-  const timerRow = {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: "8px",
-    marginBottom: "4px"
-  };
-
-  const timerLabel = {
-    color: WHITE,
-    fontSize: "16px",
-    width: "60px"
-  };
-
-  const durationInput = {
-    ...field,
-    width: "60px",
-    textAlign: "center"
-  };
-
-  const exerciseText = {
-    color: WHITE,
-    fontSize: "16px",
-    marginBottom: "2px"
-  };
-
-  const footer = {
-    position: "fixed",
-    bottom: 0,
-    left: 0,
-    width: "100%",
-    height: "40px",
-    background: BLACK,
-    display: "flex",
-    alignItems: "center",
-    padding: "0 16px",
-    boxSizing: "border-box"
-  };
-
-  const saveStyle = {
-    color: saveEnabled ? SILVER : DISABLED_GRAY,
-    fontSize: "18px",
-    cursor: saveEnabled ? "pointer" : "default"
-  };
-
-  const returnStyle = {
-    color: SILVER,
-    fontSize: "18px",
-    textDecoration: "underline",
-    cursor: "pointer"
-  };
-
+  // -----------------------------
+  // RETURN UI
+  // -----------------------------
   return (
-    <div style={container}>
-      <div style={inner}>
-        <div style={clickable} onClick={openMenu}>
-          Menu
+    <div
+      style={{
+        backgroundColor: BACKGROUND,
+        minHeight: "100vh",
+        padding: "20px",
+        color: TEXT,
+        fontFamily: "sans-serif",
+        position: "relative",
+      }}
+    >
+      {/* MODE TOGGLE */}
+      <div style={{ display: "flex", marginBottom: "20px" }}>
+        <div
+          onClick={() => setMode("manual")}
+          style={{
+            flex: 1,
+            padding: "10px",
+            backgroundColor: mode === "manual" ? ACCENT : "#111",
+            color: mode === "manual" ? BACKGROUND : ACCENT,
+            border: `1px solid ${ACCENT}`,
+            borderRadius: "6px 0 0 6px",
+            fontWeight: "bold",
+            textAlign: "center",
+            cursor: "pointer",
+          }}
+        >
+          Manual
         </div>
 
-        {/* MODE SELECTOR */}
-        <div style={sectionHeader}>Mode</div>
-        <select
-          value={mode}
-          onChange={e => setMode(e.target.value)}
-          style={field}
+        <div
+          onClick={() => setMode("generator")}
+          style={{
+            flex: 1,
+            padding: "10px",
+            backgroundColor: mode === "generator" ? ACCENT : "#111",
+            color: mode === "generator" ? BACKGROUND : ACCENT,
+            border: `1px solid ${ACCENT}`,
+            borderRadius: "0 6px 6px 0",
+            fontWeight: "bold",
+            textAlign: "center",
+            cursor: "pointer",
+          }}
         >
-          <option value="generator">Generator</option>
-          <option value="manual">Manual</option>
-        </select>
-
-        {/* MANUAL MODE */}
-        {mode === "manual" && (
-          <>
-            <div style={label}>Workout Name</div>
-            <input
-              style={field}
-              value={manualName}
-              onChange={e => setManualName(e.target.value)}
-            />
-
-            <div style={label}>Duration</div>
-            <input
-              style={field}
-              value={manualDuration}
-              onChange={e => setManualDuration(e.target.value)}
-            />
-
-            <div style={label}>Notes</div>
-            <textarea
-              style={field}
-              value={manualNotes}
-              onChange={e => setManualNotes(e.target.value)}
-            />
-
-            <div style={clickable} onClick={handleManualSave}>
-              Save Manual Workout
-            </div>
-          </>
-        )}
-
-        {/* GENERATOR MODE */}
-        {mode === "generator" && (
-          <>
-            <div style={sectionHeader}>Workout Type</div>
-            <select
-              value={workoutType}
-              onChange={e => handleWorkoutTypeSelect(e.target.value)}
-              style={field}
-            >
-              <option value="">Select</option>
-              {UI_MAIN_CATEGORIES.map(cat => (
-                <optgroup key={cat} label={cat}>
-                  {UI_SUBCATEGORY_MAP[cat].map(sub => (
-                    <option key={sub} value={sub}>
-                      {sub}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-
-            <div style={sectionHeader}>Duration</div>
-            <select
-              value={duration}
-              onChange={e => setDuration(e.target.value)}
-              style={field}
-            >
-              <option value="15 min">15 min</option>
-              <option value="20 min">20 min</option>
-              <option value="30 min">30 min</option>
-              <option value="45 min">45 min</option>
-            </select>
-
-            {/* WEIGHT SECTION */}
-            {weightSectionEnabled && (
-              <>
-                <div style={sectionHeader}>Weight</div>
-                <input
-                  style={field}
-                  value={weightValue}
-                  onChange={e => setWeightValue(e.target.value)}
-                  placeholder="Enter weight"
-                />
-                <select
-                  value={weightUnit}
-                  onChange={e => setWeightUnit(e.target.value)}
-                  style={field}
-                >
-                  <option value="lbs">lbs</option>
-                  <option value="kg">kg</option>
-                </select>
-              </>
-            )}
-
-            <div style={clickable} onClick={handleGenerate}>
-              Generate Workout
-            </div>
-
-            {/* WORKOUT PLAN */}
-            <div style={sectionHeader}>Warmup</div>
-            {plan.warmup.map((ex, i) => (
-              <div key={i} style={exerciseText}>
-                {ex}
-              </div>
-            ))}
-
-            <div style={sectionHeader}>Main</div>
-            {plan.main.map((ex, i) => (
-              <div key={i} style={exerciseText}>
-                {ex}
-              </div>
-            ))}
-
-            <div style={sectionHeader}>Finisher</div>
-            {plan.finisher.map((ex, i) => (
-              <div key={i} style={exerciseText}>
-                {ex}
-              </div>
-            ))}
-
-            <div style={sectionHeader}>Cooldown</div>
-            {plan.cooldown.map((ex, i) => (
-              <div key={i} style={exerciseText}>
-                {ex}
-              </div>
-            ))}
-
-            {/* TIMERS */}
-            <div style={sectionHeader}>Timers</div>
-
-            {["warmup", "main", "finisher", "cooldown"].map(key => (
-              <div key={key} style={timerRow}>
-                <div style={timerLabel}>{key.toUpperCase()}</div>
-                <input
-                  style={durationInput}
-                  value={blockDurations[key]}
-                  onChange={e =>
-                    setBlockDurations(prev => ({
-                      ...prev,
-                      [key]: e.target.value
-                    }))
-                  }
-                />
-                <div style={timerLabel}>{formatTimer(blockElapsed[key])}</div>
-                <div
-                  style={clickable}
-                  onClick={() => handleStartBlock(key)}
-                >
-                  Start
-                </div>
-              </div>
-            ))}
-          </>
-        )}
+          Generator
+        </div>
       </div>
 
-      {/* FOOTER */}
-      <div style={footer}>
-        <div style={returnStyle} onClick={openMenu}>
-          Return
-        </div>
+      {/* ----------------------------- */}
+      {/* MANUAL MODE (A) */}
+      {/* ----------------------------- */}
+      {mode === "manual" && (
         <div
-          style={saveStyle}
-          onClick={saveEnabled ? handleSave : undefined}
+          style={{
+            padding: "15px",
+            backgroundColor: "#111",
+            borderRadius: "6px",
+            border: `1px solid ${ACCENT}`,
+          }}
         >
-          Save
+          <label style={{ color: ACCENT }}>Sport Performed</label>
+          <input
+            type="text"
+            value={manualSport}
+            onChange={(e) => setManualSport(e.target.value)}
+            placeholder="e.g., Basketball Shooting Drills"
+            style={{
+              width: "100%",
+              padding: "10px",
+              marginTop: "8px",
+              backgroundColor: "#000",
+              color: ACCENT,
+              border: `1px solid ${ACCENT}`,
+              borderRadius: "6px",
+            }}
+          />
+
+          <label style={{ color: ACCENT, marginTop: "15px", display: "block" }}>
+            Duration (minutes)
+          </label>
+          <input
+            type="number"
+            value={manualDuration}
+            onChange={(e) => setManualDuration(e.target.value)}
+            placeholder="e.g., 45"
+            style={{
+              width: "100%",
+              padding: "10px",
+              marginTop: "8px",
+              backgroundColor: "#000",
+              color: ACCENT,
+              border: `1px solid ${ACCENT}`,
+              borderRadius: "6px",
+            }}
+          />
+
+          <label style={{ color: ACCENT, marginTop: "15px", display: "block" }}>
+            Notes
+          </label>
+          <textarea
+            value={manualNotes}
+            onChange={(e) => setManualNotes(e.target.value)}
+            placeholder="Optional notes about the workout"
+            style={{
+              width: "100%",
+              padding: "10px",
+              marginTop: "8px",
+              backgroundColor: "#000",
+              color: ACCENT,
+              border: `1px solid ${ACCENT}`,
+              borderRadius: "6px",
+              minHeight: "80px",
+            }}
+          />
         </div>
+      )}
+
+      {/* ----------------------------- */}
+      {/* GENERATOR MODE (C) */}
+      {/* ----------------------------- */}
+      {mode === "generator" && (
+        <>
+          {/* SPORT SELECTOR */}
+          <div style={{ marginBottom: "20px" }}>
+            <label style={{ color: ACCENT }}>Sport</label>
+            <select
+              value={sport}
+              onChange={(e) => setSport(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px",
+                marginTop: "8px",
+                backgroundColor: "#111",
+                color: ACCENT,
+                border: `1px solid ${ACCENT}`,
+                borderRadius: "6px",
+              }}
+            >
+              <option value="">Select Sport</option>
+              {sportsList.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* CATEGORY SELECTOR */}
+          {sport && (
+            <div style={{ marginBottom: "20px" }}>
+              <label style={{ color: ACCENT }}>Category</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  marginTop: "8px",
+                  backgroundColor: "#111",
+                  color: ACCENT,
+                  border: `1px solid ${ACCENT}`,
+                  borderRadius: "6px",
+                }}
+              >
+                <option value="">Select Category</option>
+                {categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* LEVEL SELECTOR */}
+          {category && (
+            <div style={{ marginBottom: "20px" }}>
+              <label style={{ color: ACCENT }}>Skill Level</label>
+              <select
+                value={level}
+                onChange={(e) => setLevel(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  marginTop: "8px",
+                  backgroundColor: "#111",
+                  color: ACCENT,
+                  border: `1px solid ${ACCENT}`,
+                  borderRadius: "6px",
+                }}
+              >
+                <option value="">Select Level</option>
+                {levels.map((lvl) => (
+                  <option key={lvl} value={lvl}>
+                    {lvl}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* GENERATE DRILL */}
+          {level && (
+            <div
+              onClick={handleGenerate}
+              style={{
+                width: "100%",
+                padding: "12px",
+                backgroundColor: ACCENT,
+                color: BACKGROUND,
+                borderRadius: "6px",
+                fontWeight: "bold",
+                marginTop: "10px",
+                textAlign: "center",
+                cursor: "pointer",
+              }}
+            >
+              Generate Drill
+            </div>
+          )}
+
+          {/* DRILL RESULT */}
+          {drill && (
+            <div
+              style={{
+                marginTop: "20px",
+                padding: "15px",
+                backgroundColor: "#111",
+                borderRadius: "6px",
+                border: `1px solid ${ACCENT}`,
+              }}
+            >
+              <p style={{ color: ACCENT, marginBottom: "8px" }}>Drill</p>
+              <p>{drill}</p>
+            </div>
+          )}
+
+          {/* DURATION */}
+          {drill && (
+            <div style={{ marginTop: "20px" }}>
+              <label style={{ color: ACCENT }}>Duration (minutes)</label>
+              <input
+                type="number"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                placeholder="e.g., 30"
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  marginTop: "8px",
+                  backgroundColor: "#000",
+                  color: ACCENT,
+                  border: `1px solid ${ACCENT}`,
+                  borderRadius: "6px",
+                }}
+              />
+            </div>
+          )}
+
+          {/* NOTES */}
+          {drill && (
+            <div style={{ marginTop: "20px" }}>
+              <label style={{ color: ACCENT }}>Notes</label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Optional notes about the workout"
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  marginTop: "8px",
+                  backgroundColor: "#000",
+                  color: ACCENT,
+                  border: `1px solid ${ACCENT}`,
+                  borderRadius: "6px",
+                  minHeight: "80px",
+                }}
+              />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* SAVE WORKOUT (BOTTOM LEFT) */}
+      <div
+        onClick={handleSaveWorkout}
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          left: "20px",
+          color: ACCENT,
+          cursor: "pointer",
+          textDecoration: "underline",
+          fontSize: "18px",
+        }}
+      >
+        Save Workout
+      </div>
+
+      {/* RETURN TO MENU (BOTTOM RIGHT) */}
+      <div
+        onClick={openMenu}
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          color: ACCENT,
+          cursor: "pointer",
+          textDecoration: "underline",
+          fontSize: "18px",
+        }}
+      >
+        Return to Menu
       </div>
     </div>
   );
