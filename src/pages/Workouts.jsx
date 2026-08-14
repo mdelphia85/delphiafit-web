@@ -598,34 +598,12 @@ export default function Workouts() {
 
       
       {/* SAVE WORKOUT (BOTTOM LEFT) */}
-      <div
-        onClick={handleSaveWorkout}
-        style={{
-          position: "fixed",
-          bottom: "20px",
-          left: "20px",
-          color: ACCENT,
-          cursor: "pointer",
-          textDecoration: "underline",
-          fontSize: "18px",
-        }}
-      >
+      <div onClick={handleSave} style={saveStyle}>
         Save Workout
       </div>
 
       {/* RETURN TO MENU (BOTTOM RIGHT) */}
-      <div
-        onClick={openMenu}
-        style={{
-          position: "fixed",
-          bottom: "20px",
-          right: "20px",
-          color: ACCENT,
-          cursor: "pointer",
-          textDecoration: "underline",
-          fontSize: "18px",
-        }}
-      >
+      <div onClick={openMenu} style={returnStyle}>
         Return to Menu
       </div>
     </div>
