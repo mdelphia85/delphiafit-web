@@ -412,24 +412,31 @@ export default function Workouts() {
   };
 
   // ⭐ FIXED FOOTER — MATCHES YOUR OTHER PAGE EXACTLY
+  const footerBar = {
+    position: "fixed",
+    left: "0",
+    right: "0",
+    bottom: "20px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "0 20px",
+    boxSizing: "border-box",
+    width: "100vw"
+  };
+
   const saveStyle = {
     color: saveEnabled ? SILVER : DISABLED_GRAY,
     fontSize: "18px",
     textDecoration: "underline",
-    cursor: saveEnabled ? "pointer" : "default",
-    position: "fixed",
-    bottom: "20px",
-    left: "20px"
+    cursor: saveEnabled ? "pointer" : "default"
   };
 
   const returnStyle = {
     color: SILVER,
     fontSize: "18px",
     textDecoration: "underline",
-    cursor: "pointer",
-    position: "fixed",
-    bottom: "20px",
-    right: "20px"
+    cursor: "pointer"
   };
 
   return (
@@ -597,14 +604,14 @@ export default function Workouts() {
       </div>
 
       
-      {/* SAVE WORKOUT (BOTTOM LEFT) */}
-      <div onClick={handleSave} style={saveStyle}>
-        Save Workout
-      </div>
+      <div style={footerBar}>
+        <div onClick={handleSave} style={saveStyle}>
+          Save Workout
+        </div>
 
-      {/* RETURN TO MENU (BOTTOM RIGHT) */}
-      <div onClick={openMenu} style={returnStyle}>
-        Return to Menu
+        <div onClick={openMenu} style={returnStyle}>
+          Return to Menu
+        </div>
       </div>
     </div>
   );
