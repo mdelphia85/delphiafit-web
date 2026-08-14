@@ -411,32 +411,25 @@ export default function Workouts() {
     marginBottom: "2px"
   };
 
-  // ⭐ FIXED FOOTER — ONLY CHANGE MADE
-  const footer = {
-    position: "fixed",
-    bottom: 0,
-    left: 0,
-    width: "100%",
-    height: "40px",
-    background: BLACK,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between", // ⭐ FIXED
-    padding: "0 16px",
-    boxSizing: "border-box"
-  };
-
+  // ⭐ FIXED FOOTER — MATCHES YOUR OTHER PAGE EXACTLY
   const saveStyle = {
     color: saveEnabled ? SILVER : DISABLED_GRAY,
     fontSize: "18px",
-    cursor: saveEnabled ? "pointer" : "default"
+    textDecoration: "underline",
+    cursor: saveEnabled ? "pointer" : "default",
+    position: "fixed",
+    bottom: "20px",
+    left: "20px"
   };
 
   const returnStyle = {
     color: SILVER,
     fontSize: "18px",
     textDecoration: "underline",
-    cursor: "pointer"
+    cursor: "pointer",
+    position: "fixed",
+    bottom: "20px",
+    right: "20px"
   };
 
   return (
@@ -603,21 +596,19 @@ export default function Workouts() {
         )}
       </div>
 
-      {/* ⭐ FIXED FOOTER */}
-      <div style={footer}>
-        <div
-          style={saveStyle}
-          onClick={saveEnabled ? handleSave : undefined}
-        >
-          Save
-        </div>
+      {/* ⭐ FIXED FOOTER — EXACTLY LIKE YOUR OTHER PAGE */}
+      <div
+        style={saveStyle}
+        onClick={saveEnabled ? handleSave : undefined}
+      >
+        Save
+      </div>
 
-        <div
-          style={returnStyle}
-          onClick={openMenu}
-        >
-          Return to Menu
-        </div>
+      <div
+        style={returnStyle}
+        onClick={openMenu}
+      >
+        Return to Menu
       </div>
     </div>
   );
