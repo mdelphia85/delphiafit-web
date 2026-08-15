@@ -87,6 +87,31 @@ import Firefighters from "./pages/Firefighters.jsx";
 import EMS from "./pages/EMS.jsx";
 import Military from "./pages/Military.jsx";
 import Police from "./pages/Police.jsx";
+// TACTICAL SPECIALIZED TRAINING
+import K9Operations from "./pages/K9Operations.jsx";
+import SearchRescue from "./pages/SearchRescue.jsx";
+import DisasterResponse from "./pages/DisasterResponse.jsx";
+import MaritimeOperations from "./pages/MaritimeOperations.jsx";
+import AviationCrewReadiness from "./pages/AviationCrewReadiness.jsx";
+import HazmatCBRN from "./pages/HazmatCBRN.jsx";
+import WildlandFire from "./pages/WildlandFire.jsx";
+import TacticalFitnessCivilian from "./pages/TacticalFitnessCivilian.jsx";
+
+// ACADEMY PREP
+import FireAcademyPrep from "./pages/FireAcademyPrep.jsx";
+import PoliceAcademyPrep from "./pages/PoliceAcademyPrep.jsx";
+import EMTParamedicPrep from "./pages/EMTParamedicPrep.jsx";
+import MilitaryBootcampPrep from "./pages/MilitaryBootcampPrep.jsx";
+import SOFSelectionPrep from "./pages/SOFSelectionPrep.jsx";
+import SWATSelectionPrep from "./pages/SWATSelectionPrep.jsx";
+
+// TACTICAL CORE SYSTEMS
+import ScenarioSimulator from "./pages/ScenarioSimulator.jsx";
+import LoadoutsManager from "./pages/LoadoutsManager.jsx";
+import InstructorPortal from "./pages/InstructorPortal.jsx";
+import MissionReplay from "./pages/MissionReplay.jsx";
+import CertificationsTracker from "./pages/CertificationsTracker.jsx";
+import UnitBuilder from "./pages/UnitBuilder.jsx";
 
 import { MenuProvider, MenuContext } from "./context/MenuContext.jsx";
 
@@ -202,6 +227,33 @@ function MenuOverlay() {
       <MenuItem label="Military" onClick={() => go("/tactical/military")} />
       <MenuItem label="Police" onClick={() => go("/tactical/police")} />
 
+  {/* TACTICAL SPECIALIZED TRAINING */}
+  <MenuItem label="K9 Operations" onClick={() => go("/tactical/k9-operations")} />
+  <MenuItem label="Search & Rescue" onClick={() => go("/tactical/search-rescue")} />
+  <MenuItem label="Disaster Response" onClick={() => go("/tactical/disaster-response")} />
+  <MenuItem label="Maritime Operations" onClick={() => go("/tactical/maritime-operations")} />
+  <MenuItem label="Aviation Crew Readiness" onClick={() => go("/tactical/aviation-crew")} />
+  <MenuItem label="Hazmat & CBRN" onClick={() => go("/tactical/hazmat-cbrn")} />
+  <MenuItem label="Wildland Fire" onClick={() => go("/tactical/wildland-fire")} />
+  <MenuItem label="Tactical Fitness" onClick={() => go("/tactical/fitness-civilian")} />
+
+  {/* ACADEMY PREP */}
+  <MenuItem label="Fire Academy Prep" onClick={() => go("/tactical/fire-academy")} />
+  <MenuItem label="Police Academy Prep" onClick={() => go("/tactical/police-academy")} />
+  <MenuItem label="EMT/Paramedic Prep" onClick={() => go("/tactical/emt-paramedic")} />
+  <MenuItem label="Military Bootcamp Prep" onClick={() => go("/tactical/military-bootcamp")} />
+  <MenuItem label="SOF Selection Prep" onClick={() => go("/tactical/sof-selection")} />
+  <MenuItem label="SWAT Selection Prep" onClick={() => go("/tactical/swat-selection")} />
+
+  {/* TACTICAL CORE SYSTEMS */}
+  <MenuItem label="Scenario Simulator" onClick={() => go("/tactical/scenario-simulator")} />
+  <MenuItem label="Loadouts Manager" onClick={() => go("/tactical/loadouts")} />
+  <MenuItem label="Team Operations" onClick={() => go("/tactical/team-ops")} />
+  <MenuItem label="Instructor Portal" onClick={() => go("/tactical/instructor")} />
+  <MenuItem label="Mission Replay" onClick={() => go("/tactical/mission-replay")} />
+  <MenuItem label="Certifications" onClick={() => go("/tactical/certifications")} />
+  <MenuItem label="Unit Builder" onClick={() => go("/tactical/unit-builder")} />
+
       {/* UPDATED SETTINGS ROUTE */}
       <MenuItem label="Settings" onClick={() => go("/settings")} />
 
@@ -305,6 +357,33 @@ function AppWithMenu() {
       <Route path="/tactical/ems" element={<EMS />} />
       <Route path="/tactical/military" element={<Military />} />
       <Route path="/tactical/police" element={<Police />} />
+      
+  {/* TACTICAL SPECIALIZED TRAINING */}
+  <Route path="/tactical/k9-operations" element={<K9Operations />} />
+  <Route path="/tactical/search-rescue" element={<SearchRescue />} />
+  <Route path="/tactical/disaster-response" element={<DisasterResponse />} />
+  <Route path="/tactical/maritime-operations" element={<MaritimeOperations />} />
+  <Route path="/tactical/aviation-crew" element={<AviationCrewReadiness />} />
+  <Route path="/tactical/hazmat-cbrn" element={<HazmatCBRN />} />
+  <Route path="/tactical/wildland-fire" element={<WildlandFire />} />
+  <Route path="/tactical/fitness-civilian" element={<TacticalFitnessCivilian />} />
+      
+  {/* ACADEMY PREP */}
+  <Route path="/tactical/fire-academy" element={<FireAcademyPrep />} />
+  <Route path="/tactical/police-academy" element={<PoliceAcademyPrep />} />
+  <Route path="/tactical/emt-paramedic" element={<EMTParamedicPrep />} />
+  <Route path="/tactical/military-bootcamp" element={<MilitaryBootcampPrep />} />
+  <Route path="/tactical/sof-selection" element={<SOFSelectionPrep />} />
+  <Route path="/tactical/swat-selection" element={<SWATSelectionPrep />} />
+      
+  {/* TACTICAL CORE SYSTEMS */}
+  <Route path="/tactical/scenario-simulator" element={<ScenarioSimulator />} />
+  <Route path="/tactical/loadouts" element={<LoadoutsManager />} />
+  <Route path="/tactical/team-ops" element={<TeamOperations />} />
+  <Route path="/tactical/instructor" element={<InstructorPortal />} />
+  <Route path="/tactical/mission-replay" element={<MissionReplay />} />
+  <Route path="/tactical/certifications" element={<CertificationsTracker />} />
+  <Route path="/tactical/unit-builder" element={<UnitBuilder />} />
 
       {/* ADMIN */}
       <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
