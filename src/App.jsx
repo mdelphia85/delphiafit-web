@@ -47,6 +47,20 @@ import RecruitingProfiles from "./pages/RecruitingProfiles.jsx";
 import CompetitionEvents from "./pages/CompetitionEvents.jsx";
 import PermissionsLayer from "./pages/PermissionsLayer.jsx";
 import OrganizationLayer from "./pages/OrganizationLayer.jsx";
+import GlobalCompetition from "./pages/GlobalCompetition.jsx";
+import FederationLayer from "./pages/FederationLayer.jsx";
+import AIPerformanceLab from "./pages/AIPerformanceLab.jsx";
+import MedicalRehab from "./pages/MedicalRehab.jsx";
+import DelphiaLive from "./pages/DelphiaLive.jsx";
+import AIMediaEngine from "./pages/AIMediaEngine.jsx";
+import CloudOS from "./pages/CloudOS.jsx";
+import IntelligenceGraph from "./pages/IntelligenceGraph.jsx";
+import AutonomousCoaching from "./pages/AutonomousCoaching.jsx";
+import DelphiaWorld from "./pages/DelphiaWorld.jsx";
+import EnterpriseCloud from "./pages/EnterpriseCloud.jsx";
+import GovernmentMilitary from "./pages/GovernmentMilitary.jsx";
+import GlobalHealthNetwork from "./pages/GlobalHealthNetwork.jsx";
+import AutonomousEcosystem from "./pages/AutonomousEcosystem.jsx";
 import About from "./pages/About.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
@@ -182,6 +196,21 @@ function MenuOverlay() {
       <MenuItem label="Permissions" onClick={() => go("/permissions")} />
       <MenuItem label="Organization" onClick={() => go("/organization")} />
 
+      <MenuItem label="Global Competitions" onClick={() => go("/global-competitions")} />
+      <MenuItem label="Federations" onClick={() => go("/federations")} />
+      <MenuItem label="Performance Lab" onClick={() => go("/performance-lab")} />
+      <MenuItem label="Medical + Rehab" onClick={() => go("/medical-rehab")} />
+      <MenuItem label="DelphiaFit LIVE" onClick={() => go("/delphia-live")} />
+      <MenuItem label="AI Media Engine" onClick={() => go("/ai-media")} />
+      <MenuItem label="Cloud OS" onClick={() => go("/cloud-os")} />
+      <MenuItem label="Intelligence Graph" onClick={() => go("/intelligence-graph")} />
+      <MenuItem label="Autonomous Coaching" onClick={() => go("/autonomous-coaching")} />
+      <MenuItem label="DelphiaFit World" onClick={() => go("/delphia-world")} />
+      <MenuItem label="Enterprise Cloud" onClick={() => go("/enterprise-cloud")} />
+      <MenuItem label="Government + Military" onClick={() => go("/government-military")} />
+      <MenuItem label="Global Health" onClick={() => go("/global-health")} />
+      <MenuItem label="Autonomous Ecosystem" onClick={() => go("/autonomous-ecosystem")} />
+
       <MenuItem label="About" onClick={() => go("/about")} />
 
       <MenuItem label="Firefighters" onClick={() => go("/tactical/firefighters")} />
@@ -278,6 +307,20 @@ function AppWithMenu() {
       <Route path="/competition-events" element={<CompetitionEvents />} />
       <Route path="/permissions" element={<PermissionsLayer />} />
       <Route path="/organization" element={<OrganizationLayer />} />
+      <Route path="/global-competitions" element={<GlobalCompetition />} />
+      <Route path="/federations" element={<FederationLayer />} />
+      <Route path="/performance-lab" element={<AIPerformanceLab />} />
+      <Route path="/medical-rehab" element={<MedicalRehab />} />
+      <Route path="/delphia-live" element={<DelphiaLive />} />
+      <Route path="/ai-media" element={<AIMediaEngine />} />
+      <Route path="/cloud-os" element={<CloudOS />} />
+      <Route path="/intelligence-graph" element={<IntelligenceGraph />} />
+      <Route path="/autonomous-coaching" element={<AutonomousCoaching />} />
+      <Route path="/delphia-world" element={<DelphiaWorld />} />
+      <Route path="/enterprise-cloud" element={<EnterpriseCloud />} />
+      <Route path="/government-military" element={<GovernmentMilitary />} />
+      <Route path="/global-health" element={<GlobalHealthNetwork />} />
+      <Route path="/autonomous-ecosystem" element={<AutonomousEcosystem />} />
       <Route path="/about" element={<About />} />
       <Route path="/daily-log" element={<DailyLog />} />
 
