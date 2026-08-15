@@ -11,7 +11,7 @@ const streaks = [
 ];
 
 export default function Streaks() {
-  const { openMenu } = useContext(MenuContext);
+  const { setMenuOpen } = useContext(MenuContext);
 
   const BLACK = "rgb(0,0,0)";
   const BLUE = "#4464FF";
@@ -26,7 +26,8 @@ export default function Streaks() {
         boxSizing: "border-box",
         display: "flex",
         justifyContent: "center",
-        overflowY: "auto"
+        overflowY: "auto",
+        color: "#fff"
       }}
     >
       <div
@@ -95,7 +96,7 @@ export default function Streaks() {
             textDecoration: "underline",
             cursor: "pointer"
           }}
-          onClick={openMenu}
+          onClick={() => setMenuOpen(true)}
         >
           Return to Menu
         </div>
