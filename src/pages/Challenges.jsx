@@ -17,7 +17,7 @@ export default function Challenges() {
     <div
       style={{
         minHeight: "100vh",
-        width: "100vw",
+        width: "100%",
         backgroundColor: "black",
         padding: "20px 20px 90px",
         overflowY: "auto",
