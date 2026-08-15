@@ -23,6 +23,10 @@ import Challenges from "./pages/Challenges.jsx";
 import Achievements from "./pages/Achievements.jsx";
 import Streaks from "./pages/Streaks.jsx";
 import Groups from "./pages/Groups.jsx";
+import Periodization from "./pages/Periodization.jsx";
+import Recovery from "./pages/Recovery.jsx";
+import PerformanceDashboard from "./pages/PerformanceDashboard.jsx";
+import AthleteAnalytics from "./pages/AthleteAnalytics.jsx";
 import About from "./pages/About.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
@@ -130,6 +134,11 @@ function MenuOverlay() {
       <MenuItem label="Achievements" onClick={() => go("/achievements")} />
       <MenuItem label="Streaks" onClick={() => go("/streaks")} />
       <MenuItem label="Groups" onClick={() => go("/groups")} />
+
+      <MenuItem label="Periodization" onClick={() => go("/periodization")} />
+      <MenuItem label="Recovery" onClick={() => go("/recovery")} />
+      <MenuItem label="Performance" onClick={() => go("/performance")} />
+      <MenuItem label="Analytics" onClick={() => go("/analytics")} />
       <MenuItem label="About" onClick={() => go("/about")} />
 
       <MenuItem label="Firefighters" onClick={() => go("/tactical/firefighters")} />
@@ -202,6 +211,10 @@ function AppWithMenu() {
       <Route path="/achievements" element={<Achievements />} />
       <Route path="/streaks" element={<Streaks />} />
       <Route path="/groups" element={<Groups />} />
+      <Route path="/periodization" element={<Periodization />} />
+      <Route path="/recovery" element={<Recovery />} />
+      <Route path="/performance" element={<PerformanceDashboard />} />
+      <Route path="/analytics" element={<AthleteAnalytics />} />
       <Route path="/about" element={<About />} />
       <Route path="/daily-log" element={<DailyLog />} />
 
