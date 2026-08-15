@@ -28,6 +28,9 @@ import Recovery from "./pages/Recovery.jsx";
 import PerformanceDashboard from "./pages/PerformanceDashboard.jsx";
 import AthleteAnalytics from "./pages/AthleteAnalytics.jsx";
 import CoachDashboard from "./pages/CoachDashboard.jsx";
+import CoachLogin from "./pages/CoachLogin.jsx";
+import CoachInviteAccept from "./pages/CoachInviteAccept.jsx";
+import CoachPasswordReset from "./pages/CoachPasswordReset.jsx";
 import ClientManagement from "./pages/ClientManagement.jsx";
 import PlanBuilder from "./pages/PlanBuilder.jsx";
 import CoachMessaging from "./pages/CoachMessaging.jsx";
@@ -189,7 +192,7 @@ function MenuOverlay() {
       <MenuItem label="Performance" onClick={() => go("/performance")} />
       <MenuItem label="Analytics" onClick={() => go("/analytics")} />
 
-      <MenuItem label="Coach Hub" onClick={() => go("/coach-dashboard")} />
+      <MenuItem label="Coach Hub Login" onClick={() => go("/coach-login")} />
       <MenuItem label="My Clients" onClick={() => go("/client-management")} />
       <MenuItem label="Plan Builder" onClick={() => go("/plan-builder")} />
       <MenuItem label="Drill Library" onClick={() => go("/drill-library")} />
@@ -322,6 +325,9 @@ function AppWithMenu() {
       <Route path="/performance" element={<PerformanceDashboard />} />
       <Route path="/analytics" element={<AthleteAnalytics />} />
       <Route path="/coach-dashboard" element={<CoachDashboard />} />
+      <Route path="/coach-login" element={<CoachLogin />} />
+      <Route path="/coach/invite" element={<CoachInviteAccept />} />
+      <Route path="/coach/password-reset" element={<CoachPasswordReset />} />
       <Route path="/client-management" element={<ClientManagement />} />
       <Route path="/plan-builder" element={<PlanBuilder />} />
       <Route path="/coach-messaging" element={<CoachMessaging />} />

@@ -1,35 +1,73 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.jsx";
-
-const coachStats = {
-  totalClients: 12,
-  activePrograms: 8,
-  messagesUnread: 3,
-  weeklyHours: 18.5
-};
-
-const recentClients = [
-  { id: 1, name: "Alex Johnson", program: "Strength Building", status: "Active", progress: 72 },
-  { id: 2, name: "Sarah Chen", program: "Marathon Training", status: "Active", progress: 85 },
-  { id: 3, name: "Mike Davis", program: "Sport Performance", status: "Paused", progress: 60 }
-];
 
 export default function CoachDashboard() {
   const navigate = useNavigate();
   const { setMenuOpen } = useContext(MenuContext);
-  const [view, setView] = useState("overview");
-  const token = localStorage.getItem("token");
+  const [teamData, setTeamData] = useState(null);
+  const [availableTeams, setAvailableTeams] = useState([]);
+  const [activeTeamId, setActiveTeamId] = useState(localStorage.getItem("coachTeamId") || "");
+  const [errorMessage, setErrorMessage] = useState("");
+  const token = localStorage.getItem("coachToken");
 
   const COACH_COLOR = "#ec4899";
   const BLACK = "#000";
   const WHITE = "#fff";
 
-  React.useEffect(() => {
-    if (!token) navigate("/login");
-  }, [navigate, token]);
+  useEffect(() => {
+    if (!token) {
+      navigate("/coach-login");
+      return;
+    }
+
+    async function loadTeam() {
+      try {
+        const teamQuery = activeTeamId ? `?team_id=${encodeURIComponent(activeTeamId)}` : "";
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/coach/team${teamQuery}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem("coachToken");
+          localStorage.removeItem("coachEmail");
+          localStorage.removeItem("coachId");
+          localStorage.removeItem("coachTeamId");
+          navigate("/coach-login");
+          return;
+        }
+
+        if (!res.ok) throw new Error("Unable to load team data.");
+
+        const data = await res.json();
+        const teams = data.available_teams || data.availableTeams || data.teams || [];
+        setAvailableTeams(teams);
+        if (!activeTeamId && (data.team_id || data.teamId)) {
+          const initialTeamId = String(data.team_id || data.teamId);
+          setActiveTeamId(initialTeamId);
+          localStorage.setItem("coachTeamId", initialTeamId);
+        }
+        setTeamData(data);
+      } catch (error) {
+        setErrorMessage("Unable to load your team data.");
+      }
+    }
+
+    loadTeam();
+  }, [activeTeamId, navigate, token]);
 
   if (!token) return null;
+
+  if (!teamData && !errorMessage) {
+    return <StatusScreen message="Loading your team..." />;
+  }
+
+  if (errorMessage) {
+    return <StatusScreen message={errorMessage} />;
+  }
+
+  const coachStats = teamData.stats || {};
+  const recentClients = teamData.clients || [];
 
   return (
     <div
@@ -50,6 +88,29 @@ export default function CoachDashboard() {
         <div style={{ textAlign: "center", marginBottom: "20px" }}>
           <div style={{ color: COACH_COLOR, fontSize: "28px", fontWeight: "700" }}>🏆 Coach Hub</div>
         </div>
+
+        {availableTeams.length > 1 && (
+          <div style={{ marginBottom: "20px" }}>
+            <label htmlFor="coach-team" style={{ display: "block", color: "#999", fontSize: "12px", marginBottom: "6px" }}>
+              Active Team
+            </label>
+            <select
+              id="coach-team"
+              value={activeTeamId}
+              onChange={(event) => {
+                setTeamData(null);
+                setErrorMessage("");
+                setActiveTeamId(event.target.value);
+                localStorage.setItem("coachTeamId", event.target.value);
+              }}
+              style={{ width: "100%", padding: "10px", background: "#111", color: WHITE, border: `1px solid ${COACH_COLOR}`, borderRadius: "6px" }}
+            >
+              {availableTeams.map((team) => (
+                <option key={team.id} value={team.id}>{team.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Coach Stats */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
@@ -208,6 +269,14 @@ export default function CoachDashboard() {
           Return to Menu
         </div>
       </div>
+    </div>
+  );
+}
+
+function StatusScreen({ message }) {
+  return (
+    <div style={{ minHeight: "100vh", background: "#000", color: "#ec4899", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", textAlign: "center" }}>
+      {message}
     </div>
   );
 }
