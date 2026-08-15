@@ -1,28 +1,89 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.jsx";
 
-const clientList = [
-  { id: 1, name: "Alex Johnson", status: "Active", joinDate: "2026-06-15", email: "alex@example.com" },
-  { id: 2, name: "Sarah Chen", status: "Active", joinDate: "2026-05-20", email: "sarah@example.com" },
-  { id: 3, name: "Mike Davis", status: "Paused", joinDate: "2026-04-10", email: "mike@example.com" }
-];
-
 export default function ClientManagement() {
+  const navigate = useNavigate();
   const { setMenuOpen } = useContext(MenuContext);
-  const [clients, setClients] = useState(clientList);
+  const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
   const [newClientEmail, setNewClientEmail] = useState("");
+  const [status, setStatus] = useState("loading");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const COACH_COLOR = "#ec4899";
   const BLACK = "#000";
   const WHITE = "#fff";
+  const staffToken = localStorage.getItem("coachToken") || localStorage.getItem("trainerToken");
 
-  const handleInviteClient = () => {
-    if (newClientEmail.trim()) {
-      alert(`Invitation sent to ${newClientEmail}`);
+  useEffect(() => {
+    if (!staffToken) {
+      navigate("/coach-login");
+      return;
+    }
+
+    async function loadClients() {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/staff/clients`, {
+          headers: { Authorization: `Bearer ${staffToken}` }
+        });
+
+        if (res.status === 401 || res.status === 403) {
+          navigate("/coach-login");
+          return;
+        }
+
+        if (!res.ok) throw new Error("Unable to load clients.");
+        const data = await res.json();
+        setClients(data.clients || []);
+        setStatus("ready");
+      } catch (error) {
+        setStatus("error");
+        setErrorMessage("Unable to load assigned clients.");
+      }
+    }
+
+    loadClients();
+  }, [navigate, staffToken]);
+
+  async function handleInviteClient() {
+    if (!newClientEmail.trim() || !staffToken) return;
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/staff/clients/invite`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${staffToken}` },
+        body: JSON.stringify({ email: newClientEmail.trim() })
+      });
+
+      if (!res.ok) throw new Error("Invitation failed.");
       setNewClientEmail("");
+    } catch (error) {
+      setErrorMessage("Unable to invite this client.");
+    }
+  }
+
+  async function removeClient(clientId) {
+    if (!staffToken) return;
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/staff/clients/${clientId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${staffToken}` }
+      });
+
+      if (!res.ok) throw new Error("Remove failed.");
+      setClients((prev) => prev.filter((client) => client.id !== clientId));
+      setSelectedClient(null);
+    } catch (error) {
+      setErrorMessage("Unable to remove this client.");
     }
   };
+
+  if (!staffToken) return null;
+
+  if (status === "loading") return <StatusScreen message="Loading assigned clients..." />;
+  if (status === "error") return <StatusScreen message={errorMessage} />;
 
   return (
     <div
@@ -88,6 +149,7 @@ export default function ClientManagement() {
 
             {/* Client List */}
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {clients.length === 0 && <div style={{ color: "#999", textAlign: "center", padding: "20px" }}>No assigned clients.</div>}
               {clients.map((client) => (
                 <div
                   key={client.id}
@@ -173,6 +235,7 @@ export default function ClientManagement() {
 
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <button
+                onClick={() => removeClient(selectedClient.id)}
                 style={{
                   padding: "12px",
                   background: COACH_COLOR,
@@ -248,6 +311,14 @@ export default function ClientManagement() {
           Return to Menu
         </div>
       </div>
+    </div>
+  );
+}
+
+function StatusScreen({ message }) {
+  return (
+    <div style={{ minHeight: "100vh", background: "#000", color: "#ec4899", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", textAlign: "center" }}>
+      {message}
     </div>
   );
 }
