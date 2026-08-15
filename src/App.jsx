@@ -56,7 +56,6 @@ import GovernmentMilitary from "./pages/GovernmentMilitary.jsx";
 import About from "./pages/About.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
-import DailyLog from "./pages/DailyLog.jsx";
 
 // DEMO
 import Landing from "./pages/Landing.jsx";
@@ -170,7 +169,6 @@ function MenuOverlay() {
       <MenuItem label="Calories" onClick={() => go("/calories")} />
       <MenuItem label="Profile" onClick={() => go("/profile")} />
       <MenuItem label="Meals" onClick={() => go("/meals")} />
-      <MenuItem label="Daily Log" onClick={() => go("/daily-log")} />
 
       <MenuItem label="Supplements" onClick={() => go("/supplements")} />
       <MenuItem label="Workouts" onClick={() => go("/workouts")} />
@@ -350,7 +348,6 @@ function AppWithMenu() {
       <Route path="/autonomous-coaching" element={<AutonomousCoaching />} />
       <Route path="/government-military" element={<GovernmentMilitary />} />
       <Route path="/about" element={<About />} />
-      <Route path="/daily-log" element={<DailyLog />} />
 
       {/* TACTICAL */}
       <Route path="/tactical/firefighters" element={<Firefighters />} />
