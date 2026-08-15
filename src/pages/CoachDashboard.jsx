@@ -1,4 +1,5 @@
 import React, { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.jsx";
 
 const coachStats = {
@@ -15,12 +16,20 @@ const recentClients = [
 ];
 
 export default function CoachDashboard() {
+  const navigate = useNavigate();
   const { setMenuOpen } = useContext(MenuContext);
   const [view, setView] = useState("overview");
+  const token = localStorage.getItem("token");
 
   const COACH_COLOR = "#ec4899";
   const BLACK = "#000";
   const WHITE = "#fff";
+
+  React.useEffect(() => {
+    if (!token) navigate("/login");
+  }, [navigate, token]);
+
+  if (!token) return null;
 
   return (
     <div
