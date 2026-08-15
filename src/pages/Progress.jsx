@@ -224,20 +224,21 @@ export default function Progress() {
         </p>
       </div>
 
-      <p
+      <div
         onClick={() => setMenuOpen(true)}
         style={{
-          position: "absolute",
+          position: "fixed",
           bottom: "20px",
           right: "20px",
           color: PROGRESS_COLOR,
           fontSize: "22px",
           textDecoration: "underline",
-          cursor: "pointer"
+          cursor: "pointer",
+          zIndex: 10
         }}
       >
         Return to Menu
-      </p>
+      </div>
     </div>
   );
 }
