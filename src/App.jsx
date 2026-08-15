@@ -22,6 +22,7 @@ import Leaderboard from "./pages/Leaderboard.jsx";
 import Challenges from "./pages/Challenges.jsx";
 import Achievements from "./pages/Achievements.jsx";
 import Streaks from "./pages/Streaks.jsx";
+import Groups from "./pages/Groups.jsx";
 import About from "./pages/About.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
@@ -128,6 +129,7 @@ function MenuOverlay() {
       <MenuItem label="Challenges" onClick={() => go("/challenges")} />
       <MenuItem label="Achievements" onClick={() => go("/achievements")} />
       <MenuItem label="Streaks" onClick={() => go("/streaks")} />
+      <MenuItem label="Groups" onClick={() => go("/groups")} />
       <MenuItem label="About" onClick={() => go("/about")} />
 
       <MenuItem label="Firefighters" onClick={() => go("/tactical/firefighters")} />
@@ -199,6 +201,7 @@ function AppWithMenu() {
       <Route path="/challenges" element={<Challenges />} />
       <Route path="/achievements" element={<Achievements />} />
       <Route path="/streaks" element={<Streaks />} />
+      <Route path="/groups" element={<Groups />} />
       <Route path="/about" element={<About />} />
       <Route path="/daily-log" element={<DailyLog />} />
 
