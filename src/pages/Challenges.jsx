@@ -23,67 +23,71 @@ export default function Challenges() {
         overflowY: "auto",
         boxSizing: "border-box",
         position: "relative",
-        color: "white"
+        color: "white",
+        display: "flex",
+        justifyContent: "center"
       }}
     >
-      <p
-        style={{
-          color: CHALLENGES_COLOR,
-          fontSize: "32px",
-          textAlign: "center",
-          marginBottom: "30px"
-        }}
-      >
-        Community Challenges
-      </p>
+      <div style={{ width: "360px", maxWidth: "100%" }}>
+        <p
+          style={{
+            color: CHALLENGES_COLOR,
+            fontSize: "32px",
+            textAlign: "center",
+            margin: "0 0 30px"
+          }}
+        >
+          Community Challenges
+        </p>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-        {challenges.map((challenge, index) => (
-          <div
-            key={index}
-            style={{
-              background: "#111",
-              border: "1px solid #333",
-              borderRadius: "12px",
-              padding: "14px"
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px" }}>
-              <div style={{ color: CHALLENGES_COLOR, fontSize: "18px", fontWeight: "700" }}>
-                {challenge.title}
-              </div>
-              <div style={{ color: "#ddd", fontSize: "12px" }}>{challenge.reward}</div>
-            </div>
-
-            <div style={{ color: "#ddd", fontSize: "14px", marginTop: "8px" }}>
-              {challenge.badge}
-            </div>
-
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          {challenges.map((challenge, index) => (
             <div
+              key={index}
               style={{
-                width: "100%",
-                height: "10px",
-                background: "#222",
-                marginTop: "12px",
-                borderRadius: "999px",
-                overflow: "hidden"
+                background: "#111",
+                border: "1px solid #333",
+                borderRadius: "12px",
+                padding: "14px"
               }}
             >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px" }}>
+                <div style={{ color: CHALLENGES_COLOR, fontSize: "18px", fontWeight: "700" }}>
+                  {challenge.title}
+                </div>
+                <div style={{ color: "#ddd", fontSize: "12px" }}>{challenge.reward}</div>
+              </div>
+
+              <div style={{ color: "#ddd", fontSize: "14px", marginTop: "8px" }}>
+                {challenge.badge}
+              </div>
+
               <div
                 style={{
-                  width: `${challenge.progress}%`,
-                  height: "100%",
-                  background: CHALLENGES_COLOR,
-                  borderRadius: "999px"
+                  width: "100%",
+                  height: "10px",
+                  background: "#222",
+                  marginTop: "12px",
+                  borderRadius: "999px",
+                  overflow: "hidden"
                 }}
-              />
-            </div>
+              >
+                <div
+                  style={{
+                    width: `${challenge.progress}%`,
+                    height: "100%",
+                    background: CHALLENGES_COLOR,
+                    borderRadius: "999px"
+                  }}
+                />
+              </div>
 
-            <div style={{ color: CHALLENGES_COLOR, fontSize: "12px", marginTop: "8px" }}>
-              {challenge.progress}% complete
+              <div style={{ color: CHALLENGES_COLOR, fontSize: "12px", marginTop: "8px" }}>
+                {challenge.progress}% complete
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       <p
