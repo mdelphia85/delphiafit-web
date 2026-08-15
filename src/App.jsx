@@ -27,6 +27,26 @@ import Periodization from "./pages/Periodization.jsx";
 import Recovery from "./pages/Recovery.jsx";
 import PerformanceDashboard from "./pages/PerformanceDashboard.jsx";
 import AthleteAnalytics from "./pages/AthleteAnalytics.jsx";
+import CoachDashboard from "./pages/CoachDashboard.jsx";
+import ClientManagement from "./pages/ClientManagement.jsx";
+import PlanBuilder from "./pages/PlanBuilder.jsx";
+import CoachMessaging from "./pages/CoachMessaging.jsx";
+import DrillLibraries from "./pages/DrillLibraries.jsx";
+import CreatorMarketplace from "./pages/CreatorMarketplace.jsx";
+import HardwareIntegrations from "./pages/HardwareIntegrations.jsx";
+import EnterpriseDashboard from "./pages/EnterpriseDashboard.jsx";
+import DelphiaProAnalytics from "./pages/DelphiaProAnalytics.jsx";
+import DelphiaKids from "./pages/DelphiaKids.jsx";
+import NutritionPro from "./pages/NutritionPro.jsx";
+import SportsAcademy from "./pages/SportsAcademy.jsx";
+import AICoach from "./pages/AICoach.jsx";
+import TeamOperations from "./pages/TeamOperations.jsx";
+import TeamCommunications from "./pages/TeamCommunications.jsx";
+import TeamPerformance from "./pages/TeamPerformance.jsx";
+import RecruitingProfiles from "./pages/RecruitingProfiles.jsx";
+import CompetitionEvents from "./pages/CompetitionEvents.jsx";
+import PermissionsLayer from "./pages/PermissionsLayer.jsx";
+import OrganizationLayer from "./pages/OrganizationLayer.jsx";
 import About from "./pages/About.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
@@ -139,6 +159,29 @@ function MenuOverlay() {
       <MenuItem label="Recovery" onClick={() => go("/recovery")} />
       <MenuItem label="Performance" onClick={() => go("/performance")} />
       <MenuItem label="Analytics" onClick={() => go("/analytics")} />
+
+      <MenuItem label="Coach Hub" onClick={() => go("/coach-dashboard")} />
+      <MenuItem label="My Clients" onClick={() => go("/client-management")} />
+      <MenuItem label="Plan Builder" onClick={() => go("/plan-builder")} />
+      <MenuItem label="Drill Library" onClick={() => go("/drill-library")} />
+      <MenuItem label="Coach Messages" onClick={() => go("/coach-messaging")} />
+
+      <MenuItem label="Marketplace" onClick={() => go("/marketplace")} />
+      <MenuItem label="Integrations" onClick={() => go("/integrations")} />
+      <MenuItem label="Enterprise" onClick={() => go("/enterprise")} />
+      <MenuItem label="DelphiaFit Pro" onClick={() => go("/pro-analytics")} />
+      <MenuItem label="DelphiaFit Kids" onClick={() => go("/delphia-kids")} />
+      <MenuItem label="Nutrition Pro" onClick={() => go("/nutrition-pro")} />
+      <MenuItem label="Sports Academy" onClick={() => go("/sports-academy")} />
+      <MenuItem label="AI Coach" onClick={() => go("/ai-coach")} />
+      <MenuItem label="Team Roster" onClick={() => go("/team-operations")} />
+      <MenuItem label="Team Comms" onClick={() => go("/team-communications")} />
+      <MenuItem label="Team Performance" onClick={() => go("/team-performance")} />
+      <MenuItem label="Recruiting" onClick={() => go("/recruiting-profiles")} />
+      <MenuItem label="Competition" onClick={() => go("/competition-events")} />
+      <MenuItem label="Permissions" onClick={() => go("/permissions")} />
+      <MenuItem label="Organization" onClick={() => go("/organization")} />
+
       <MenuItem label="About" onClick={() => go("/about")} />
 
       <MenuItem label="Firefighters" onClick={() => go("/tactical/firefighters")} />
@@ -215,6 +258,26 @@ function AppWithMenu() {
       <Route path="/recovery" element={<Recovery />} />
       <Route path="/performance" element={<PerformanceDashboard />} />
       <Route path="/analytics" element={<AthleteAnalytics />} />
+      <Route path="/coach-dashboard" element={<CoachDashboard />} />
+      <Route path="/client-management" element={<ClientManagement />} />
+      <Route path="/plan-builder" element={<PlanBuilder />} />
+      <Route path="/coach-messaging" element={<CoachMessaging />} />
+      <Route path="/drill-library" element={<DrillLibraries />} />
+      <Route path="/marketplace" element={<CreatorMarketplace />} />
+      <Route path="/integrations" element={<HardwareIntegrations />} />
+      <Route path="/enterprise" element={<EnterpriseDashboard />} />
+      <Route path="/pro-analytics" element={<DelphiaProAnalytics />} />
+      <Route path="/delphia-kids" element={<DelphiaKids />} />
+      <Route path="/nutrition-pro" element={<NutritionPro />} />
+      <Route path="/sports-academy" element={<SportsAcademy />} />
+      <Route path="/ai-coach" element={<AICoach />} />
+      <Route path="/team-operations" element={<TeamOperations />} />
+      <Route path="/team-communications" element={<TeamCommunications />} />
+      <Route path="/team-performance" element={<TeamPerformance />} />
+      <Route path="/recruiting-profiles" element={<RecruitingProfiles />} />
+      <Route path="/competition-events" element={<CompetitionEvents />} />
+      <Route path="/permissions" element={<PermissionsLayer />} />
+      <Route path="/organization" element={<OrganizationLayer />} />
       <Route path="/about" element={<About />} />
       <Route path="/daily-log" element={<DailyLog />} />
 
