@@ -1,3 +1,17 @@
+const STORAGE_KEY = "delphiafit-personalization-model";
+
+function loadModel() {
+  if (typeof localStorage === "undefined") return null;
+
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
+
+const savedModel = loadModel();
+
 export const PersonalizationModel = {
   // Performance signals
   completionRate: 0,          // % of workouts completed
@@ -19,4 +33,15 @@ export const PersonalizationModel = {
   // Recommendation memory
   lastRecommended: null,
   lastCompleted: null,
+  ...savedModel,
 };
+
+export function persistPersonalizationModel() {
+  if (typeof localStorage === "undefined") return;
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(PersonalizationModel));
+  } catch {
+    return;
+  }
+}

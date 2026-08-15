@@ -196,7 +196,7 @@ export default function Workouts() {
     if (decision === "shorten") {
       setBlockDurations(prev => ({
         ...prev,
-        [key]: String(plannedMinutes - 2)
+        [key]: String(Math.max(plannedMinutes - 2, 1))
       }));
     } else if (decision === "extend") {
       setBlockDurations(prev => ({

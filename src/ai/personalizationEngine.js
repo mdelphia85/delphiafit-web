@@ -1,10 +1,11 @@
-import { PersonalizationModel } from "./personalizationModel";
+import { PersonalizationModel, persistPersonalizationModel } from "./personalizationModel";
 
 export function updatePersonalizationEngine(workout) {
+  const completionSignal = workout.completed ? 1 : 0;
+
   // 1. Completion rate
   PersonalizationModel.completionRate =
-    ((PersonalizationModel.completionRate * 0.9) +
-      (workout.completed ? 1 : 0)) / 2;
+    (PersonalizationModel.completionRate * 0.9) + (completionSignal * 0.1);
 
   // 2. Block completion
   if (workout.blockCompletion) {
@@ -16,21 +17,22 @@ export function updatePersonalizationEngine(workout) {
   }
 
   // 3. Intensity
-  if (workout.intensityScore) {
+  if (Number.isFinite(workout.intensityScore)) {
     PersonalizationModel.avgIntensity =
       (PersonalizationModel.avgIntensity * 0.85 +
         workout.intensityScore * 0.15);
   }
 
   // 4. Duration accuracy
-  if (workout.durationAccuracy) {
+  if (Number.isFinite(workout.durationAccuracy)) {
     PersonalizationModel.avgDurationAccuracy =
       (PersonalizationModel.avgDurationAccuracy * 0.85 +
         workout.durationAccuracy * 0.15);
   }
 
   // 5. Preferred times
-  const hour = new Date(workout.timestamp).getHours();
+  const timestamp = new Date(workout.timestamp);
+  const hour = Number.isNaN(timestamp.getTime()) ? new Date().getHours() : timestamp.getHours();
   const bucket =
     hour < 12 ? "morning" : hour < 18 ? "afternoon" : "night";
 
@@ -43,4 +45,5 @@ export function updatePersonalizationEngine(workout) {
 
   // 7. Save last recommended/completed
   PersonalizationModel.lastCompleted = workout;
+  persistPersonalizationModel();
 }

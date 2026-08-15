@@ -1,4 +1,8 @@
 export function smartAdjust(block, elapsed, planned) {
+  if (!Number.isFinite(elapsed) || !Number.isFinite(planned) || planned <= 0 || elapsed <= 0) {
+    return "keep";
+  }
+
   const ratio = elapsed / (planned * 60);
 
   if (ratio > 1.2) {

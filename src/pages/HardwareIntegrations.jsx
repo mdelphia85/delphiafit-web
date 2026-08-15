@@ -1,18 +1,17 @@
-import React, { useContext, useState } from "react";
+import { useContext } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
 
 const devices = [
-  { id: 1, name: "Apple Health", status: "Connected", icon: "🍎", lastSync: "2 hours ago" },
-  { id: 2, name: "Google Fit", status: "Disconnected", icon: "🔍", lastSync: "Never" },
-  { id: 3, name: "Garmin", status: "Connected", icon: "⌚", lastSync: "30 min ago" },
-  { id: 4, name: "Fitbit", status: "Connected", icon: "📊", lastSync: "1 hour ago" },
-  { id: 5, name: "Whoop", status: "Connected", icon: "💪", lastSync: "15 min ago" },
-  { id: 6, name: "Oura Ring", status: "Disconnected", icon: "💍", lastSync: "Never" }
+  { id: 1, name: "Apple Health", status: "Not configured", icon: "🍎", lastSync: "No sync data" },
+  { id: 2, name: "Google Fit", status: "Not configured", icon: "🔍", lastSync: "No sync data" },
+  { id: 3, name: "Garmin", status: "Not configured", icon: "⌚", lastSync: "No sync data" },
+  { id: 4, name: "Fitbit", status: "Not configured", icon: "📊", lastSync: "No sync data" },
+  { id: 5, name: "Whoop", status: "Not configured", icon: "💪", lastSync: "No sync data" },
+  { id: 6, name: "Oura Ring", status: "Not configured", icon: "💍", lastSync: "No sync data" }
 ];
 
 export default function HardwareIntegrations() {
   const { setMenuOpen } = useContext(MenuContext);
-  const [connectedDevices, setConnectedDevices] = useState(devices);
 
   const HARDWARE_COLOR = "#f59e0b";
 
@@ -33,10 +32,11 @@ export default function HardwareIntegrations() {
       <div style={{ width: "360px", maxWidth: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: "20px" }}>
           <div style={{ color: HARDWARE_COLOR, fontSize: "28px", fontWeight: "700" }}>⚙️ Integrations</div>
+          <div style={{ color: "#999", fontSize: "12px", marginTop: "6px" }}>Device syncing is not configured in this build.</div>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {connectedDevices.map((device) => (
+          {devices.map((device) => (
             <div
               key={device.id}
               style={{
@@ -59,7 +59,7 @@ export default function HardwareIntegrations() {
               <div
                 style={{
                   fontSize: "11px",
-                  color: device.status === "Connected" ? "#6ee7b7" : "#999",
+                  color: "#999",
                   fontWeight: "600"
                 }}
               >
