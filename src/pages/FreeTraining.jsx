@@ -160,12 +160,14 @@ export default function FreeTraining() {
       <p
         onClick={saveSession}
         style={{
+          position: "absolute",
+          bottom: "20px",
+          left: "20px",
           color: FREE_TRAINING_COLOR,
           fontSize: "26px",
-          textAlign: "center",
           textDecoration: "underline",
           cursor: "pointer",
-          marginBottom: "20px"
+          margin: 0
         }}
       >
         {status === "loading" ? "Saving..." : "Save Session"}
