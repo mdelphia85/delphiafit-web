@@ -1,17 +1,26 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function RecentDrills() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: replace this with your real backend call
-    // Example: fetch("/api/drills").then(...)
     async function loadDrills() {
       try {
-        // Placeholder: empty list for now
-        const data = []; // replace with real data from backend
-        setLogs(data.reverse()); // newest first
+        const token = localStorage.getItem("token");
+        if (!token) {
+          setLogs([]);
+          return;
+        }
+
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/drills/recent`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error("Unable to load recent drills.");
+
+        const data = await res.json();
+        setLogs((data.logs || data).slice().reverse());
       } catch (e) {
         console.error("Failed to load drills", e);
       } finally {

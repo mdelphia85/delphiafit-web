@@ -106,7 +106,11 @@ export default function Profile() {
   }
 
   function handleCamera() {
-    alert("Camera capture not implemented yet");
+    const avatarInput = document.getElementById("avatarInput");
+    if (!avatarInput) return;
+
+    avatarInput.setAttribute("capture", "user");
+    avatarInput.click();
   }
 
   function clearAvatar() {
@@ -294,7 +298,7 @@ export default function Profile() {
           <Button label="Clear" onClick={clearAvatar} color={profileColor} />
         </div>
 
-        <input id="avatarInput" type="file" accept="image/*" onChange={handleUpload} style={{ display: "none" }} />
+        <input id="avatarInput" type="file" accept="image/*" capture="user" onChange={handleUpload} style={{ display: "none" }} />
 
         <div style={{ marginTop: "10px" }}>
           <h3 style={{ marginBottom: "10px" }}>Conversion Formulas</h3>

@@ -1,4 +1,5 @@
 import AdminLayout from "./Admin.jsx";
+import { useEffect, useState } from "react";
 
 export default function AdminAnalytics() {
   const BG = "rgb(0,0,0)";
@@ -8,27 +9,26 @@ export default function AdminAnalytics() {
   const TEXT_MUTED = "rgb(160,160,160)";
   const ACCENT = "rgb(128,0,128)";
 
-  // ⭐ Static UI sample data (NOT backend)
-  const overview = {
-    totalUsers: 1284,
-    activeUsers7d: 312,
-    workoutsLogged7d: 842,
-    dailyLogs7d: 1964
-  };
+  const [analytics, setAnalytics] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const topWorkouts = [
-    { label: "Strength – Full Body", count: 214 },
-    { label: "Sports – Basketball", count: 132 },
-    { label: "Free Training – Custom", count: 98 },
-    { label: "Cardio – Running", count: 76 }
-  ];
+  useEffect(() => {
+    async function loadAnalytics() {
+      try {
+        const token = localStorage.getItem("adminToken");
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/analytics`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
-  const recentActivity = [
-    { id: 1, type: "Workout", user: "user1@example.com", detail: "Strength – Upper Body", time: "5 min ago" },
-    { id: 2, type: "Daily Log", user: "user2@example.com", detail: "Completed daily log", time: "12 min ago" },
-    { id: 3, type: "Sports", user: "user3@example.com", detail: "Basketball session", time: "27 min ago" },
-    { id: 4, type: "Free Training", user: "user4@example.com", detail: "Custom workout", time: "1 hr ago" }
-  ];
+        if (!res.ok) throw new Error("Unable to load analytics.");
+        setAnalytics(await res.json());
+      } catch {
+        setErrorMessage("Unable to load analytics data.");
+      }
+    }
+
+    loadAnalytics();
+  }, []);
 
   const container = {
     width: "100%",
@@ -112,7 +112,7 @@ export default function AdminAnalytics() {
     borderBottom: `1px solid ${BORDER}`
   };
 
-  const badge = type => ({
+  const badge = () => ({
     fontSize: "11px",
     padding: "2px 6px",
     borderRadius: "999px",
@@ -120,6 +120,18 @@ export default function AdminAnalytics() {
     color: TEXT_MUTED,
     marginRight: "6px"
   });
+
+  if (errorMessage) {
+    return <AdminLayout><div style={container}>{errorMessage}</div></AdminLayout>;
+  }
+
+  if (!analytics) {
+    return <AdminLayout><div style={container}>Loading analytics...</div></AdminLayout>;
+  }
+
+  const overview = analytics.overview || {};
+  const topWorkouts = analytics.topWorkouts || analytics.top_workouts || [];
+  const recentActivity = analytics.recentActivity || analytics.recent_activity || [];
 
   return (
     <AdminLayout>
@@ -187,13 +199,6 @@ export default function AdminAnalytics() {
           </div>
         </div>
 
-        {/* FUTURE CHARTS AREA */}
-        <div style={{ ...card, marginTop: "8px" }}>
-          <div style={sectionTitle}>Charts & Trends</div>
-          <div style={{ fontSize: "13px", color: TEXT_MUTED }}>
-            This area will host charts once backend analytics endpoints are ready.
-          </div>
-        </div>
       </div>
     </AdminLayout>
   );
