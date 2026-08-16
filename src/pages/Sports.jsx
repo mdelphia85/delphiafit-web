@@ -5,6 +5,7 @@ import { MenuContext } from "../context/MenuContext.jsx";
 // ⭐ Phase 4 AI imports
 import { updatePersonalizationEngine } from "../ai/personalizationEngine";
 import { updateBehavior } from "../ai/behaviorEngine";
+import { API } from "../config/api.js";
 
 export default function Sports() {
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ export default function Sports() {
 
       try {
         const res = await fetch(
-          "https://delphiafit-backend-production.up.railway.app/sports",
+          `${API}/sports`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -71,7 +72,7 @@ export default function Sports() {
 
       try {
         const res = await fetch(
-          `https://delphiafit-backend-production.up.railway.app/sports/${sport}/skills`,
+          `${API}/sports/${sport}/skills`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -100,7 +101,7 @@ export default function Sports() {
 
       try {
         const res = await fetch(
-          `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/levels`,
+          `${API}/sports/${sport}/${category}/levels`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -127,7 +128,7 @@ export default function Sports() {
 
     try {
       const res = await fetch(
-        `https://delphiafit-backend-production.up.railway.app/sports/${sport}/${category}/${level}/drills`,
+        `${API}/sports/${sport}/${category}/${level}/drills`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -173,7 +174,7 @@ export default function Sports() {
 
     try {
       const res = await fetch(
-        "https://delphiafit-backend-production.up.railway.app/workouts",
+        `${API}/workouts`,
         {
           method: "POST",
           headers: {

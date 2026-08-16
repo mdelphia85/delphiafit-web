@@ -1,6 +1,7 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.jsx";
+import { API } from "../config/api.js";
 
 export default function FreeTraining() {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ export default function FreeTraining() {
 
     try {
       const res = await fetch(
-        "https://delphiafit-backend-production.up.railway.app/free/log",
+        `${API}/free/log`,
         {
           method: "POST",
           headers: {

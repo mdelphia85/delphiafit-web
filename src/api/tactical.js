@@ -1,4 +1,4 @@
-const BASE_URL = "https://api.delphiafit.com"; // ← update if needed
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 // -----------------------------
 // FIREFIGHTERS

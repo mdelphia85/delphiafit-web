@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "./Admin.jsx";
+import { API } from "../config/api.js";
 
 export default function AdminAnnouncements() {
   const BG = "rgb(0,0,0)";
@@ -50,7 +51,7 @@ export default function AdminAnnouncements() {
     const token = localStorage.getItem("adminToken");
 
     const res = await fetch(
-      "https://delphiafit-backend-production.up.railway.app/admin/announcements",
+      `${API}/admin/announcements`,
       {
         method: "POST",
         headers: {
@@ -78,7 +79,7 @@ export default function AdminAnnouncements() {
     const token = localStorage.getItem("adminToken");
 
     await fetch(
-      `https://delphiafit-backend-production.up.railway.app/admin/announcements/${id}`,
+      `${API}/admin/announcements/${id}`,
       {
         method: "DELETE",
         headers: {

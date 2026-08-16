@@ -1,5 +1,6 @@
 import React, { useState, useContext } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
+import { API } from "../config/api.js";
 
 const PROGRESS_COLOR = "yellow";
 
@@ -67,7 +68,7 @@ export default function DailyLog() {
         supplements: normalize(form.supplements)
       };
 
-      const url = "https://delphiafit-backend-production.up.railway.app/api/progress/log";
+      const url = `${API}/api/progress/log`;
 
       const res = await fetch(url, {
         method: "POST",

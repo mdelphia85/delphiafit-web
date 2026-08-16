@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
+import { API } from "../config/api.js";
 
 export default function Progress() {
   const { setMenuOpen, refreshProgress, setRefreshProgress } = useContext(MenuContext);
@@ -41,7 +42,7 @@ export default function Progress() {
       const email = localStorage.getItem("userEmail");
 
       const res = await fetch(
-        `https://delphiafit-backend-production.up.railway.app/api/progress/history?email=${email}`
+        `${API}/api/progress/history?email=${email}`
       );
 
       const data = await res.json();
@@ -63,7 +64,7 @@ export default function Progress() {
       const email = localStorage.getItem("userEmail");
 
       const res = await fetch(
-        `https://delphiafit-backend-production.up.railway.app/api/progress/summary?email=${email}&days=${days}`
+        `${API}/api/progress/summary?email=${email}&days=${days}`
       );
 
       const data = await res.json();

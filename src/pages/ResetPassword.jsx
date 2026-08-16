@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import homescreen from "../assets/homescreen.png";
+import { API } from "../config/api.js";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ export default function ResetPassword() {
 
     try {
       const res = await fetch(
-        "https://delphiafit-backend-production.up.railway.app/auth/reset-password",
+        `${API}/auth/reset-password`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

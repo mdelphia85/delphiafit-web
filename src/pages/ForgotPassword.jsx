@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import homescreen from "../assets/homescreen.png";
+import { API } from "../config/api.js";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ export default function ForgotPassword() {
 
     try {
       const res = await fetch(
-        "https://delphiafit-backend-production.up.railway.app/auth/forgot-password",
+        `${API}/auth/forgot-password`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -1,5 +1,6 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
+import { API } from "../config/api.js";
 
 import {
   UI_MAIN_CATEGORIES,
@@ -237,7 +238,7 @@ export default function Workouts() {
 
     try {
       const res = await fetch(
-        "https://delphiafit-backend-production.up.railway.app/workouts",
+        `${API}/workouts`,
         {
           method: "POST",
           headers: {
@@ -286,7 +287,7 @@ export default function Workouts() {
 
     try {
       const res = await fetch(
-        "https://delphiafit-backend-production.up.railway.app/workouts",
+        `${API}/workouts`,
         {
           method: "POST",
           headers: {

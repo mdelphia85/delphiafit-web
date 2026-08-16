@@ -1,6 +1,7 @@
 import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.jsx";
+import { API } from "../config/api.js";
 
 export default function Profile() {
   const profileColor = "rgb(128, 0, 128)";
@@ -36,7 +37,7 @@ export default function Profile() {
 
       try {
         const res = await fetch(
-          "https://delphiafit-backend-production.up.railway.app/profile/get",
+          `${API}/profile/get`,
           {
             headers: { Authorization: `Bearer ${token}` }
           }
@@ -132,7 +133,7 @@ export default function Profile() {
 
     try {
       const res = await fetch(
-        "https://delphiafit-backend-production.up.railway.app/profile/update",
+        `${API}/profile/update`,
         {
           method: "POST",
           headers: {
