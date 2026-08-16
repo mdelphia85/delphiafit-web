@@ -1,14 +1,16 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
 import { readJson, writeJson } from "../utils/dataPersistence.js";
 
 const initialPhases = [
-  { id: 1, name: "Physical Conditioning Phase 1", duration: "6 weeks", focus: "Strength", completed: false },
-  { id: 2, name: "Military Basics & Discipline", duration: "4 weeks", focus: "Theory", completed: false },
-  { id: 3, name: "Combat Fitness", duration: "8 weeks", focus: "Endurance", completed: false },
-  { id: 4, name: "Team Operations Basics", duration: "6 weeks", focus: "Tactics", completed: false },
-  { id: 5, name: "Survival & Navigation", duration: "4 weeks", focus: "Wilderness", completed: false },
-  { id: 6, name: "Final Bootcamp Assessment", duration: "2 weeks", focus: "Evaluation", completed: false }
+  { id: 1, name: "Physical Readiness", duration: "6 weeks", focus: "Strength & endurance", objective: "Build running, push-up, core, and loaded-carry capacity.", completed: false },
+  { id: 2, name: "Military Customs & Discipline", duration: "3 weeks", focus: "Foundations", objective: "Practice routines, attention to detail, time management, and accountability.", completed: false },
+  { id: 3, name: "Rucking & Load Carriage", duration: "4 weeks", focus: "Work capacity", objective: "Progress distance and load while protecting feet, joints, and recovery.", completed: false },
+  { id: 4, name: "Teamwork & Leadership", duration: "4 weeks", focus: "Team skills", objective: "Develop communication, followership, initiative, and small-team problem solving.", completed: false },
+  { id: 5, name: "Field Skills & Navigation", duration: "4 weeks", focus: "Field craft", objective: "Train land navigation, movement, environmental awareness, and field readiness.", completed: false },
+  { id: 6, name: "Resilience & Recovery", duration: "3 weeks", focus: "Readiness", objective: "Build sleep, nutrition, stress-management, and injury-prevention habits.", completed: false },
+  { id: 7, name: "Military Fitness Test Prep", duration: "3 weeks", focus: "Assessment", objective: "Prepare for timed fitness events and repeatable performance under fatigue.", completed: false },
+  { id: 8, name: "Final Recruit Readiness Assessment", duration: "2 weeks", focus: "Evaluation", objective: "Confirm physical, mental, and team readiness before reporting to training.", completed: false }
 ];
 
 export default function MilitaryBootcampPrep() {
@@ -30,8 +32,8 @@ export default function MilitaryBootcampPrep() {
     <div style={{ width: "100vw", minHeight: "100vh", backgroundColor: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", overflowY: "auto", color: "#fff" }}>
       <div style={{ width: "360px", maxWidth: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <div style={{ color: TACTICAL_COLOR, fontSize: "28px", fontWeight: "700" }}>🎖️ Military Bootcamp Prep</div>
-          <div style={{ color: "#999", fontSize: "12px", marginTop: "4px" }}>Preparation Program</div>
+          <div style={{ color: TACTICAL_COLOR, fontSize: "28px", fontWeight: "700" }}>🎖️ Military Basic Training Prep</div>
+          <div style={{ color: "#999", fontSize: "12px", marginTop: "4px" }}>Recruit readiness program</div>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -46,6 +48,8 @@ export default function MilitaryBootcampPrep() {
                 <div>{phase.duration}</div>
                 <div style={{ color: TACTICAL_COLOR }}>{phase.focus}</div>
               </div>
+
+              <div style={{ marginTop: "8px", fontSize: "12px", lineHeight: "1.4", color: "#bbb" }}>{phase.objective}</div>
             </div>
           ))}
         </div>
