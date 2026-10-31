@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { MenuContext } from "../context/MenuContext.jsx";
 
 export default function CoachLogin() {
   const navigate = useNavigate();
+  const { setMenuOpen } = useContext(MenuContext);
 
   useEffect(() => {
     if (localStorage.getItem("coachToken")) navigate("/coach-dashboard", { replace: true });
@@ -113,10 +115,13 @@ export default function CoachLogin() {
         <div style={{ color: "#777", fontSize: "12px", textAlign: "center", marginTop: "18px" }}>
           Coach access is created by invitation.
         </div>
+      </div>
 
-        <div onClick={() => navigate("/")} style={{ color: "#ec4899", textDecoration: "underline", textAlign: "center", marginTop: "20px", cursor: "pointer", fontSize: "13px" }}>
-          Return Home
-        </div>
+      <div
+        onClick={() => setMenuOpen(true)}
+        style={{ position: "fixed", bottom: "20px", right: "20px", color: "#ec4899", textDecoration: "underline", fontSize: "18px", cursor: "pointer", zIndex: 20 }}
+      >
+        Return to Menu
       </div>
     </div>
   );
