@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
+import { useContext, useState } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
-import { readJson, writeJson } from "../utils/dataPersistence.js";
 
 const environments = ["Urban", "Rural", "Wilderness", "Maritime", "Mountain", "Desert", "Arctic", "Jungle"];
 const threatLevels = ["Low", "Medium", "High", "Critical"];
@@ -13,7 +13,7 @@ const initialScenarios = [
 
 export default function ScenarioSimulator() {
   const { setMenuOpen } = useContext(MenuContext);
-  const [scenarios, setScenarios] = useState(() => readJson("scenarios", initialScenarios));
+  const [scenarios, setScenarios, progress] = useTacticalProgress("scenario-simulator", "scenarios", initialScenarios);
   const [building, setBuilding] = useState(false);
   const [newScenario, setNewScenario] = useState({
     name: "",
@@ -25,7 +25,6 @@ export default function ScenarioSimulator() {
 
   const TACTICAL_COLOR = "#2d5f3a";
 
-  useEffect(() => writeJson("scenarios", scenarios), [scenarios]);
 
   function startBuilding() {
     setBuilding(true);
@@ -64,6 +63,7 @@ export default function ScenarioSimulator() {
 
   return (
     <div style={{ width: "100vw", minHeight: "100vh", backgroundColor: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", overflowY: "auto", color: "#fff" }}>
+      {(progress.loading || progress.error) && <div role="status" aria-live="polite" style={{ position: "fixed", top: "8px", left: "8px", zIndex: 50, background: "#111", color: "#fff", border: "1px solid #555", borderRadius: "6px", padding: "8px", fontSize: "12px" }}>{progress.loading ? "Syncing saved progress..." : `Progress unavailable: ${progress.error}`}</div>}
       <div style={{ width: "360px", maxWidth: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: "20px" }}>
           <div style={{ color: TACTICAL_COLOR, fontSize: "28px", fontWeight: "700" }}>🎯 Scenario Simulator</div>

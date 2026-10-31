@@ -1,7 +1,7 @@
-import React, { useContext, useState, useRef, useEffect } from "react";
+import { useContext, useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.jsx";
-import { API } from "../config/api.js";
+import { apiRequest } from "../utils/api.js";
 
 export default function FreeTraining() {
   const navigate = useNavigate();
@@ -54,29 +54,19 @@ export default function FreeTraining() {
     setStatus("loading");
 
     try {
-      const res = await fetch(
-        `${API}/free/log`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            workout_name: fields.name,
-            skill_focus: fields.skill,
-            notes: fields.notes,
-            extra: fields.extra,
-            duration_seconds: time
-          })
-        }
-      );
-
-      if (!res.ok) {
+      if (time < 1) {
         setStatus("error");
-        setErrorMessage("Failed to save session.");
+        setErrorMessage("Start the timer and record at least one second before saving.");
         return;
       }
+      await apiRequest("/workouts/save", { method: "POST", body: {
+        mode: "manual",
+        manual_name: fields.name.trim() || "Free Training",
+        duration_minutes: Math.max(1, Math.round(time / 60)),
+        manual_notes: [fields.skill && `Skill: ${fields.skill}`, fields.notes, fields.extra].filter(Boolean).join("\n"),
+        workout_type: fields.skill || "free_training",
+        timestamp: new Date().toISOString()
+      } });
 
       setStatus("success");
       resetTimer();
@@ -84,7 +74,7 @@ export default function FreeTraining() {
 
     } catch (err) {
       setStatus("error");
-      setErrorMessage("Server error. Please try again.");
+      setErrorMessage(err.message || "Server error. Please try again.");
     }
   }
 

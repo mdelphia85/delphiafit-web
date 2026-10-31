@@ -1,89 +1,86 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
-import { readJson, writeJson } from "../utils/dataPersistence.js";
+import { apiRequest } from "../utils/api.js";
 
-const gearPresets = [
-  { id: 1, name: "Firefighter Turnout", weight: "75 lbs", type: "Fire", items: ["Turnout Gear", "SCBA", "Helmet", "Boots"], selected: false },
-  { id: 2, name: "Police Duty", weight: "35 lbs", type: "Police", items: ["Duty Belt", "Duty Uniform", "Vest", "Equipment"], selected: false },
-  { id: 3, name: "EMS Trauma Kit", weight: "25 lbs", type: "Medical", items: ["Medic Bag", "Cardiac Monitor", "Airway Kit", "Trauma Supplies"], selected: false },
-  { id: 4, name: "Military Ruck", weight: "80 lbs", type: "Military", items: ["Rucksack", "Ammunition", "Rations", "Water", "Gear"], selected: false },
-  { id: 5, name: "SWAT Breach", weight: "60 lbs", type: "Tactical", items: ["Breaching Tool", "Charge", "Vest", "Helmet", "Weapon"], selected: false },
-  { id: 6, name: "SOF Dive", weight: "90 lbs", type: "Maritime", items: ["Dive Gear", "Rebreather", "Weapons", "Explosives"], selected: false }
-];
+const color = "#2d5f3a";
 
 export default function LoadoutsManager() {
   const { setMenuOpen } = useContext(MenuContext);
-  const [loadouts, setLoadouts] = useState(() => readJson("loadouts", gearPresets));
-  const [selectedLoadout, setSelectedLoadout] = useState(null);
-  const TACTICAL_COLOR = "#2d5f3a";
+  const [loadouts, setLoadouts] = useState([]);
+  const [items, setItems] = useState([]);
+  const [selectedId, setSelectedId] = useState("");
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState("general");
+  const [itemName, setItemName] = useState("");
+  const [weight, setWeight] = useState("0");
+  const [quantity, setQuantity] = useState("1");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  useEffect(() => writeJson("loadouts", loadouts), [loadouts]);
+  useEffect(() => {
+    let active = true;
+    apiRequest("/loadout/list").then((result) => {
+      if (active) setLoadouts(result);
+    }).catch((requestError) => {
+      if (active) setError(requestError.message || "Unable to load your loadouts.");
+    }).finally(() => {
+      if (active) setLoading(false);
+    });
+    return () => { active = false; };
+  }, []);
 
-  function toggleLoadout(id) {
-    setLoadouts((prev) =>
-      prev.map((loadout) =>
-        loadout.id === id ? { ...loadout, selected: !loadout.selected } : loadout
-      )
-    );
-    setSelectedLoadout(id);
+  async function createLoadout(event) {
+    event.preventDefault();
+    try {
+      const created = await apiRequest("/loadout/create", { method: "POST", body: { name: name.trim(), category, description: "" } });
+      setLoadouts((current) => [created, ...current]);
+      setSelectedId(String(created.id));
+      setItems([]); setName(""); setError("");
+    } catch (requestError) { setError(requestError.message || "Unable to save loadout."); }
   }
 
-  const activeLoadout = loadouts.find((l) => l.selected);
+  async function selectLoadout(loadout) {
+    setSelectedId(String(loadout.id));
+    try { setItems(await apiRequest(`/loadout/item/${loadout.id}`)); setError(""); }
+    catch (requestError) { setError(requestError.message || "Unable to load loadout items."); }
+  }
 
-  return (
-    <div style={{ width: "100vw", minHeight: "100vh", backgroundColor: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", overflowY: "auto", color: "#fff" }}>
-      <div style={{ width: "360px", maxWidth: "100%" }}>
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <div style={{ color: TACTICAL_COLOR, fontSize: "28px", fontWeight: "700" }}>🎒 Loadouts Manager</div>
-          <div style={{ color: "#999", fontSize: "12px", marginTop: "4px" }}>Gear Selection & Customization</div>
-        </div>
+  async function addItem(event) {
+    event.preventDefault();
+    if (!selectedId) return;
+    try {
+      await apiRequest("/loadout/item", { method: "POST", body: { loadout_id: Number(selectedId), name: itemName.trim(), weight: Number(weight), quantity: Number(quantity) } });
+      setItems(await apiRequest(`/loadout/item/${selectedId}`));
+      setLoadouts(await apiRequest("/loadout/list"));
+      setItemName(""); setWeight("0"); setQuantity("1"); setError("");
+    } catch (requestError) { setError(requestError.message || "Unable to add this equipment."); }
+  }
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
-          {loadouts.map((loadout) => (
-            <div key={loadout.id} onClick={() => toggleLoadout(loadout.id)} style={{ background: loadout.selected ? "#1a2a1f" : "#111", border: `1px solid ${loadout.selected ? TACTICAL_COLOR : "#333"}`, borderRadius: "10px", padding: "12px", cursor: "pointer" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-                <div style={{ color: "white", fontSize: "16px", fontWeight: "600" }}>{loadout.name}</div>
-                <div style={{ color: TACTICAL_COLOR, fontWeight: "700" }}>{loadout.selected ? "✓" : "○"}</div>
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "#999" }}>
-                <div style={{ color: TACTICAL_COLOR }}>{loadout.type}</div>
-                <div style={{ color: TACTICAL_COLOR, fontWeight: "600" }}>{loadout.weight}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {activeLoadout && (
-          <div style={{ background: "#111", border: `1px solid ${TACTICAL_COLOR}`, borderRadius: "10px", padding: "14px" }}>
-            <div style={{ color: TACTICAL_COLOR, fontSize: "16px", fontWeight: "700", marginBottom: "12px" }}>Active Loadout</div>
-
-            <div style={{ marginBottom: "12px" }}>
-              <div style={{ color: "#999", fontSize: "12px", marginBottom: "8px" }}>Equipment:</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                {activeLoadout.items.map((item, idx) => (
-                  <div key={idx} style={{ color: "#ccc", fontSize: "13px", paddingLeft: "12px" }}>
-                    • {item}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ padding: "12px", background: "#000", borderRadius: "8px", marginTop: "12px" }}>
-              <div style={{ color: TACTICAL_COLOR, fontWeight: "700", marginBottom: "6px" }}>Load Impact</div>
-              <div style={{ color: "#999", fontSize: "12px" }}>
-                <div>Weight: {activeLoadout.weight}</div>
-                <div>Movement Speed: -25%</div>
-                <div>Endurance Drain: +15%</div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: "20px", right: "20px", color: TACTICAL_COLOR, fontSize: "22px", textDecoration: "underline", cursor: "pointer", zIndex: 20 }}>
-        Return to Menu
-      </div>
-    </div>
-  );
+  const selected = loadouts.find((loadout) => String(loadout.id) === selectedId);
+  return <div style={{ minHeight: "100vh", background: "#000", padding: "20px 16px 90px", color: "#fff" }}>
+    <main style={{ width: "min(760px, 100%)", margin: "0 auto" }}>
+      <h1 style={{ color }}>Loadouts Manager</h1><p>Build and weigh your own equipment sets. Totals are calculated from entered weights.</p>
+      {error && <p role="alert" style={{ color: "#fecaca" }}>{error}</p>}
+      <form onSubmit={createLoadout} style={panel}><h2>Create a loadout</h2>
+        <label>Name<input required value={name} onChange={(event) => setName(event.target.value)} style={field} /></label>
+        <label>Category<select value={category} onChange={(event) => setCategory(event.target.value)} style={field}><option>general</option><option>fire</option><option>police</option><option>medical</option><option>military</option><option>tactical</option><option>maritime</option></select></label>
+        <button style={button}>Save loadout</button>
+      </form>
+      <section aria-busy={loading}><h2 style={{ color }}>Your loadouts</h2>{loading ? <p role="status">Loading loadouts?</p> : loadouts.length === 0 ? <p role="status">No loadouts saved yet.</p> : loadouts.map((loadout) => <button type="button" key={loadout.id} onClick={() => selectLoadout(loadout)} style={{ ...panel, width: "100%", textAlign: "left", cursor: "pointer" }}><strong>{loadout.name}</strong><div>{loadout.category} ? Recorded total weight: {loadout.total_weight} ? Mobility score: {loadout.mobility_score} ? Endurance score: {loadout.endurance_score}</div></button>)}</section>
+      {selected && <section style={panel}><h2>{selected.name} equipment</h2>
+        {items.length === 0 ? <p>No equipment items recorded yet.</p> : items.map((item) => <div key={item.id} style={{ borderTop: "1px solid #444", padding: 8 }}>{item.name} ? {item.quantity} ? {item.weight} weight units</div>)}
+        <form onSubmit={addItem} style={{ display: "grid", gap: 8, marginTop: 16 }}>
+          <label>Equipment name<input required value={itemName} onChange={(event) => setItemName(event.target.value)} style={field} /></label>
+          <label>Weight per item<input required type="number" min="0" step="0.01" value={weight} onChange={(event) => setWeight(event.target.value)} style={field} /></label>
+          <label>Quantity<input required type="number" min="1" value={quantity} onChange={(event) => setQuantity(event.target.value)} style={field} /></label>
+          <button style={button}>Add equipment</button>
+        </form>
+      </section>}
+    </main>
+    <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color, background: "#111", padding: 10 }}>Return to Menu</button>
+  </div>;
 }
+
+const panel = { background: "#111", border: "1px solid #444", borderRadius: 10, padding: 14, marginBottom: 12, color: "#fff" };
+const field = { display: "block", width: "100%", boxSizing: "border-box", padding: 8, marginTop: 4, color: "#fff", background: "#000", border: "1px solid #444", borderRadius: 6 };
+const button = { padding: 10, color: "#fff", background: "#151515", border: `1px solid ${color}`, borderRadius: 6, cursor: "pointer" };

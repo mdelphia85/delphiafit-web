@@ -1,73 +1,27 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import homescreen from "../assets/homescreen.png";
-import { API } from "../config/api.js";
+import { apiRequest } from "../utils/api.js";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const [email, setEmail] = useState("");
-  const [token, setToken] = useState("");
+  const [email, setEmail] = useState(searchParams.get("email") || "");
+  const [token, setToken] = useState(searchParams.get("token") || "");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
   async function handleReset() {
-    if (!email.includes("@")) {
-      setStatus("error");
-      setErrorMessage("Please enter a valid email.");
-      return;
-    }
-
-    if (password.length < 10 || confirm.length < 10) {
-      setStatus("error");
-      setErrorMessage("Password must be at least 10 characters.");
-      return;
-    }
-
-    if (password !== confirm) {
-      setStatus("mismatch");
-      setErrorMessage("Passwords do not match.");
-      return;
-    }
-
-    if (token.length < 5) {
-      setStatus("error");
-      setErrorMessage("Invalid or missing reset token.");
-      return;
-    }
-
+    if (!email.includes("@")) { setStatus("error"); setErrorMessage("Please enter a valid email."); return; }
+    if (password.length < 10 || confirm.length < 10) { setStatus("error"); setErrorMessage("Password must be at least 10 characters."); return; }
+    if (password !== confirm) { setStatus("mismatch"); setErrorMessage("Passwords do not match."); return; }
+    if (token.length < 5) { setStatus("error"); setErrorMessage("Invalid or missing reset token."); return; }
     setStatus("loading");
-
-    try {
-      const res = await fetch(
-        `${API}/auth/reset-password`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email,
-            token,
-            new_password: password,
-          }),
-        }
-      );
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setStatus("error");
-        setErrorMessage(data.message || "Reset failed.");
-        return;
-      }
-
-      setStatus("success");
-
-      setTimeout(() => navigate("/login"), 1500);
-    } catch (err) {
-      setStatus("error");
-      setErrorMessage("Server error. Please try again.");
-    }
+    try { await apiRequest("/auth/reset-password", { method: "POST", body: { email, token, new_password: password } }); setStatus("success"); setTimeout(() => navigate("/login"), 1500); }
+    catch (err) { setStatus("error"); setErrorMessage(err.message || "Reset failed."); }
   }
 
   const inputStyle = {
@@ -167,7 +121,7 @@ export default function ResetPassword() {
         />
 
         {/* CLICKABLE RESET ACTION */}
-        <div
+        <button type="button" disabled={status === "loading"}
           onClick={handleReset}
           style={{
             color:
@@ -189,7 +143,7 @@ export default function ResetPassword() {
             : status === "success"
             ? "Password Updated!"
             : "Reset Password"}
-        </div>
+        </button>
 
         {/* ERROR MESSAGES */}
         {(status === "error" || status === "mismatch") && (

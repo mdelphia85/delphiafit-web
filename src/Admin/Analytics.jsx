@@ -1,109 +1,28 @@
 import AdminLayout from "./Admin.jsx";
 import { useEffect, useState } from "react";
+import { adminFetch, formatDateTime } from "./adminApi.js";
+import { ACCENT, BORDER, TEXT_MUTED, card, container, errorBox, subtitle } from "./adminTheme.js";
 
 export default function AdminAnalytics() {
-  const BG = "rgb(0,0,0)";
-  const CARD_BG = "rgb(15,15,15)";
-  const BORDER = "rgb(60,60,60)";
-  const TEXT_MAIN = "rgb(240,240,240)";
-  const TEXT_MUTED = "rgb(160,160,160)";
-  const ACCENT = "rgb(128,0,128)";
-
   const [analytics, setAnalytics] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    async function loadAnalytics() {
-      try {
-        const token = localStorage.getItem("adminToken");
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/analytics`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        if (!res.ok) throw new Error("Unable to load analytics.");
-        setAnalytics(await res.json());
-      } catch {
-        setErrorMessage("Unable to load analytics data.");
-      }
-    }
-
-    loadAnalytics();
+    adminFetch("/admin/analytics")
+      .then(setAnalytics)
+      .catch((err) => setErrorMessage(err.message || "Unable to load analytics data."));
   }, []);
 
-  const container = {
-    width: "100%",
-    height: "100%",
-    backgroundColor: BG,
-    color: TEXT_MAIN,
-    padding: "20px",
-    boxSizing: "border-box",
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-    overflow: "auto"
-  };
-
-  const headerRow = {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center"
-  };
-
-  const title = {
-    fontSize: "24px",
-    fontWeight: "600"
-  };
-
-  const subtitle = {
-    fontSize: "14px",
-    color: TEXT_MUTED
-  };
-
+  const cardLabel = { fontSize: "13px", color: TEXT_MUTED, marginBottom: "4px" };
+  const cardValue = { fontSize: "22px", fontWeight: "600" };
   const kpiRow = {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
     gap: "12px"
   };
-
-  const card = {
-    backgroundColor: CARD_BG,
-    border: `1px solid ${BORDER}`,
-    borderRadius: "10px",
-    padding: "12px 14px"
-  };
-
-  const cardLabel = {
-    fontSize: "13px",
-    color: TEXT_MUTED,
-    marginBottom: "4px"
-  };
-
-  const cardValue = {
-    fontSize: "22px",
-    fontWeight: "600"
-  };
-
-  const layoutRow = {
-    display: "flex",
-    flexDirection: "row",
-    gap: "16px",
-    flexWrap: "wrap"
-  };
-
-  const column = {
-    flex: 1,
-    minWidth: "260px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px"
-  };
-
-  const sectionTitle = {
-    fontSize: "16px",
-    fontWeight: "500",
-    marginBottom: "6px"
-  };
-
+  const layoutRow = { display: "flex", flexDirection: "row", gap: "16px", flexWrap: "wrap" };
+  const column = { flex: 1, minWidth: "260px", display: "flex", flexDirection: "column", gap: "12px" };
+  const sectionTitle = { fontSize: "16px", fontWeight: "500", marginBottom: "6px" };
   const listItem = {
     display: "flex",
     justifyContent: "space-between",
@@ -111,18 +30,17 @@ export default function AdminAnalytics() {
     padding: "6px 0",
     borderBottom: `1px solid ${BORDER}`
   };
-
-  const badge = () => ({
+  const badge = {
     fontSize: "11px",
     padding: "2px 6px",
     borderRadius: "999px",
     border: `1px solid ${BORDER}`,
     color: TEXT_MUTED,
     marginRight: "6px"
-  });
+  };
 
   if (errorMessage) {
-    return <AdminLayout><div style={container}>{errorMessage}</div></AdminLayout>;
+    return <AdminLayout><div style={container}><div style={errorBox}>{errorMessage}</div></div></AdminLayout>;
   }
 
   if (!analytics) {
@@ -130,43 +48,64 @@ export default function AdminAnalytics() {
   }
 
   const overview = analytics.overview || {};
-  const topWorkouts = analytics.topWorkouts || analytics.top_workouts || [];
-  const recentActivity = analytics.recentActivity || analytics.recent_activity || [];
+  const topWorkouts = analytics.top_workouts || [];
+  const recentActivity = analytics.recent_activity || [];
+  const series = analytics.daily_series || [];
+  const peak = Math.max(1, ...series.map(d => Math.max(d.logins, d.workouts, d.dailyLogs, d.signups)));
+
+  const kpis = [
+    ["Total Users", overview.totalUsers],
+    ["New Users (7 days)", overview.newUsers7d],
+    ["Active Users (7 days)", overview.activeUsers7d],
+    ["Logins (7 days)", overview.logins7d],
+    ["Workouts Logged (7 days)", overview.workoutsLogged7d],
+    ["Daily Logs (7 days)", overview.dailyLogs7d],
+  ];
 
   return (
     <AdminLayout>
-      <div style={container}>
-        {/* HEADER */}
-        <div style={headerRow}>
-          <div>
-            <div style={title}>Admin Analytics</div>
-            <div style={subtitle}>High‑level metrics across users, workouts, and logs.</div>
-          </div>
+      <div style={{ ...container, gap: "16px" }}>
+        <div>
+          <div style={{ fontSize: "24px", fontWeight: "600" }}>Admin Analytics</div>
+          <div style={subtitle}>Metrics computed from live user, login, workout, and log records.</div>
         </div>
 
-        {/* KPI CARDS */}
         <div style={kpiRow}>
-          <div style={card}>
-            <div style={cardLabel}>Total Users</div>
-            <div style={cardValue}>{overview.totalUsers}</div>
+          {kpis.map(([label, value]) => (
+            <div key={label} style={{ ...card, padding: "12px 14px" }}>
+              <div style={cardLabel}>{label}</div>
+              <div style={cardValue}>{value ?? 0}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={card}>
+          <div style={sectionTitle}>Last 7 Days</div>
+          <div style={{ display: "flex", gap: "8px", alignItems: "flex-end", height: "120px" }}>
+            {series.map(day => (
+              <div key={day.date} style={{ flex: 1, textAlign: "center" }}>
+                <div
+                  title={`${day.logins} logins, ${day.workouts} workouts, ${day.dailyLogs} daily logs, ${day.signups} signups`}
+                  style={{
+                    height: `${Math.round(((day.logins + day.workouts + day.dailyLogs) / (peak * 3)) * 100)}px`,
+                    minHeight: "2px",
+                    backgroundColor: ACCENT,
+                    borderRadius: "4px 4px 0 0"
+                  }}
+                />
+                <div style={{ fontSize: "11px", color: TEXT_MUTED, marginTop: "4px" }}>
+                  {day.date.slice(5)}
+                </div>
+                <div style={{ fontSize: "11px" }}>{day.logins + day.workouts + day.dailyLogs}</div>
+              </div>
+            ))}
           </div>
-          <div style={card}>
-            <div style={cardLabel}>Active Users (7 days)</div>
-            <div style={cardValue}>{overview.activeUsers7d}</div>
-          </div>
-          <div style={card}>
-            <div style={cardLabel}>Workouts Logged (7 days)</div>
-            <div style={cardValue}>{overview.workoutsLogged7d}</div>
-          </div>
-          <div style={card}>
-            <div style={cardLabel}>Daily Logs (7 days)</div>
-            <div style={cardValue}>{overview.dailyLogs7d}</div>
+          <div style={{ fontSize: "12px", color: TEXT_MUTED, marginTop: "6px" }}>
+            Daily total of logins, workouts and daily logs.
           </div>
         </div>
 
-        {/* MAIN LAYOUT */}
         <div style={layoutRow}>
-          {/* LEFT COLUMN – TOP WORKOUTS */}
           <div style={column}>
             <div style={card}>
               <div style={sectionTitle}>Top Workouts (7 days)</div>
@@ -176,10 +115,12 @@ export default function AdminAnalytics() {
                   <span style={{ color: ACCENT, fontWeight: "600" }}>{w.count}</span>
                 </div>
               ))}
+              {topWorkouts.length === 0 && (
+                <div style={{ color: TEXT_MUTED, fontSize: "14px" }}>No workouts logged in the last 7 days.</div>
+              )}
             </div>
           </div>
 
-          {/* RIGHT COLUMN – RECENT ACTIVITY */}
           <div style={column}>
             <div style={card}>
               <div style={sectionTitle}>Recent Activity</div>
@@ -187,18 +128,20 @@ export default function AdminAnalytics() {
                 <div key={item.id} style={listItem}>
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     <span style={{ fontSize: "13px" }}>
-                      <span style={badge(item.type)}>{item.type}</span>
+                      <span style={badge}>{item.type}</span>
                       {item.detail}
                     </span>
                     <span style={{ fontSize: "12px", color: TEXT_MUTED }}>{item.user}</span>
                   </div>
-                  <span style={{ fontSize: "12px", color: TEXT_MUTED }}>{item.time}</span>
+                  <span style={{ fontSize: "12px", color: TEXT_MUTED }}>{formatDateTime(item.time)}</span>
                 </div>
               ))}
+              {recentActivity.length === 0 && (
+                <div style={{ color: TEXT_MUTED, fontSize: "14px" }}>No activity in the last 7 days.</div>
+              )}
             </div>
           </div>
         </div>
-
       </div>
     </AdminLayout>
   );

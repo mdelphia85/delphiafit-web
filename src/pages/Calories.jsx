@@ -4,11 +4,14 @@ import { MenuContext } from "../context/MenuContext.jsx";
 import useNutritionTargets from "../hooks/useNutritionTargets.js";
 import TargetPanel from "../components/TargetPanel.jsx";
 import { EstimateNote, MissingDataNotice } from "../components/NutritionNotices.jsx";
+import useDailyConsumption from "../hooks/useDailyConsumption.js";
 
 export default function Calories() {
   const caloriesColor = "rgb(0, 255, 0)"; // Correct green for Calories screen
 
-  const [calories, setCalories] = useState(0);
+  const [localCalories, setCalories] = useState(null);
+  const { savedTotal, status: saveStatus, save } = useDailyConsumption("calories");
+  const calories = localCalories ?? savedTotal;
   const [gender, setGender] = useState("male"); // male or female
   const [showCelebration, setShowCelebration] = useState(false);
 
@@ -23,7 +26,7 @@ export default function Calories() {
 
   function addCalories(amount) {
     setCalories(prev => {
-      const updated = prev + amount;
+      const updated = (prev ?? savedTotal) + amount;
       checkCelebration(updated);
       return updated;
     });
@@ -58,6 +61,7 @@ export default function Calories() {
 
   function saveCalories() {
     checkCelebration(calories);
+    save(calories);
   }
 
   return (
@@ -178,6 +182,7 @@ export default function Calories() {
         >
           Save
         </div>
+        {saveStatus && <div role="status" style={{ textAlign: "center", marginTop: 8 }}>{saveStatus}</div>}
 
         {/* RETURN TO MENU */}
         <div

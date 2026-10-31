@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import Footer from "./footer.jsx";
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -65,6 +66,7 @@ export default function Landing() {
       >
         Login
       </div>
+      <Footer />
     </div>
   );
 }

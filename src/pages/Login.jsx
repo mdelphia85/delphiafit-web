@@ -1,113 +1,30 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useContext } from "react";
+import { useState } from "react";
 import homescreen from "../assets/homescreen.png";
-import menuIcon from "../assets/menu.png";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { apiRequest } from "../utils/api.js";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { menuOpen, setMenuOpen } = useContext(MenuContext);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   async function handleLogin() {
-    if (!email.includes("@") || password.length < 1) {
-      setStatus("error");
-      setErrorMessage("Invalid email or password.");
-      return;
-    }
-
+    if (!email.includes("@") || password.length < 1) { setStatus("error"); setErrorMessage("Invalid email or password."); return; }
     setStatus("loading");
-
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!res.ok) {
-        setStatus("error");
-        setErrorMessage("Invalid email or password.");
-        return;
-      }
-
-      const data = await res.json();
-
-      // ⭐ Save JWT + email + login state
+      const data = await apiRequest("/auth/login", { method: "POST", body: { email, password } });
+      if (!data?.access_token) throw new Error("Login response did not include a session token.");
       localStorage.setItem("token", data.access_token);
       localStorage.setItem("userEmail", email);
       localStorage.setItem("loggedIn", "true");
-
-      setStatus("success");
-
-      // ⭐ FIX: NO REDIRECT — Login screen becomes Home screen
-      setTimeout(() => {
-        setIsLoggedIn(true);
-      }, 600);
-
-    } catch (err) {
-      setStatus("error");
-      setErrorMessage("Server error. Please try again.");
-    }
+      setStatus("success"); navigate("/profile", { replace: true });
+    } catch (err) { setStatus("error"); setErrorMessage(err.status === 401 ? "Invalid email or password." : err.message || "Server error. Please try again."); }
   }
 
-  // ⭐ AFTER LOGIN → HOME SCREEN (NO REDIRECT)
-  if (isLoggedIn) {
-    return (
-      <div
-        style={{
-          minHeight: "100vh",
-          backgroundImage: `url(${homescreen})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          color: "white",
-          padding: "40px 20px",
-          textAlign: "center",
-          position: "relative"
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            backgroundColor: "rgba(0,0,0,0.72)",
-            zIndex: 1
-          }}
-        ></div>
-
-        <img
-          src={menuIcon}
-          alt="menu"
-          onClick={() => setMenuOpen(!menuOpen)}
-          style={{
-            position: "absolute",
-            top: "40px",
-            left: "20px",
-            width: "120px",
-            height: "120px",
-            zIndex: 3,
-            cursor: "pointer"
-          }}
-        />
-
-        <div style={{ position: "relative", zIndex: 2 }}>
-          <h1 style={{ fontSize: "40px", fontWeight: "700" }}>Home</h1>
-          <p style={{ fontSize: "22px", marginTop: "20px" }}>
-            Welcome back!
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // ⭐ BEFORE LOGIN → LOGIN FORM
   const inputStyle = {
     padding: "12px 4px",
     border: "none",
@@ -191,7 +108,7 @@ export default function Login() {
           Forgot Password?
         </div>
 
-        <div
+        <button type="button" disabled={status === "loading"}
           onClick={handleLogin}
           style={{
             color:
@@ -213,7 +130,7 @@ export default function Login() {
             : status === "success"
             ? "Success!"
             : "Login"}
-        </div>
+        </button>
 
         {status === "error" && (
           <p style={{ color: "red", marginTop: "12px" }}>

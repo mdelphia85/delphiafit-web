@@ -1,385 +1,128 @@
-import React, { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
+import { apiRequest } from "../utils/api.js";
 
-const initialFriends = [
-  { name: "Ava Thompson", streak: 12, status: "Training today", following: true },
-  { name: "Marcus Lee", streak: 9, status: "Meal logged", following: true },
-  { name: "Jasmine Cruz", streak: 18, status: "New PR", following: false },
-  { name: "Daniel Ortiz", streak: 6, status: "Rest day", following: false }
-];
-
-const profileCards = [
-  { name: "Ava Thompson", focus: "Strength", wins: "3 PRs this month" },
-  { name: "Marcus Lee", focus: "Endurance", wins: "12-mile weekend run" },
-  { name: "Jasmine Cruz", focus: "Hybrid", wins: "21 day streak" },
-  { name: "Daniel Ortiz", focus: "Recovery", wins: "Best sleep score" }
-];
-
-const initialPosts = [
-  {
-    text: "Finished a 30 minute strength block and felt great.",
-    timestamp: "2h ago",
-    reactions: { like: 9, fire: 3, support: 4 },
-    comments: [
-      { user: "Marcus", text: "Nice work!" },
-      { user: "Jasmine", text: "That consistency is paying off." }
-    ]
-  },
-  {
-    text: "Logged my protein goal for the day. Keep it moving.",
-    timestamp: "5h ago",
-    reactions: { like: 12, fire: 2, support: 8 },
-    comments: [{ user: "Ava", text: "Solid effort." }]
-  },
-  {
-    text: "Weekend challenge is on — who is in?",
-    timestamp: "Yesterday",
-    reactions: { like: 16, fire: 5, support: 7 },
-    comments: [{ user: "Daniel", text: "I’m in." }]
-  }
-];
+const COLOR = "purple";
 
 export default function Community() {
   const { setMenuOpen } = useContext(MenuContext);
-
-  const COMMUNITY_COLOR = "purple";
-
+  const [posts, setPosts] = useState([]);
+  const [profiles, setProfiles] = useState([]);
   const [text, setText] = useState("");
-  const [posts, setPosts] = useState(initialPosts);
-  const [friends, setFriends] = useState(initialFriends);
-  const [selectedProfile, setSelectedProfile] = useState(profileCards[0]);
-  const [commentDrafts, setCommentDrafts] = useState({});
+  const [drafts, setDrafts] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
-  function handlePost() {
-    if (!text.trim()) return;
-
-    const newPost = {
-      text,
-      timestamp: "Just now",
-      reactions: { like: 0, fire: 0, support: 0 },
-      comments: []
-    };
-
-    setPosts([newPost, ...posts]);
-    setText("");
+  async function loadFeed() {
+    setLoading(true);
+    setError("");
+    try {
+      const feed = await apiRequest("/social/posts");
+      setPosts(Array.isArray(feed) ? feed : []);
+    } catch (requestError) {
+      setError(requestError.message || "Unable to load community posts.");
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function handleReaction(index, key) {
-    setPosts(prev =>
-      prev.map((post, i) => {
-        if (i !== index) return post;
-
-        return {
-          ...post,
-          reactions: {
-            ...post.reactions,
-            [key]: (post.reactions[key] || 0) + 1
-          }
-        };
+  useEffect(() => {
+    let active = true;
+    Promise.all([apiRequest("/social/posts"), apiRequest("/community/profiles")])
+      .then(([feed, members]) => {
+        if (active) {
+          setPosts(Array.isArray(feed) ? feed : []);
+          setProfiles(Array.isArray(members) ? members : []);
+        }
       })
-    );
+      .catch((requestError) => { if (active) setError(requestError.message || "Unable to load community."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  async function toggleFollow(profile) {
+    try {
+      await apiRequest(`/community/follows/${profile.id}`, { method: profile.following ? "DELETE" : "POST" });
+      setProfiles((rows) => rows.map((row) => row.id === profile.id ? { ...row, following: !profile.following } : row));
+    } catch (requestError) {
+      setError(requestError.message || "Unable to update follow status.");
+    }
   }
 
-  function handleCommentSubmit(index) {
-    const draft = (commentDrafts[index] || "").trim();
-    if (!draft) return;
-
-    setPosts(prev =>
-      prev.map((post, i) => {
-        if (i !== index) return post;
-
-        return {
-          ...post,
-          comments: [...post.comments, { user: "You", text: draft }]
-        };
-      })
-    );
-
-    setCommentDrafts(prev => ({ ...prev, [index]: "" }));
+  async function handlePost(event) {
+    event.preventDefault();
+    if (!text.trim() || saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      await apiRequest(`/social/posts?content=${encodeURIComponent(text.trim())}`, { method: "POST" });
+      setText("");
+      await loadFeed();
+    } catch (requestError) {
+      setError(requestError.message || "Unable to publish your post.");
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function toggleFollow(name) {
-    setFriends(prev =>
-      prev.map(friend =>
-        friend.name === name
-          ? { ...friend, following: !friend.following }
-          : friend
-      )
-    );
+  async function handleReaction(post) {
+    setError("");
+    try {
+      await apiRequest(`/social/posts/${post.id}/reactions?reaction_type=like`, { method: "POST" });
+      await loadFeed();
+    } catch (requestError) {
+      setError(requestError.message || "Unable to save reaction.");
+    }
+  }
+
+  async function handleComment(post) {
+    const content = (drafts[post.id] || "").trim();
+    if (!content) return;
+    setError("");
+    try {
+      await apiRequest(`/social/posts/${post.id}/comments?content=${encodeURIComponent(content)}`, { method: "POST" });
+      setDrafts((previous) => ({ ...previous, [post.id]: "" }));
+      await loadFeed();
+    } catch (requestError) {
+      setError(requestError.message || "Unable to add comment.");
+    }
+  }
+
+  function countLikes(reactions) {
+    return reactions.filter((reaction) => reaction.reaction_type === "like").length;
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        width: "100vw",
-        backgroundColor: "black",
-        padding: "20px 20px 90px",
-        overflowY: "auto",
-        boxSizing: "border-box",
-        position: "relative",
-        color: "white"
-      }}
-    >
-      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-        <div>
-          <p style={{ color: COMMUNITY_COLOR, fontSize: "28px", margin: "0 0 12px" }}>
-            Community
-          </p>
-
-          <div
-            style={{
-              background: "#111",
-              border: `1px solid ${COMMUNITY_COLOR}`,
-              borderRadius: "12px",
-              padding: "12px 14px"
-            }}
-          >
-            <div style={{ color: "#ddd", fontSize: "15px", marginBottom: "8px" }}>
-              Featured profile
+    <main style={{ minHeight: "100vh", width: "100vw", backgroundColor: "black", padding: "20px 20px 90px", boxSizing: "border-box", color: "white" }}>
+      <section style={{ maxWidth: "760px", margin: "0 auto" }}>
+        <h1 style={{ color: COLOR, fontSize: "28px" }}>Community</h1>
+        <section style={{ marginBottom: "18px" }}>
+          <h2 style={{ color: COLOR, fontSize: "20px" }}>Community members</h2>
+          {profiles.length === 0 ? <p>No other members to follow yet.</p> : profiles.map((profile) => <div key={profile.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#111", padding: "10px 12px", marginBottom: "6px", borderRadius: "8px" }}><span>{profile.name}</span><button type="button" onClick={() => toggleFollow(profile)} style={{ background: profile.following ? "transparent" : COLOR, color: profile.following ? COLOR : "#000", border: `1px solid ${COLOR}`, borderRadius: "999px", padding: "6px 12px", cursor: "pointer" }}>{profile.following ? "Following" : "Follow"}</button></div>)}
+        </section>
+        <form onSubmit={handlePost} style={{ background: "#111", border: `1px solid ${COLOR}`, borderRadius: "12px", padding: "14px", marginBottom: "18px" }}>
+          <label htmlFor="community-post" style={{ display: "block", marginBottom: "8px" }}>Share something</label>
+          <textarea id="community-post" value={text} onChange={(event) => setText(event.target.value)} maxLength={5000} rows={3} style={{ width: "100%", boxSizing: "border-box", resize: "vertical", background: "#000", color: "white", border: "1px solid #333", borderRadius: "8px", padding: "10px" }} />
+          <button type="submit" disabled={saving || !text.trim()} style={{ marginTop: "10px", background: COLOR, border: 0, borderRadius: "8px", padding: "9px 16px", fontWeight: 700, cursor: "pointer" }}>{saving ? "Posting..." : "Post"}</button>
+        </form>
+        {error && <p role="alert" style={{ color: "#ff8b8b" }}>{error}</p>}
+        {loading ? <p>Loading community...</p> : posts.length === 0 ? <p>No community posts yet. Start the conversation.</p> : posts.map((post) => (
+          <article key={post.id} style={{ background: "#111", border: "1px solid #333", borderRadius: "10px", padding: "14px", marginBottom: "14px" }}>
+            <div style={{ color: "#aaa", fontSize: "12px", marginBottom: "8px" }}>Member {post.user_id} | {post.created_at ? new Date(post.created_at).toLocaleString() : ""}</div>
+            <p style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{post.content}</p>
+            <button type="button" onClick={() => handleReaction(post)} style={{ background: "transparent", border: `1px solid ${COLOR}`, color: COLOR, borderRadius: "999px", padding: "5px 10px", cursor: "pointer" }}>Like {countLikes(post.reactions || [])}</button>
+            <div style={{ marginTop: "12px" }}>
+              {(post.comments || []).map((comment) => <p key={comment.id} style={{ background: "#000", padding: "8px", borderRadius: "6px" }}><strong style={{ color: COLOR }}>Member {comment.user_id}: </strong>{comment.content}</p>)}
+              <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
+                <input aria-label={`Comment on post ${post.id}`} value={drafts[post.id] || ""} onChange={(event) => setDrafts((previous) => ({ ...previous, [post.id]: event.target.value }))} maxLength={2000} placeholder="Write a comment..." style={{ flex: 1, minWidth: 0, background: "#000", color: "white", border: "1px solid #333", borderRadius: "8px", padding: "8px" }} />
+                <button type="button" onClick={() => handleComment(post)} disabled={!(drafts[post.id] || "").trim()} style={{ background: COLOR, border: 0, borderRadius: "8px", padding: "0 12px", cursor: "pointer" }}>Comment</button>
+              </div>
             </div>
-            <div style={{ color: COMMUNITY_COLOR, fontSize: "22px", fontWeight: "700" }}>
-              {selectedProfile.name}
-            </div>
-            <div style={{ color: "#ddd", fontSize: "16px", marginTop: "6px" }}>
-              {selectedProfile.focus}
-            </div>
-            <div style={{ color: "#ddd", fontSize: "15px", marginTop: "10px" }}>
-              {selectedProfile.wins}
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <p style={{ color: COMMUNITY_COLOR, fontSize: "24px", margin: "0 0 12px" }}>
-            Friends
-          </p>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {friends.map(friend => (
-              <div
-                key={friend.name}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  background: "#111",
-                  borderRadius: "10px",
-                  padding: "10px 12px",
-                  border: "1px solid #333"
-                }}
-              >
-                <div>
-                  <div style={{ color: "white", fontSize: "18px", fontWeight: "600" }}>
-                    {friend.name}
-                  </div>
-                  <div style={{ color: "#ddd", fontSize: "14px" }}>
-                    {friend.status}
-                  </div>
-                  <div style={{ color: COMMUNITY_COLOR, fontSize: "13px", marginTop: "2px" }}>
-                    {friend.streak} day streak
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => toggleFollow(friend.name)}
-                  style={{
-                    background: friend.following ? "transparent" : COMMUNITY_COLOR,
-                    color: friend.following ? COMMUNITY_COLOR : "black",
-                    border: `1px solid ${COMMUNITY_COLOR}`,
-                    borderRadius: "999px",
-                    padding: "7px 12px",
-                    cursor: "pointer",
-                    fontWeight: "700"
-                  }}
-                >
-                  {friend.following ? "Following" : "Follow"}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <p style={{ color: COMMUNITY_COLOR, fontSize: "24px", margin: "0 0 12px" }}>
-            Profiles
-          </p>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {profileCards.map(profile => (
-              <div
-                key={profile.name}
-                onClick={() => setSelectedProfile(profile)}
-                style={{
-                  background: selectedProfile.name === profile.name ? "#1b1b1b" : "#111",
-                  border: `1px solid ${selectedProfile.name === profile.name ? COMMUNITY_COLOR : "#333"}`,
-                  borderRadius: "10px",
-                  padding: "12px",
-                  cursor: "pointer"
-                }}
-              >
-                <div style={{ color: "white", fontSize: "18px", fontWeight: "600" }}>
-                  {profile.name}
-                </div>
-                <div style={{ color: "#ddd", fontSize: "14px", marginTop: "4px" }}>
-                  {profile.focus}
-                </div>
-                <div style={{ color: COMMUNITY_COLOR, fontSize: "13px", marginTop: "6px" }}>
-                  {profile.wins}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <p style={{ color: COMMUNITY_COLOR, fontSize: "26px", marginBottom: "10px" }}>
-            Share something...
-          </p>
-
-          <input
-            type="text"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            style={{
-              width: "100%",
-              backgroundColor: "black",
-              border: "none",
-              outline: "none",
-              color: COMMUNITY_COLOR,
-              caretColor: COMMUNITY_COLOR,
-              fontSize: "22px",
-              marginBottom: "20px"
-            }}
-          />
-
-          <p
-            onClick={handlePost}
-            style={{
-              color: COMMUNITY_COLOR,
-              fontSize: "26px",
-              textAlign: "center",
-              textDecoration: "underline",
-              cursor: "pointer",
-              marginBottom: "30px"
-            }}
-          >
-            Post
-          </p>
-
-          {posts.map((p, index) => (
-            <div
-              key={index}
-              style={{
-                background: "#111",
-                border: "1px solid #333",
-                borderRadius: "10px",
-                padding: "12px 14px",
-                marginBottom: "14px"
-              }}
-            >
-              <div style={{ color: "white", fontSize: "18px", marginBottom: "6px" }}>
-                {p.text}
-              </div>
-              <div style={{ color: "#aaa", fontSize: "12px", marginBottom: "10px" }}>
-                {p.timestamp}
-              </div>
-
-              <div style={{ display: "flex", gap: "8px", marginBottom: "12px", flexWrap: "wrap" }}>
-                {Object.entries(p.reactions || {}).map(([key, value]) => (
-                  <button
-                    key={key}
-                    onClick={() => handleReaction(index, key)}
-                    style={{
-                      background: "transparent",
-                      border: `1px solid ${COMMUNITY_COLOR}`,
-                      color: COMMUNITY_COLOR,
-                      borderRadius: "999px",
-                      padding: "4px 8px",
-                      cursor: "pointer",
-                      fontSize: "12px"
-                    }}
-                  >
-                    {key} {value}
-                  </button>
-                ))}
-              </div>
-
-              <div style={{ marginBottom: "10px" }}>
-                <input
-                  type="text"
-                  value={commentDrafts[index] || ""}
-                  onChange={e =>
-                    setCommentDrafts(prev => ({
-                      ...prev,
-                      [index]: e.target.value
-                    }))
-                  }
-                  placeholder="Write a comment..."
-                  style={{
-                    width: "100%",
-                    background: "#000",
-                    color: "white",
-                    border: "1px solid #333",
-                    borderRadius: "8px",
-                    padding: "8px 10px",
-                    outline: "none",
-                    boxSizing: "border-box"
-                  }}
-                />
-
-                <div
-                  onClick={() => handleCommentSubmit(index)}
-                  style={{
-                    color: COMMUNITY_COLOR,
-                    fontSize: "14px",
-                    textDecoration: "underline",
-                    cursor: "pointer",
-                    marginTop: "8px"
-                  }}
-                >
-                  Comment
-                </div>
-              </div>
-
-              {(p.comments || []).length > 0 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                  {(p.comments || []).map((comment, commentIndex) => (
-                    <div
-                      key={commentIndex}
-                      style={{
-                        background: "#000",
-                        borderRadius: "8px",
-                        padding: "8px 10px",
-                        border: "1px solid #222"
-                      }}
-                    >
-                      <span style={{ color: COMMUNITY_COLOR, fontWeight: "700" }}>{comment.user}: </span>
-                      <span style={{ color: "#ddd" }}>{comment.text}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <p
-        onClick={() => setMenuOpen(true)}
-        style={{
-          position: "fixed",
-          bottom: "20px",
-          right: "20px",
-          color: COMMUNITY_COLOR,
-          fontSize: "22px",
-          textDecoration: "underline",
-          cursor: "pointer",
-          zIndex: 20
-        }}
-      >
-        Return to Menu
-      </p>
-    </div>
+          </article>
+        ))}
+      </section>
+      <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: "20px", right: "20px", color: COLOR, background: "black", border: 0, textDecoration: "underline", fontSize: "18px", cursor: "pointer" }}>Return to Menu</button>
+    </main>
   );
 }

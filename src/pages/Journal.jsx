@@ -1,5 +1,7 @@
-import React, { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
+import { userDataApi } from "../utils/userDataApi.js";
+import { apiRequest } from "../utils/api.js";
 
 export default function Journal() {
   const MAGENTA = "#FF2ECC"; // your exact magenta accent
@@ -7,6 +9,9 @@ export default function Journal() {
 
   const [entry, setEntry] = useState("");
   const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const [showRecallModal, setShowRecallModal] = useState(false);
   const [showKeywordModal, setShowKeywordModal] = useState(false);
@@ -18,30 +23,41 @@ export default function Journal() {
   const [keyword, setKeyword] = useState("");
   const [dateQuery, setDateQuery] = useState("");
 
-  // Load entries from localStorage
+  // Load server records and import existing device-only notes once without discarding them.
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("journal_entries") || "[]");
-    setEntries(saved);
+    let active = true;
+    userDataApi.list("journal").then(async (records) => {
+      const legacy = JSON.parse(localStorage.getItem("journal_entries") || "[]");
+      let rows = records.map((record) => ({ ...record.data, id: record.id, timestamp: record.data.timestamp || record.created_at }));
+      if (!rows.length && legacy.length && localStorage.getItem("journal_entries_imported") !== "1") {
+        const legacyEmail = localStorage.getItem("userEmail");
+        const account = await apiRequest("/auth/me");
+        if (legacyEmail && legacyEmail.toLowerCase() === String(account.email).toLowerCase()) {
+          const imported = await Promise.all(legacy.map((record) => userDataApi.create("journal", record)));
+          rows = imported.map((record) => ({ ...record.data, id: record.id, timestamp: record.data.timestamp || record.created_at }));
+          localStorage.setItem("journal_entries_imported", "1");
+        } else if (active) {
+          setError("Existing device-only entries were preserved and not imported because their owner could not be verified.");
+        }
+      }
+      if (active) setEntries(rows);
+    }).catch((err) => active && setError(err.message || "Unable to load journal entries."))
+      .finally(() => active && setLoading(false));
+    return () => { active = false; };
   }, []);
 
-  // Save entries to localStorage
-  const saveEntries = (updated) => {
-    localStorage.setItem("journal_entries", JSON.stringify(updated));
-    setEntries(updated);
-  };
-
-  // Save new entry
-  const saveEntry = () => {
+  const saveEntry = async () => {
     if (!entry.trim()) return;
-
-    const newEntry = {
-      text: entry.trim(),
-      timestamp: new Date().toISOString(),
-    };
-
-    const updated = [newEntry, ...entries];
-    saveEntries(updated);
-    setEntry("");
+    setSaving(true);
+    setError("");
+    const record = { text: entry.trim(), timestamp: new Date().toISOString() };
+    try {
+      const saved = await userDataApi.create("journal", record);
+      setEntries((current) => [{ ...record, id: saved.id }, ...current]);
+      setEntry("");
+    } catch (err) {
+      setError(err.message || "Unable to save journal entry.");
+    } finally { setSaving(false); }
   };
 
   // Open entry viewer
@@ -72,6 +88,9 @@ export default function Journal() {
     >
 
       {/* MULTILINE INPUT — NO HEADER */}
+      {loading && <p role="status">Loading journal...</p>}
+      {saving && <p role="status">Saving entry...</p>}
+      {error && <p role="alert">{error}</p>}
       <textarea
         className="journal-input"
         value={entry}

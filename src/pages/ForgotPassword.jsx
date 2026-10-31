@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import homescreen from "../assets/homescreen.png";
-import { API } from "../config/api.js";
+import { apiRequest } from "../utils/api.js";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -9,40 +9,13 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [deliveryInfo, setDeliveryInfo] = useState("");
 
   async function handleSend() {
-    if (!email.includes("@")) {
-      setStatus("error");
-      setErrorMessage("Please enter a valid email.");
-      return;
-    }
-
+    if (!email.includes("@")) { setStatus("error"); setErrorMessage("Please enter a valid email."); return; }
     setStatus("loading");
-
-    try {
-      const res = await fetch(
-        `${API}/auth/forgot-password`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        }
-      );
-
-      if (!res.ok) {
-        setStatus("error");
-        setErrorMessage("Email not found or server error.");
-        return;
-      }
-
-      // Backend returns: { message: "Reset email sent" }
-      await res.json();
-
-      setStatus("success");
-    } catch (err) {
-      setStatus("error");
-      setErrorMessage("Server error. Please try again.");
-    }
+    try { const result = await apiRequest("/auth/forgot-password", { method: "POST", body: { email } }); setStatus("success"); setDeliveryInfo(result.delivery_configured ? "If the account exists, reset instructions have been sent." : "Password-reset email delivery is not configured. Contact support to regain access."); }
+    catch (err) { setStatus("error"); setErrorMessage(err.message || "Unable to request password reset."); }
   }
 
   const inputStyle = {
@@ -105,7 +78,7 @@ export default function ForgotPassword() {
         />
 
         {/* SEND RESET LINK */}
-        <div
+        <button type="button" disabled={status === "loading"}
           onClick={handleSend}
           style={{
             color:
@@ -127,10 +100,12 @@ export default function ForgotPassword() {
             : status === "success"
             ? "Email Sent!"
             : "Send Reset Link"}
-        </div>
+        </button>
+
+        {status === "success" && <p role="status" style={{ color: "#b7f7cf" }}>{deliveryInfo}</p>}
 
         {/* ALWAYS VISIBLE RESET PASSWORD LINK */}
-        <div
+        <button type="button"
           onClick={() => navigate("/reset-password")}
           style={{
             color: "#4da6ff",
@@ -142,7 +117,7 @@ export default function ForgotPassword() {
           }}
         >
           Reset Password
-        </div>
+        </button>
 
         {/* ERROR MESSAGE */}
         {status === "error" && (

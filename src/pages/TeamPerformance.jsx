@@ -1,85 +1,55 @@
-import React, { useContext } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
+import CoachShell from "../components/CoachShell.jsx";
+import StatusMessage from "../components/StatusMessage.jsx";
+import TeamPicker from "../components/TeamPicker.jsx";
+import { COACH_COLOR, cardStyle } from "../components/coachStyles.js";
+import { useCoachRequest } from "../utils/coachSession.js";
+import useTeamRoster from "../utils/useTeamRoster.js";
 
 export default function TeamPerformance() {
-  const { setMenuOpen } = useContext(MenuContext);
-  const PERF_COLOR = "#34d399";
+  const request = useCoachRequest();
+  const { teams, teamId, setTeamId, roster, status, error } = useTeamRoster(request);
+  const clients = (roster && roster.clients) || [];
+  const active = clients.filter((c) => (c.active_days_7d || 0) > 0).length;
+  const workouts = clients.reduce((sum, c) => sum + (c.workouts_7d || 0), 0);
 
   return (
-    <div
-      style={{
-        width: "100vw",
-        minHeight: "100vh",
-        backgroundColor: "#000",
-        padding: "16px 16px 90px",
-        boxSizing: "border-box",
-        display: "flex",
-        justifyContent: "center",
-        overflowY: "auto",
-        color: "#fff"
-      }}
-    >
-      <div style={{ width: "360px", maxWidth: "100%" }}>
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <div style={{ color: PERF_COLOR, fontSize: "28px", fontWeight: "700" }}>📊 Team Performance</div>
-        </div>
-
-        {[
-          { label: "Team Workload", value: "High", trend: "↑ 12%" },
-          { label: "Avg Recovery", value: "72%", trend: "→ Stable" },
-          { label: "Injury Risk", value: "Low", trend: "↓ 3%" },
-          { label: "Performance Index", value: "8.2/10", trend: "↑ 5%" }
-        ].map((metric, idx) => (
-          <div
-            key={idx}
-            style={{
-              background: "#111",
-              border: "1px solid #2a2a2a",
-              borderRadius: "12px",
-              padding: "14px",
-              marginBottom: "10px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center"
-            }}
-          >
-            <div style={{ fontWeight: "600" }}>{metric.label}</div>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: "16px", fontWeight: "700", color: PERF_COLOR }}>{metric.value}</div>
-              <div style={{ fontSize: "11px", color: "#999" }}>{metric.trend}</div>
-            </div>
+    <CoachShell title="📊 Team Performance">
+      <TeamPicker teams={teams} value={teamId} onChange={setTeamId} />
+      {status === "error" && <StatusMessage error>{error}</StatusMessage>}
+      {status === "loading" && <StatusMessage>Loading team...</StatusMessage>}
+      {status === "ready" && teams.length === 0 && <StatusMessage>You have no teams yet. Create one in Team Operations.</StatusMessage>}
+      {roster && status === "ready" && (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", marginBottom: "16px" }}>
+            {[
+              { label: "Athletes", value: clients.length },
+              { label: "Active this week", value: active },
+              { label: "Workouts (7d)", value: workouts }
+            ].map((s) => (
+              <div key={s.label} style={{ ...cardStyle, textAlign: "center", padding: "10px" }}>
+                <div style={{ color: COACH_COLOR, fontSize: "20px", fontWeight: "700" }}>{s.value}</div>
+                <div style={{ color: "#999", fontSize: "11px" }}>{s.label}</div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-
-      <div
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          width: "100%",
-          height: "40px",
-          background: "#000",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          padding: "0 16px",
-          boxSizing: "border-box",
-          zIndex: 20
-        }}
-      >
-        <div
-          style={{
-            color: PERF_COLOR,
-            fontSize: "18px",
-            textDecoration: "underline",
-            cursor: "pointer"
-          }}
-          onClick={() => setMenuOpen(true)}
-        >
-          Return to Menu
-        </div>
-      </div>
-    </div>
+          {clients.length === 0 ? (
+            <StatusMessage>No athletes on this team yet.</StatusMessage>
+          ) : (
+            clients.map((c) => (
+              <div key={c.id} style={{ ...cardStyle, marginBottom: "8px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                  <span>{c.name}</span>
+                  <span style={{ color: "#999" }}>{c.workouts_7d || 0} workout(s)</span>
+                </div>
+                <div style={{ background: "#222", height: "6px", borderRadius: "4px", marginTop: "6px", overflow: "hidden" }}>
+                  <div style={{ width: `${Math.min(100, ((c.active_days_7d || 0) / 7) * 100)}%`, height: "100%", background: COACH_COLOR }} />
+                </div>
+                <div style={{ color: "#777", fontSize: "11px", marginTop: "4px" }}>{c.active_days_7d || 0} of 7 days active</div>
+              </div>
+            ))
+          )}
+        </>
+      )}
+    </CoachShell>
   );
 }

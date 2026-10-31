@@ -1,12 +1,14 @@
+import { Link } from "react-router-dom";
+
 export default function Footer() {
   return (
     <footer className="footer">
       <div className="footer-content">
 
         <div className="footer-links">
-          <a href="/privacy">Privacy Policy</a>
+          <Link to="/privacy">Privacy Policy</Link>
           <span className="divider">|</span>
-          <a href="/terms">Terms of Service</a>
+          <Link to="/terms">Terms of Service</Link>
           <span className="divider">|</span>
           <a href="mailto:delphiadesignsllc@gmail.com">Contact</a>
         </div>
@@ -17,7 +19,7 @@ export default function Footer() {
         </div>
 
         <div className="footer-cookies">
-          <p>This site uses basic cookies for login and session functionality.</p>
+          <p>This site uses browser storage for login session functionality.</p>
         </div>
 
       </div>

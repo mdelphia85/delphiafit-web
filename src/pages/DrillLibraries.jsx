@@ -1,220 +1,110 @@
-import React, { useContext, useState } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { useCallback, useEffect, useState } from "react";
+import CoachShell from "../components/CoachShell.jsx";
+import StatusMessage from "../components/StatusMessage.jsx";
+import { COACH_COLOR, cardStyle, dangerButton, inputStyle, primaryButton, secondaryButton } from "../components/coachStyles.js";
+import { errorText, useCoachRequest } from "../utils/coachSession.js";
 
-const drillCategories = [
-  {
-    category: "Strength",
-    drills: [
-      { id: 1, name: "Barbell Squat", reps: "5x5", intensity: "High" },
-      { id: 2, name: "Deadlift", reps: "3x3", intensity: "High" },
-      { id: 3, name: "Bench Press", reps: "4x6", intensity: "High" }
-    ]
-  },
-  {
-    category: "Cardio",
-    drills: [
-      { id: 4, name: "Tempo Run", distance: "5km", pace: "5:30/km" },
-      { id: 5, name: "High Intensity Intervals", distance: "8x400m", pace: "90sec" },
-      { id: 6, name: "Long Run", distance: "15km", pace: "6:00/km" }
-    ]
-  },
-  {
-    category: "Sports",
-    drills: [
-      { id: 7, name: "Cone Dribbling", reps: "3x30sec", focus: "Agility" },
-      { id: 8, name: "Pass Accuracy", reps: "20 passes", focus: "Technique" },
-      { id: 9, name: "Shot On Goal", reps: "15 shots", focus: "Accuracy" }
-    ]
-  }
-];
+const EMPTY = { name: "", category: "", difficulty: "medium", equipment: "", instructions: "", video_url: "" };
 
 export default function DrillLibraries() {
-  const { setMenuOpen } = useContext(MenuContext);
-  const [selectedCategory, setSelectedCategory] = useState("Strength");
-  const [selectedDrill, setSelectedDrill] = useState(null);
+  const request = useCoachRequest();
+  const [drills, setDrills] = useState([]);
+  const [status, setStatus] = useState("loading");
+  const [error, setError] = useState("");
+  const [form, setForm] = useState(null);
+  const [busy, setBusy] = useState(false);
 
-  const COACH_COLOR = "#ec4899";
-  const BLACK = "#000";
-  const WHITE = "#fff";
+  const load = useCallback(async () => {
+    try {
+      const data = await request("/staff/drills");
+      setDrills(data.drills || []);
+      setStatus("ready");
+    } catch (e) {
+      setError(errorText(e, "Unable to load drills."));
+      setStatus("error");
+    }
+  }, [request]);
 
-  const drills = drillCategories.find((c) => c.category === selectedCategory)?.drills || [];
+  useEffect(() => {
+    const timer = setTimeout(() => load(), 0);
+    return () => clearTimeout(timer);
+  }, [load]);
+
+  async function save() {
+    if (form.name.trim().length < 2) {
+      setError("Give the drill a name.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    const body = Object.fromEntries(Object.entries(form).filter(([key]) => key !== "id").map(([k, v]) => [k, v === "" ? null : v]));
+    body.name = form.name.trim();
+    try {
+      if (form.id) await request(`/staff/drills/${form.id}`, { method: "PUT", body });
+      else await request("/staff/drills", { method: "POST", body });
+      setForm(null);
+      await load();
+    } catch (e) {
+      setError(errorText(e, "Could not save the drill."));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function remove(drill) {
+    if (!window.confirm(`Delete "${drill.name}"?`)) return;
+    try {
+      await request(`/staff/drills/${drill.id}`, { method: "DELETE" });
+      await load();
+    } catch (e) {
+      setError(errorText(e, "Could not delete the drill."));
+    }
+  }
+
+  const set = (key) => (event) => setForm({ ...form, [key]: event.target.value });
+
+  if (form) {
+    return (
+      <CoachShell title="🎯 Drill Library">
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <input aria-label="Drill name" placeholder="Drill name" style={inputStyle} value={form.name} onChange={set("name")} />
+          <input aria-label="Category" placeholder="Category (e.g. Strength)" style={inputStyle} value={form.category || ""} onChange={set("category")} />
+          <select aria-label="Difficulty" style={inputStyle} value={form.difficulty} onChange={set("difficulty")}>
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+          <input aria-label="Equipment" placeholder="Equipment" style={inputStyle} value={form.equipment || ""} onChange={set("equipment")} />
+          <textarea aria-label="Instructions" placeholder="Instructions" style={{ ...inputStyle, minHeight: "100px" }} value={form.instructions || ""} onChange={set("instructions")} />
+          <input aria-label="Video URL" placeholder="Video URL (optional)" style={inputStyle} value={form.video_url || ""} onChange={set("video_url")} />
+          {error && <StatusMessage error>{error}</StatusMessage>}
+          <button style={primaryButton(busy)} disabled={busy} onClick={save}>{form.id ? "Save Changes" : "Add Drill"}</button>
+          <button style={secondaryButton} onClick={() => { setForm(null); setError(""); }}>Cancel</button>
+        </div>
+      </CoachShell>
+    );
+  }
 
   return (
-    <div
-      style={{
-        width: "100vw",
-        minHeight: "100vh",
-        backgroundColor: BLACK,
-        padding: "16px 16px 90px",
-        boxSizing: "border-box",
-        display: "flex",
-        justifyContent: "center",
-        overflowY: "auto",
-        color: WHITE
-      }}
-    >
-      <div style={{ width: "360px", maxWidth: "100%" }}>
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <div style={{ color: COACH_COLOR, fontSize: "28px", fontWeight: "700" }}>🎯 Drill Library</div>
-        </div>
-
-        {!selectedDrill ? (
-          <>
-            {/* Category Selector */}
-            <div style={{ display: "flex", gap: "8px", marginBottom: "20px", flexWrap: "wrap" }}>
-              {drillCategories.map((cat) => (
-                <button
-                  key={cat.category}
-                  onClick={() => setSelectedCategory(cat.category)}
-                  style={{
-                    padding: "10px 14px",
-                    background: selectedCategory === cat.category ? COACH_COLOR : "#222",
-                    color: selectedCategory === cat.category ? BLACK : WHITE,
-                    border: "none",
-                    borderRadius: "8px",
-                    fontSize: "12px",
-                    fontWeight: "600",
-                    cursor: "pointer"
-                  }}
-                >
-                  {cat.category}
-                </button>
-              ))}
+    <CoachShell title="🎯 Drill Library">
+      <button style={{ ...primaryButton(), width: "100%", marginBottom: "14px" }} onClick={() => { setError(""); setForm({ ...EMPTY }); }}>+ Add Drill</button>
+      {status === "loading" && <StatusMessage>Loading drills...</StatusMessage>}
+      {error && status !== "loading" && <StatusMessage error>{error}</StatusMessage>}
+      {status === "ready" && drills.length === 0 && <StatusMessage>Your drill library is empty. Add your first drill.</StatusMessage>}
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        {drills.map((drill) => (
+          <div key={drill.id} style={cardStyle}>
+            <div style={{ color: COACH_COLOR, fontWeight: "700" }}>{drill.name}</div>
+            <div style={{ color: "#999", fontSize: "12px" }}>{[drill.category, drill.difficulty, drill.equipment].filter(Boolean).join(" · ")}</div>
+            {drill.instructions && <div style={{ color: "#ccc", fontSize: "12px", marginTop: "6px", whiteSpace: "pre-wrap" }}>{drill.instructions}</div>}
+            {drill.video_url && <a href={drill.video_url} target="_blank" rel="noreferrer noopener" style={{ color: COACH_COLOR, fontSize: "12px" }}>Watch video</a>}
+            <div style={{ display: "flex", gap: "6px", marginTop: "8px" }}>
+              <button style={{ ...secondaryButton, padding: "8px 10px", fontSize: "12px" }} onClick={() => { setError(""); setForm({ ...EMPTY, ...drill }); }}>Edit</button>
+              <button style={{ ...dangerButton, padding: "8px 10px", fontSize: "12px" }} onClick={() => remove(drill)}>Delete</button>
             </div>
-
-            {/* Drills List */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {drills.map((drill) => (
-                <div
-                  key={drill.id}
-                  onClick={() => setSelectedDrill(drill)}
-                  style={{
-                    background: "#111",
-                    border: `1px solid #2a2a2a`,
-                    borderRadius: "12px",
-                    padding: "14px",
-                    cursor: "pointer"
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = COACH_COLOR)}
-                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#2a2a2a")}
-                >
-                  <div style={{ fontWeight: "600", marginBottom: "6px" }}>{drill.name}</div>
-                  <div style={{ fontSize: "12px", color: "#999" }}>
-                    {drill.reps || drill.distance} • {drill.intensity || drill.pace || drill.focus}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Drill Detail */}
-            <button
-              onClick={() => setSelectedDrill(null)}
-              style={{
-                padding: "12px",
-                background: "#222",
-                color: WHITE,
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "14px",
-                marginBottom: "20px",
-                width: "100%"
-              }}
-            >
-              ← Back
-            </button>
-
-            <div
-              style={{
-                background: "#111",
-                border: `1px solid ${COACH_COLOR}`,
-                borderRadius: "12px",
-                padding: "16px",
-                marginBottom: "20px"
-              }}
-            >
-              <div style={{ fontSize: "20px", fontWeight: "700", marginBottom: "12px", color: COACH_COLOR }}>
-                {selectedDrill.name}
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px", fontSize: "14px" }}>
-                <div>
-                  <div style={{ color: "#999", fontSize: "12px" }}>Volume</div>
-                  <div>{selectedDrill.reps || selectedDrill.distance}</div>
-                </div>
-                <div>
-                  <div style={{ color: "#999", fontSize: "12px" }}>Target</div>
-                  <div>{selectedDrill.intensity || selectedDrill.pace || selectedDrill.focus}</div>
-                </div>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <button
-                style={{
-                  padding: "12px",
-                  background: COACH_COLOR,
-                  color: BLACK,
-                  border: "none",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  cursor: "pointer"
-                }}
-              >
-                Assign to Client
-              </button>
-              <button
-                style={{
-                  padding: "12px",
-                  background: "#222",
-                  color: WHITE,
-                  border: "none",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  cursor: "pointer"
-                }}
-              >
-                View Analytics
-              </button>
-            </div>
-          </>
-        )}
+          </div>
+        ))}
       </div>
-
-      {/* Footer */}
-      <div
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          width: "100%",
-          height: "40px",
-          background: BLACK,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          padding: "0 16px",
-          boxSizing: "border-box",
-          zIndex: 20
-        }}
-      >
-        <div
-          style={{
-            color: COACH_COLOR,
-            fontSize: "18px",
-            textDecoration: "underline",
-            cursor: "pointer"
-          }}
-          onClick={() => setMenuOpen(true)}
-        >
-          Return to Menu
-        </div>
-      </div>
-    </div>
+    </CoachShell>
   );
 }

@@ -1,16 +1,12 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
+import { useContext, useState } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
-import { readJson, writeJson } from "../utils/dataPersistence.js";
 
-const initialUnits = [
-  { id: 1, name: "Custom Urban Team", type: "4-man", specialty: "Building Clearance", drills: 12, active: true },
-  { id: 2, name: "Wilderness Rescue Unit", type: "8-man", specialty: "Terrain Navigation", drills: 8, active: true },
-  { id: 3, name: "Hazmat Response Team", type: "6-man", specialty: "Chemical Handling", drills: 5, active: false }
-];
+const initialUnits = [];
 
 export default function UnitBuilder() {
   const { setMenuOpen } = useContext(MenuContext);
-  const [units, setUnits] = useState(() => readJson("custom-units", initialUnits));
+  const [units, setUnits, progress] = useTacticalProgress("unit-builder", "custom-units", initialUnits);
   const [building, setBuilding] = useState(false);
   const [newUnit, setNewUnit] = useState({
     name: "",
@@ -21,7 +17,6 @@ export default function UnitBuilder() {
 
   const TACTICAL_COLOR = "#2d5f3a";
 
-  useEffect(() => writeJson("custom-units", units), [units]);
 
   function createUnit() {
     if (!newUnit.name.trim() || !newUnit.specialty.trim()) return;
@@ -54,6 +49,7 @@ export default function UnitBuilder() {
 
   return (
     <div style={{ width: "100vw", minHeight: "100vh", backgroundColor: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", overflowY: "auto", color: "#fff" }}>
+      {(progress.loading || progress.error) && <div role="status" aria-live="polite" style={{ position: "fixed", top: "8px", left: "8px", zIndex: 50, background: "#111", color: "#fff", border: "1px solid #555", borderRadius: "6px", padding: "8px", fontSize: "12px" }}>{progress.loading ? "Syncing saved progress..." : `Progress unavailable: ${progress.error}`}</div>}
       <div style={{ width: "360px", maxWidth: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: "20px" }}>
           <div style={{ color: TACTICAL_COLOR, fontSize: "28px", fontWeight: "700" }}>🛠️ Unit Builder</div>

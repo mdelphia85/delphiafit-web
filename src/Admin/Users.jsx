@@ -1,208 +1,138 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AdminLayout from "./Admin.jsx";
+import { adminFetch, formatDate, formatDateTime } from "./adminApi.js";
+import {
+  BORDER, TEXT_MAIN, card, container, dangerBtn, errorBox, input, subtitle, title, toggleBtn,
+} from "./adminTheme.js";
 
 export default function AdminUsers() {
-  const BG = "rgb(0,0,0)";
-  const CARD_BG = "rgb(15,15,15)";
-  const BORDER = "rgb(60,60,60)";
-  const TEXT_MAIN = "rgb(240,240,240)";
-  const TEXT_MUTED = "rgb(160,160,160)";
-  const ACCENT = "rgb(128,0,128)";
-
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
 
-  // ⭐ Fetch REAL users from backend
   useEffect(() => {
-    async function loadUsers() {
-      try {
-        const token = localStorage.getItem("adminToken");
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      const qs = query.trim() ? `?q=${encodeURIComponent(query.trim())}` : "";
+      adminFetch(`/admin/users${qs}`)
+        .then((json) => {
+          if (cancelled) return;
+          setUsers(json || []);
+          setError("");
+        })
+        .catch((err) => !cancelled && setError(err.message || "Failed to load users."))
+        .finally(() => !cancelled && setLoading(false));
+    }, query ? 250 : 0);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [query]);
 
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/admin/users`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
-        );
+  function replaceUser(updated) {
+    setUsers(prev => prev.map(u => (u.id === updated.id ? updated : u)));
+  }
 
-        const json = await res.json();
-        setUsers(json.users || json);
-      } catch (err) {
-        console.error("Failed to load users:", err);
-      }
-
-      setLoading(false);
+  async function act(fn) {
+    setError("");
+    try {
+      await fn();
+    } catch (err) {
+      setError(err.message);
     }
-
-    loadUsers();
-  }, []);
-
-  // ⭐ Promote / demote admin (REAL backend)
-  async function toggleAdmin(id, current) {
-    const token = localStorage.getItem("adminToken");
-
-    await fetch(
-      `${import.meta.env.VITE_API_URL}/admin/users/${id}/admin`,
-      {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-    );
-
-    setUsers(prev =>
-      prev.map(u =>
-        u.id === id ? { ...u, is_admin: !current } : u
-      )
-    );
   }
 
-  // ⭐ Delete user (REAL backend)
-  async function deleteUser(id) {
-    const token = localStorage.getItem("adminToken");
+  const toggleAdmin = (u) => act(async () => {
+    const res = await adminFetch(`/admin/users/${u.id}/role`, { method: "PUT", body: { is_admin: !u.is_admin } });
+    replaceUser(res.user);
+  });
 
-    await fetch(
-      `${import.meta.env.VITE_API_URL}/admin/users/${id}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      }
-    );
+  const toggleSuspend = (u) => act(async () => {
+    const res = await adminFetch(`/admin/users/${u.id}/suspend`, { method: "PATCH", body: { suspended: !u.is_suspended } });
+    replaceUser(res.user);
+  });
 
-    setUsers(prev => prev.filter(u => u.id !== id));
-  }
-
-  // ⭐ Styles
-  const container = {
-    width: "100%",
-    height: "100%",
-    backgroundColor: BG,
-    color: TEXT_MAIN,
-    padding: "20px",
-    boxSizing: "border-box",
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px",
-    overflow: "auto"
+  const deleteUser = (u) => {
+    if (!window.confirm(`Permanently delete ${u.email} and all of their data?`)) return;
+    return act(async () => {
+      await adminFetch(`/admin/users/${u.id}`, { method: "DELETE" });
+      setUsers(prev => prev.filter(x => x.id !== u.id));
+    });
   };
 
-  const title = {
-    fontSize: "26px",
-    fontWeight: "600"
-  };
-
-  const subtitle = {
-    fontSize: "14px",
-    color: TEXT_MUTED
-  };
-
-  const card = {
-    backgroundColor: CARD_BG,
-    border: `1px solid ${BORDER}`,
-    borderRadius: "10px",
-    padding: "16px",
-    boxSizing: "border-box"
-  };
-
+  const cols = "1.4fr 1.6fr 0.9fr 1.2fr auto auto auto";
   const tableHeader = {
     display: "grid",
-    gridTemplateColumns: "1.5fr 1.5fr 1fr 1fr auto auto",
+    gridTemplateColumns: cols,
+    gap: "8px",
     padding: "10px 0",
     borderBottom: `1px solid ${BORDER}`,
     fontWeight: "600",
     fontSize: "14px"
   };
-
-  const tableRow = {
-    display: "grid",
-    gridTemplateColumns: "1.5fr 1.5fr 1fr 1fr auto auto",
-    padding: "10px 0",
-    borderBottom: `1px solid ${BORDER}`,
-    fontSize: "14px"
-  };
-
-  const adminBtn = isAdmin => ({
-    padding: "6px 12px",
-    borderRadius: "6px",
-    border: `1px solid ${isAdmin ? ACCENT : BORDER}`,
-    backgroundColor: isAdmin ? ACCENT : CARD_BG,
-    color: isAdmin ? "white" : TEXT_MAIN,
-    cursor: "pointer",
-    fontSize: "13px",
-    textAlign: "center"
-  });
-
-  const deleteBtn = {
-    padding: "6px 12px",
-    borderRadius: "6px",
-    border: "1px solid red",
-    backgroundColor: "transparent",
-    color: "red",
-    cursor: "pointer",
-    fontSize: "13px",
-    textAlign: "center"
-  };
-
-  if (loading) {
-    return (
-      <AdminLayout>
-        <div style={{ padding: "20px", color: TEXT_MAIN }}>Loading users...</div>
-      </AdminLayout>
-    );
-  }
+  const tableRow = { ...tableHeader, fontWeight: "400", alignItems: "center" };
 
   return (
     <AdminLayout>
       <div style={container}>
-        {/* HEADER */}
         <div>
           <div style={title}>Admin Users</div>
           <div style={subtitle}>Manage all user accounts, roles, and access.</div>
         </div>
 
-        {/* USERS TABLE */}
+        <input
+          style={{ ...input, marginBottom: 0 }}
+          placeholder="Search by name or email"
+          aria-label="Search users"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+        />
+
+        {error && <div style={errorBox}>{error}</div>}
+
         <div style={card}>
-          <div style={tableHeader}>
-            <div>Name</div>
-            <div>Email</div>
-            <div>Created</div>
-            <div>Last Login</div>
-            <div>Admin</div>
-            <div>Delete</div>
-          </div>
-
-          {users.map(user => (
-            <div key={user.id} style={tableRow}>
-              <div>{user.name || "N/A"}</div>
-              <div>{user.email}</div>
-              <div>{user.created_at?.split("T")[0] || "—"}</div>
-              <div>{user.last_login || "—"}</div>
-
-              <div
-                style={adminBtn(user.is_admin)}
-                onClick={() => toggleAdmin(user.id, user.is_admin)}
-              >
-                {user.is_admin ? "Revoke" : "Promote"}
+          {loading ? (
+            <div style={{ color: TEXT_MAIN }}>Loading users...</div>
+          ) : (
+            <>
+              <div style={tableHeader}>
+                <div>Name</div>
+                <div>Email</div>
+                <div>Created</div>
+                <div>Last Login</div>
+                <div>Admin</div>
+                <div>Access</div>
+                <div>Delete</div>
               </div>
 
-              <div
-                style={deleteBtn}
-                onClick={() => deleteUser(user.id)}
-              >
-                Delete
-              </div>
-            </div>
-          ))}
+              {users.map(user => (
+                <div key={user.id} style={tableRow}>
+                  <div style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => navigate(`/admin/users/${user.id}`)}>
+                    {user.name || "N/A"}
+                  </div>
+                  <div style={{ wordBreak: "break-all" }}>{user.email}</div>
+                  <div>{formatDate(user.created_at)}</div>
+                  <div>{formatDateTime(user.last_login)}</div>
 
-          {users.length === 0 && (
-            <div style={{ padding: "20px 0", color: TEXT_MUTED, textAlign: "center" }}>
-              No users found.
-            </div>
+                  <div style={toggleBtn(user.is_admin)} onClick={() => toggleAdmin(user)}>
+                    {user.is_admin ? "Revoke" : "Promote"}
+                  </div>
+                  <div style={toggleBtn(user.is_suspended)} onClick={() => toggleSuspend(user)}>
+                    {user.is_suspended ? "Unsuspend" : "Suspend"}
+                  </div>
+                  <div style={dangerBtn} onClick={() => deleteUser(user)}>Delete</div>
+                </div>
+              ))}
+
+              {users.length === 0 && (
+                <div style={{ padding: "20px 0", color: "rgb(160,160,160)", textAlign: "center" }}>
+                  No users found.
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

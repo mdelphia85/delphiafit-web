@@ -1,6 +1,14 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { MenuContext } from "../context/MenuContext";
 import { supplementsByCategory, unitOptions } from "../context/supplementsData";
+import { userDataApi } from "../utils/userDataApi.js";
+
+function Dropdown({ open, options, onSelect, x, y, color }) {
+  if (!open) return null;
+  return <div style={{ position: "absolute", top: y, left: x, backgroundColor: "black", zIndex: 999, width: 200 }}>
+    {options.map((opt, i) => <div key={i} onClick={() => onSelect(opt)} style={{ padding: 12, color, cursor: "pointer", fontSize: 16 }}>{opt}</div>)}
+  </div>;
+}
 
 export default function Supplements() {
   const GREEN = "#218c21";
@@ -9,12 +17,39 @@ export default function Supplements() {
   const categories = Object.keys(supplementsByCategory);
 
   // 5 categories × 4 rows × { supplement, unit }
-  const [values, setValues] = useState(
-    categories.reduce((acc, cat) => {
-      acc[cat] = Array(4).fill({ supplement: "", unit: "" });
-      return acc;
-    }, {})
-  );
+  const [values, setValues] = useState(() => categories.reduce((acc, cat) => {
+    acc[cat] = Array.from({ length: 4 }, () => ({ supplement: "", unit: "" }));
+    return acc;
+  }, {}));
+  const [recordId, setRecordId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    userDataApi.list("supplements").then((records) => {
+      if (active && records.length && records[0].data.values) {
+        setRecordId(records[0].id);
+        setValues(records[0].data.values);
+      }
+    }).catch((err) => active && setNotice(err.message || "Unable to load supplement plan."))
+      .finally(() => active && setLoading(false));
+    return () => { active = false; };
+  }, []);
+
+  async function saveSupplements() {
+    setSaving(true); setNotice("");
+    try {
+      const saved = recordId
+        ? await userDataApi.update("supplements", recordId, { values })
+        : await userDataApi.create("supplements", { values });
+      setRecordId(saved.id);
+      setNotice("Supplements saved.");
+    }
+    catch (err) { setNotice(err.message || "Unable to save supplements."); }
+    finally { setSaving(false); }
+  }
 
   const [dropdown, setDropdown] = useState({
     open: false,
@@ -24,41 +59,6 @@ export default function Supplements() {
     x: 0,
     y: 0,
   });
-
-  // ----------------------------
-  // INLINE DROPDOWN COMPONENT
-  // ----------------------------
-  function Dropdown({ open, options, onSelect, x, y }) {
-    if (!open) return null;
-
-    return (
-      <div
-        style={{
-          position: "absolute",
-          top: y,
-          left: x,
-          backgroundColor: "black",
-          zIndex: 999,
-          width: "200px",
-        }}
-      >
-        {options.map((opt, i) => (
-          <div
-            key={i}
-            onClick={() => onSelect(opt)}
-            style={{
-              padding: "12px",
-              color: GREEN,
-              cursor: "pointer",
-              fontSize: "16px",
-            }}
-          >
-            {opt}
-          </div>
-        ))}
-      </div>
-    );
-  }
 
   // ----------------------------
   // OPEN DROPDOWN
@@ -96,6 +96,8 @@ export default function Supplements() {
   // ----------------------------
   return (
     <div style={{ backgroundColor: "black", minHeight: "100vh", padding: "20px" }}>
+      {loading && <p role="status" style={{ color: GREEN }}>Loading supplements...</p>}
+      {notice && <p role="status" style={{ color: GREEN }}>{notice}</p>}
       {categories.map((cat) => (
         <div key={cat} style={{ marginBottom: "40px" }}>
           {[0, 1, 2, 3].map((row) => (
@@ -177,6 +179,7 @@ export default function Supplements() {
         onSelect={selectValue}
         x={dropdown.x}
         y={dropdown.y}
+        color={GREEN}
       />
 
       {/* FOOTER */}
@@ -193,14 +196,14 @@ export default function Supplements() {
       >
         {/* SAVE */}
         <div
-          onClick={() => console.log("Save Supplements:", values)}
+          onClick={saveSupplements}
           style={{
             color: GREEN,
             fontSize: "18px",
             cursor: "pointer",
           }}
         >
-          Save
+          {saving ? "Saving..." : "Save"}
         </div>
 
         {/* RETURN TO MENU */}

@@ -1,219 +1,117 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "./Admin.jsx";
-import { API } from "../config/api.js";
+import { adminFetch, formatDate } from "./adminApi.js";
+import {
+  TEXT_MAIN, TEXT_MUTED, card, container, errorBox, input, muted, primaryButton, subtitle, toggleBtn, dangerBtn,
+} from "./adminTheme.js";
 
 export default function AdminAnnouncements() {
-  const BG = "rgb(0,0,0)";
-  const CARD_BG = "rgb(15,15,15)";
-  const BORDER = "rgb(60,60,60)";
-  const TEXT_MAIN = "rgb(240,240,240)";
-  const TEXT_MUTED = "rgb(160,160,160)";
-  const ACCENT = "rgb(128,0,128)";
-
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
+  const [editingId, setEditingId] = useState(null);
   const [titleInput, setTitleInput] = useState("");
   const [bodyInput, setBodyInput] = useState("");
+  const [publishNow, setPublishNow] = useState(true);
 
-  // ⭐ Fetch REAL announcements from backend
   useEffect(() => {
-    async function loadAnnouncements() {
-      try {
-        const token = localStorage.getItem("adminToken");
-
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/admin/announcements`
-,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
-        );
-
-        const json = await res.json();
-        setAnnouncements(json.announcements || json);
-      } catch (err) {
-        console.error("Failed to load announcements:", err);
-      }
-
-      setLoading(false);
-    }
-
-    loadAnnouncements();
+    adminFetch("/admin/announcements")
+      .then((json) => setAnnouncements(json || []))
+      .catch((err) => setError(err.message || "Failed to load announcements."))
+      .finally(() => setLoading(false));
   }, []);
 
-  // ⭐ Create announcement (REAL backend)
-  async function createAnnouncement() {
-    if (!titleInput.trim() || !bodyInput.trim()) return;
-
-    const token = localStorage.getItem("adminToken");
-
-    const res = await fetch(
-      `${API}/admin/announcements`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          title: titleInput,
-          body: bodyInput
-        })
-      }
-    );
-
-    const newAnnouncement = await res.json();
-
-    // Add new announcement to UI
-    setAnnouncements(prev => [newAnnouncement, ...prev]);
-
+  function resetForm() {
+    setEditingId(null);
     setTitleInput("");
     setBodyInput("");
+    setPublishNow(true);
   }
 
-  // ⭐ Delete announcement (REAL backend)
-  async function deleteAnnouncement(id) {
-    const token = localStorage.getItem("adminToken");
+  async function run(action) {
+    setError("");
+    try {
+      await action();
+    } catch (err) {
+      setError(err.message || "Request failed.");
+    }
+  }
 
-    await fetch(
-      `${API}/admin/announcements/${id}`,
-      {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+  function save() {
+    if (!titleInput.trim() || !bodyInput.trim()) return;
+    return run(async () => {
+      if (editingId) {
+        const updated = await adminFetch(`/admin/announcements/${editingId}`, {
+          method: "PUT",
+          body: { title: titleInput, body: bodyInput },
+        });
+        setAnnouncements(prev => prev.map(a => (a.id === editingId ? updated : a)));
+      } else {
+        const created = await adminFetch("/admin/announcements", {
+          method: "POST",
+          body: { title: titleInput, body: bodyInput, published: publishNow },
+        });
+        setAnnouncements(prev => [created, ...prev]);
       }
-    );
-
-    setAnnouncements(prev => prev.filter(a => a.id !== id));
+      resetForm();
+    });
   }
 
-  // ⭐ Styles
-  const container = {
-    width: "100%",
-    height: "100%",
-    backgroundColor: BG,
-    color: TEXT_MAIN,
-    padding: "20px",
-    boxSizing: "border-box",
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px",
-    overflow: "auto"
-  };
+  function startEdit(a) {
+    setEditingId(a.id);
+    setTitleInput(a.title);
+    setBodyInput(a.body || "");
+  }
 
-  const card = {
-    backgroundColor: CARD_BG,
-    border: `1px solid ${BORDER}`,
-    borderRadius: "10px",
-    padding: "16px",
-    boxSizing: "border-box"
-  };
+  function togglePublished(a) {
+    return run(async () => {
+      const updated = await adminFetch(`/admin/announcements/${a.id}/publish`, {
+        method: "PATCH",
+        body: { published: !a.published },
+      });
+      setAnnouncements(prev => prev.map(x => (x.id === a.id ? updated : x)));
+    });
+  }
 
-  const titleStyle = {
-    fontSize: "24px",
-    fontWeight: "600",
-    marginBottom: "6px"
-  };
-
-  const subtitle = {
-    fontSize: "14px",
-    color: TEXT_MUTED,
-    marginBottom: "12px"
-  };
-
-  const input = {
-    width: "100%",
-    padding: "10px",
-    fontSize: "16px",
-    borderRadius: "6px",
-    border: `1px solid ${BORDER}`,
-    backgroundColor: "rgb(20,20,20)",
-    color: TEXT_MAIN,
-    marginBottom: "10px",
-    boxSizing: "border-box"
-  };
-
-  const textarea = {
-    ...input,
-    height: "100px",
-    resize: "none"
-  };
-
-  const button = {
-    padding: "10px 16px",
-    backgroundColor: ACCENT,
-    border: "none",
-    borderRadius: "6px",
-    color: "white",
-    fontSize: "16px",
-    cursor: "pointer",
-    marginTop: "6px",
-    width: "fit-content"
-  };
-
-  const announcementCard = {
-    ...card,
-    marginBottom: "12px"
-  };
-
-  const announcementTitle = {
-    fontSize: "18px",
-    fontWeight: "600",
-    marginBottom: "4px"
-  };
-
-  const announcementBody = {
-    fontSize: "14px",
-    color: TEXT_MAIN,
-    marginBottom: "6px"
-  };
-
-  const announcementDate = {
-    fontSize: "12px",
-    color: TEXT_MUTED
-  };
-
-  const deleteBtn = {
-    color: "red",
-    fontSize: "14px",
-    cursor: "pointer",
-    marginTop: "8px",
-    textDecoration: "underline",
-    width: "fit-content"
-  };
+  function remove(id) {
+    if (!window.confirm("Delete this announcement?")) return;
+    return run(async () => {
+      await adminFetch(`/admin/announcements/${id}`, { method: "DELETE" });
+      setAnnouncements(prev => prev.filter(a => a.id !== id));
+      if (editingId === id) resetForm();
+    });
+  }
 
   if (loading) {
     return (
       <AdminLayout>
-        <div style={{ padding: "20px", color: TEXT_MAIN }}>
-          Loading announcements...
-        </div>
+        <div style={{ padding: "20px", color: TEXT_MAIN }}>Loading announcements...</div>
       </AdminLayout>
     );
   }
 
+  const textarea = { ...input, height: "100px", resize: "none" };
+
   return (
     <AdminLayout>
       <div style={container}>
-        {/* HEADER */}
         <div>
-          <div style={titleStyle}>Admin Announcements</div>
-          <div style={subtitle}>Create and manage announcements for all users.</div>
+          <div style={{ fontSize: "24px", fontWeight: "600", marginBottom: "6px" }}>Admin Announcements</div>
+          <div style={subtitle}>Create, edit, publish, and remove announcements shown to all users.</div>
         </div>
 
-        {/* CREATE ANNOUNCEMENT */}
+        {error && <div style={errorBox}>{error}</div>}
+
         <div style={card}>
           <div style={{ fontSize: "18px", fontWeight: "500", marginBottom: "10px" }}>
-            Create Announcement
+            {editingId ? "Edit Announcement" : "Create Announcement"}
           </div>
 
           <input
             style={input}
             placeholder="Announcement Title"
+            aria-label="Announcement Title"
             value={titleInput}
             onChange={e => setTitleInput(e.target.value)}
           />
@@ -221,39 +119,61 @@ export default function AdminAnnouncements() {
           <textarea
             style={textarea}
             placeholder="Announcement Body"
+            aria-label="Announcement Body"
             value={bodyInput}
             onChange={e => setBodyInput(e.target.value)}
           />
 
-          <button style={button} onClick={createAnnouncement}>
-            Publish Announcement
-          </button>
+          {!editingId && (
+            <label style={{ ...muted, display: "block", marginBottom: "10px" }}>
+              <input type="checkbox" checked={publishNow} onChange={e => setPublishNow(e.target.checked)} />{" "}
+              Publish immediately
+            </label>
+          )}
+
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button style={primaryButton} onClick={save}>
+              {editingId ? "Save Changes" : publishNow ? "Publish Announcement" : "Save Draft"}
+            </button>
+            {editingId && (
+              <button style={{ ...primaryButton, backgroundColor: "transparent", border: "1px solid rgb(60,60,60)" }} onClick={resetForm}>
+                Cancel
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* EXISTING ANNOUNCEMENTS */}
         <div>
           <div style={{ fontSize: "18px", fontWeight: "500", marginBottom: "10px" }}>
             Existing Announcements
           </div>
 
           {announcements.map(a => (
-            <div key={a.id} style={announcementCard}>
-              <div style={announcementTitle}>{a.title}</div>
-              <div style={announcementBody}>{a.body}</div>
-              <div style={announcementDate}>
-                Posted on {a.created_at?.split("T")[0] || a.date}
+            <div key={a.id} style={{ ...card, marginBottom: "12px" }}>
+              <div style={{ fontSize: "18px", fontWeight: "600", marginBottom: "4px" }}>
+                {a.title}{" "}
+                <span style={{ fontSize: "12px", color: a.published ? "rgb(128,0,128)" : TEXT_MUTED }}>
+                  {a.published ? "Published" : "Draft"}
+                </span>
+              </div>
+              <div style={{ fontSize: "14px", color: TEXT_MAIN, marginBottom: "6px" }}>{a.body}</div>
+              <div style={{ fontSize: "12px", color: TEXT_MUTED }}>
+                Created {formatDate(a.created_at)}
+                {a.updated_at ? ` • Edited ${formatDate(a.updated_at)}` : ""}
               </div>
 
-              <div style={deleteBtn} onClick={() => deleteAnnouncement(a.id)}>
-                Delete
+              <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                <div style={toggleBtn(false)} onClick={() => startEdit(a)}>Edit</div>
+                <div style={toggleBtn(a.published)} onClick={() => togglePublished(a)}>
+                  {a.published ? "Unpublish" : "Publish"}
+                </div>
+                <div style={dangerBtn} onClick={() => remove(a.id)}>Delete</div>
               </div>
             </div>
           ))}
 
           {announcements.length === 0 && (
-            <div style={{ color: TEXT_MUTED, fontSize: "14px" }}>
-              No announcements yet.
-            </div>
+            <div style={muted}>No announcements yet.</div>
           )}
         </div>
       </div>

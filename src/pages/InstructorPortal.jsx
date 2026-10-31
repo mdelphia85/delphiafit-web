@@ -1,80 +1,63 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
-import { readJson, writeJson } from "../utils/dataPersistence.js";
+import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
 
-const initialDrills = [
-  { id: 1, name: "Urban Breach Drill", trainees: 12, duration: "2 hours", status: "Active", created: "2 weeks ago" },
-  { id: 2, name: "Wilderness Navigation", trainees: 8, duration: "4 hours", status: "Active", created: "3 weeks ago" },
-  { id: 3, name: "Medical Response Scenario", trainees: 6, duration: "3 hours", status: "Paused", created: "1 month ago" },
-  { id: 4, name: "Team Coordination Drill", trainees: 14, duration: "2.5 hours", status: "Active", created: "10 days ago" }
-];
+const initialDrills = [];
+const color = "#2d5f3a";
 
 export default function InstructorPortal() {
   const { setMenuOpen } = useContext(MenuContext);
-  const [drills, setDrills] = useState(() => readJson("instructor-drills", initialDrills));
+  const [drills, setDrills, progress] = useTacticalProgress("instructor-portal", "instructor-drills", initialDrills);
   const [building, setBuilding] = useState(false);
-  const TACTICAL_COLOR = "#2d5f3a";
+  const [name, setName] = useState("");
+  const [trainees, setTrainees] = useState("");
+  const [duration, setDuration] = useState("");
 
-  useEffect(() => writeJson("instructor-drills", drills), [drills]);
+  function createDrill(event) {
+    event.preventDefault();
+    const drill = { id: Date.now(), name: name.trim(), trainees: Number(trainees), duration: `${duration} hours`, status: "Active", created: new Date().toISOString().slice(0, 10) };
+    setDrills((current) => [drill, ...current]);
+    setName("");
+    setTrainees("");
+    setDuration("");
+    setBuilding(false);
+  }
+
+  function updateStatus(drill) {
+    setDrills((current) => current.map((item) => item.id === drill.id ? { ...item, status: item.status === "Active" ? "Paused" : "Active" } : item));
+  }
+
+  function deleteDrill(id) {
+    setDrills((current) => current.filter((item) => item.id !== id));
+  }
 
   return (
     <div style={{ width: "100vw", minHeight: "100vh", backgroundColor: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", overflowY: "auto", color: "#fff" }}>
-      <div style={{ width: "360px", maxWidth: "100%" }}>
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <div style={{ color: TACTICAL_COLOR, fontSize: "28px", fontWeight: "700" }}>👨‍🏫 Instructor Portal</div>
-          <div style={{ color: "#999", fontSize: "12px", marginTop: "4px" }}>Drill Management & Training</div>
-        </div>
-
-        <button onClick={() => setBuilding(!building)} style={{ width: "100%", padding: "12px", background: TACTICAL_COLOR, color: "black", border: "none", borderRadius: "10px", fontWeight: "700", marginBottom: "20px", cursor: "pointer" }}>
-          {building ? "Cancel" : "+ Create Drill"}
-        </button>
-
-        {building && (
-          <div style={{ background: "#111", border: `1px solid ${TACTICAL_COLOR}`, borderRadius: "10px", padding: "14px", marginBottom: "20px" }}>
-            <div style={{ marginBottom: "12px" }}>
-              <label style={{ color: "#999", fontSize: "12px", marginBottom: "4px", display: "block" }}>Drill Name</label>
-              <input type="text" placeholder="E.g., Extraction Drill" style={{ width: "100%", padding: "8px", background: "#000", border: "1px solid #333", borderRadius: "6px", color: "white", boxSizing: "border-box" }} />
-            </div>
-
-            <div style={{ marginBottom: "12px" }}>
-              <label style={{ color: "#999", fontSize: "12px", marginBottom: "4px", display: "block" }}>Number of Trainees</label>
-              <input type="number" placeholder="0" style={{ width: "100%", padding: "8px", background: "#000", border: "1px solid #333", borderRadius: "6px", color: "white", boxSizing: "border-box" }} />
-            </div>
-
-            <div style={{ marginBottom: "12px" }}>
-              <label style={{ color: "#999", fontSize: "12px", marginBottom: "4px", display: "block" }}>Duration (hours)</label>
-              <input type="number" placeholder="0" style={{ width: "100%", padding: "8px", background: "#000", border: "1px solid #333", borderRadius: "6px", color: "white", boxSizing: "border-box" }} />
-            </div>
-
-            <button style={{ width: "100%", padding: "10px", background: TACTICAL_COLOR, color: "black", border: "none", borderRadius: "6px", fontWeight: "700", cursor: "pointer" }}>
-              Create Drill
-            </button>
-          </div>
-        )}
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {drills.map((drill) => (
-            <div key={drill.id} style={{ background: "#111", border: `1px solid ${drill.status === "Active" ? TACTICAL_COLOR : "#333"}`, borderRadius: "10px", padding: "12px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-                <div style={{ color: "white", fontSize: "16px", fontWeight: "600" }}>{drill.name}</div>
-                <div style={{ color: drill.status === "Active" ? TACTICAL_COLOR : "#999", fontSize: "11px", fontWeight: "700" }}>{drill.status}</div>
-              </div>
-
-              <div style={{ fontSize: "12px", color: "#999", display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                <span>{drill.trainees} trainees</span>
-                <span>•</span>
-                <span>{drill.duration}</span>
-                <span>•</span>
-                <span>Created {drill.created}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: "20px", right: "20px", color: TACTICAL_COLOR, fontSize: "22px", textDecoration: "underline", cursor: "pointer", zIndex: 20 }}>
-        Return to Menu
-      </div>
+      {(progress.loading || progress.error) && <div role="status" aria-live="polite" style={{ position: "fixed", top: 8, left: 8, zIndex: 50, background: "#111", border: "1px solid #555", borderRadius: 6, padding: 8 }}>{progress.loading ? "Syncing saved progress..." : `Progress unavailable: ${progress.error}`}</div>}
+      <main style={{ width: 360, maxWidth: "100%" }}>
+        <header style={{ textAlign: "center", marginBottom: 20 }}><h1 style={{ color, fontSize: 28 }}>Instructor Portal</h1><p style={{ color: "#999", fontSize: 12 }}>Manage your training drills</p></header>
+        <button type="button" onClick={() => setBuilding((value) => !value)} style={buttonStyle}>{building ? "Cancel" : "+ Create Drill"}</button>
+        {building && <form onSubmit={createDrill} style={{ display: "grid", gap: 12, padding: 14, margin: "16px 0", background: "#111", border: `1px solid ${color}`, borderRadius: 10 }}>
+          <label>Drill name<input required value={name} onChange={(event) => setName(event.target.value)} style={fieldStyle} /></label>
+          <label>Number of trainees<input required type="number" min="1" value={trainees} onChange={(event) => setTrainees(event.target.value)} style={fieldStyle} /></label>
+          <label>Duration (hours)<input required type="number" min="0.25" step="0.25" value={duration} onChange={(event) => setDuration(event.target.value)} style={fieldStyle} /></label>
+          <button type="submit" style={buttonStyle}>Save drill</button>
+        </form>}
+        <section aria-busy={progress.loading}>
+          <h2 style={{ color }}>Saved drills</h2>
+          {!progress.loading && drills.length === 0 && <p role="status">No instructor drills yet.</p>}
+          {drills.map((drill) => <article key={drill.id} style={{ background: "#111", border: `1px solid ${drill.status === "Active" ? color : "#444"}`, borderRadius: 10, padding: 12, marginBottom: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><strong>{drill.name}</strong><span>{drill.status}</span></div>
+            <p>{drill.trainees} trainees ? {drill.duration} ? Created {drill.created}</p>
+            <button type="button" onClick={() => updateStatus(drill)}>{drill.status === "Active" ? "Pause" : "Activate"}</button>
+            <button type="button" onClick={() => deleteDrill(drill.id)} aria-label={`Delete ${drill.name}`}>Delete</button>
+          </article>)}
+        </section>
+      </main>
+      <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color, background: "#111", border: `1px solid ${color}`, padding: 10 }}>Return to Menu</button>
     </div>
   );
 }
+
+const fieldStyle = { display: "block", width: "100%", boxSizing: "border-box", padding: 8, marginTop: 4, color: "#fff", background: "#000", border: "1px solid #444", borderRadius: 6 };
+const buttonStyle = { width: "100%", padding: 10, marginBottom: 8, color: "#fff", background: "#111", border: `1px solid ${color}`, borderRadius: 6, cursor: "pointer" };

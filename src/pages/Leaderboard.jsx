@@ -1,89 +1,41 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
-import { readJson, writeJson } from "../utils/dataPersistence.js";
+import { apiRequest } from "../utils/api.js";
 
-const baseLeaderboardData = [
-  { rank: 1, name: "Ava", score: 1420, tag: "Strength leader" },
-  { rank: 2, name: "Marcus", score: 1365, tag: "Cardio king" },
-  { rank: 3, name: "Jasmine", score: 1288, tag: "Streak star" },
-  { rank: 4, name: "Daniel", score: 1190, tag: "Recovery expert" },
-  { rank: 5, name: "You", score: 1045, tag: "On the rise" }
-];
-
-const modeMap = {
-  weekly: 1,
-  monthly: 1.25,
-  alltime: 1.5
-};
+const COLOR = "dodgerblue";
 
 export default function Leaderboard() {
   const { setMenuOpen } = useContext(MenuContext);
-  const [mode, setMode] = useState(() => readJson("delphia-leaderboard-mode", "weekly"));
-  const [leaderboardData, setLeaderboardData] = useState(() => readJson("delphia-leaderboard-data", baseLeaderboardData));
-  const LEADERBOARD_COLOR = "dodgerblue";
+  const [period, setPeriod] = useState("weekly");
+  const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  useEffect(() => writeJson("delphia-leaderboard-mode", mode), [mode]);
-  useEffect(() => writeJson("delphia-leaderboard-data", leaderboardData), [leaderboardData]);
-
-  const displayedData = useMemo(() => {
-    const multiplier = modeMap[mode] || 1;
-
-    return [...leaderboardData]
-      .map((entry) => ({
-        ...entry,
-        score: entry.name === "You" ? entry.score : Math.round(entry.score * multiplier)
-      }))
-      .sort((a, b) => b.score - a.score)
-      .map((entry, index) => ({ ...entry, rank: index + 1 }));
-  }, [leaderboardData, mode]);
-
-  function boostRank() {
-    setLeaderboardData((prev) =>
-      prev.map((entry) =>
-        entry.name === "You" ? { ...entry, score: entry.score + 40 } : entry
-      )
-    );
-  }
+  useEffect(() => {
+    let active = true;
+    apiRequest(`/sports/logs/leaderboard?period=${period}`)
+      .then((data) => { if (active) setEntries(Array.isArray(data) ? data : []); })
+      .catch((requestError) => { if (active) setError(requestError.message || "Unable to load rankings."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [period]);
 
   return (
-    <div style={{ minHeight: "100vh", width: "100vw", backgroundColor: "black", padding: "20px 20px 90px", overflowY: "auto", boxSizing: "border-box", position: "relative", color: "white" }}>
-      <p style={{ color: LEADERBOARD_COLOR, fontSize: "32px", textAlign: "center", marginBottom: "20px" }}>Leaderboard</p>
-
-      <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "20px" }}>
-        {[
-          { label: "Weekly", value: "weekly" },
-          { label: "Monthly", value: "monthly" },
-          { label: "All Time", value: "alltime" }
-        ].map((item) => (
-          <button key={item.value} onClick={() => setMode(item.value)} style={{ background: mode === item.value ? LEADERBOARD_COLOR : "transparent", color: mode === item.value ? "black" : LEADERBOARD_COLOR, border: `1px solid ${LEADERBOARD_COLOR}`, borderRadius: "999px", padding: "8px 12px", cursor: "pointer", fontWeight: "700" }}>
-            {item.label}
-          </button>
-        ))}
-      </div>
-
-      <button onClick={boostRank} style={{ width: "100%", padding: "12px", borderRadius: "10px", border: "none", background: LEADERBOARD_COLOR, color: "black", fontWeight: "700", marginBottom: "20px", cursor: "pointer" }}>
-        + Boost My Rank
-      </button>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-        {displayedData.map((entry) => (
-          <div key={entry.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#111", border: entry.name === "You" ? `1px solid ${LEADERBOARD_COLOR}` : "1px solid #333", borderRadius: "12px", padding: "12px 14px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ color: LEADERBOARD_COLOR, fontSize: "20px", fontWeight: "700" }}>#{entry.rank}</div>
-              <div>
-                <div style={{ color: "white", fontSize: "18px", fontWeight: "600" }}>{entry.name}</div>
-                <div style={{ color: "#aaa", fontSize: "12px" }}>{entry.tag}</div>
-              </div>
-            </div>
-
-            <div style={{ color: LEADERBOARD_COLOR, fontSize: "18px", fontWeight: "700" }}>{entry.score} pts</div>
-          </div>
-        ))}
-      </div>
-
-      <p onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: "20px", right: "20px", color: LEADERBOARD_COLOR, fontSize: "22px", textDecoration: "underline", cursor: "pointer", zIndex: 20 }}>
-        Return to Menu
-      </p>
-    </div>
+    <main style={{ minHeight: "100vh", width: "100vw", background: "black", padding: "20px 20px 90px", boxSizing: "border-box", color: "white" }}>
+      <section style={{ maxWidth: "760px", margin: "0 auto" }}>
+        <h1 style={{ color: COLOR, textAlign: "center" }}>Leaderboard</h1>
+        <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginBottom: "20px" }}>
+          {[["weekly", "Weekly"], ["monthly", "Monthly"], ["alltime", "All Time"]].map(([value, label]) => <button key={value} type="button" onClick={() => { setLoading(true); setError(""); setPeriod(value); }} aria-pressed={period === value} style={{ background: period === value ? COLOR : "transparent", color: period === value ? "black" : COLOR, border: `1px solid ${COLOR}`, borderRadius: "999px", padding: "8px 12px", cursor: "pointer", fontWeight: 700 }}>{label}</button>)}
+        </div>
+        {error && <p role="alert" style={{ color: "#ff8b8b" }}>{error}</p>}
+        {loading ? <p>Loading rankings?</p> : entries.length === 0 ? <p>No sports logs in this period yet. Log a session to start the leaderboard.</p> : <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {entries.map((entry) => <article key={entry.user_id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", background: "#111", border: "1px solid #333", borderRadius: "12px", padding: "12px 14px" }}>
+            <div><strong style={{ color: COLOR, fontSize: "20px" }}>#{entry.rank}</strong><span style={{ marginLeft: "12px" }}>{entry.name}</span></div>
+            <div style={{ color: COLOR, textAlign: "right" }}>{entry.minutes} min<br /><small style={{ color: "#aaa" }}>{entry.sessions} sessions</small></div>
+          </article>)}
+        </div>}
+      </section>
+      <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: "20px", right: "20px", color: COLOR, background: "black", border: 0, textDecoration: "underline", fontSize: "18px", cursor: "pointer" }}>Return to Menu</button>
+    </main>
   );
 }

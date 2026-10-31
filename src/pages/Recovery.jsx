@@ -1,192 +1,23 @@
-import React, { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
-
-const recoveryMetrics = [
-  { name: "Sleep Quality", score: 78, target: 85, icon: "😴" },
-  { name: "Stress Level", score: 62, target: 70, icon: "🧠" },
-  { name: "Muscle Soreness", score: 45, target: 80, icon: "💪" },
-  { name: "Heart Rate Variability", score: 88, target: 90, icon: "❤️" },
-  { name: "Hydration Status", score: 92, target: 90, icon: "💧" },
-  { name: "Nutrition Balance", score: 71, target: 85, icon: "🍎" }
-];
-
-const recoveryScore = Math.round(
-  (78 + 62 + 45 + 88 + 92 + 71) / 6
-);
+import { apiRequest } from "../utils/api.js";
 
 export default function Recovery() {
   const { setMenuOpen } = useContext(MenuContext);
-
-  const RECOVERY_COLOR = "#6ee7b7";
-  const BLACK = "#000";
-  const WHITE = "#fff";
-
-  const getScoreColor = (score) => {
-    if (score >= 85) return "#6ee7b7";
-    if (score >= 70) return "#fbbf24";
-    return "#f87171";
-  };
-
-  return (
-    <div
-      style={{
-        width: "100vw",
-        minHeight: "100vh",
-        backgroundColor: BLACK,
-        padding: "16px 16px 90px",
-        boxSizing: "border-box",
-        display: "flex",
-        justifyContent: "center",
-        overflowY: "auto",
-        color: WHITE
-      }}
-    >
-      <div style={{ width: "360px", maxWidth: "100%" }}>
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <div style={{ color: RECOVERY_COLOR, fontSize: "28px", fontWeight: "700" }}>💚 Recovery</div>
-        </div>
-
-        {/* Overall Recovery Score */}
-        <div
-          style={{
-            background: "#111",
-            border: `2px solid ${RECOVERY_COLOR}`,
-            borderRadius: "12px",
-            padding: "20px",
-            textAlign: "center",
-            marginBottom: "20px"
-          }}
-        >
-          <div style={{ fontSize: "48px", color: RECOVERY_COLOR, fontWeight: "700", marginBottom: "8px" }}>
-            {recoveryScore}
-          </div>
-          <div style={{ fontSize: "14px", color: "#999" }}>Recovery Score (0-100)</div>
-          <div style={{ fontSize: "12px", color: RECOVERY_COLOR, marginTop: "8px", fontWeight: "600" }}>
-            {recoveryScore >= 85
-              ? "Ready for intense training"
-              : recoveryScore >= 70
-              ? "Good recovery state"
-              : "Prioritize rest and recovery"}
-          </div>
-        </div>
-
-        {/* Recovery Metrics */}
-        <div style={{ marginBottom: "20px" }}>
-          <div style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px", color: RECOVERY_COLOR }}>
-            Recovery Metrics
-          </div>
-
-          {recoveryMetrics.map((metric, idx) => (
-            <div
-              key={idx}
-              style={{
-                background: "#111",
-                borderRadius: "12px",
-                padding: "12px 14px",
-                marginBottom: "10px",
-                border: `1px solid #2a2a2a`
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <div style={{ fontSize: "18px" }}>{metric.icon}</div>
-                  <div>
-                    <div style={{ fontSize: "14px", fontWeight: "600" }}>{metric.name}</div>
-                    <div style={{ fontSize: "11px", color: "#999" }}>Target: {metric.target}</div>
-                  </div>
-                </div>
-                <div
-                  style={{
-                    fontSize: "18px",
-                    fontWeight: "700",
-                    color: getScoreColor(metric.score)
-                  }}
-                >
-                  {metric.score}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  width: "100%",
-                  height: "8px",
-                  background: "#222",
-                  borderRadius: "999px",
-                  overflow: "hidden"
-                }}
-              >
-                <div
-                  style={{
-                    width: `${Math.min(metric.score, 100)}%`,
-                    height: "100%",
-                    background: getScoreColor(metric.score),
-                    borderRadius: "999px"
-                  }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Recovery Recommendations */}
-        <div
-          style={{
-            background: "#111",
-            border: `1px solid #2a2a2a`,
-            borderRadius: "12px",
-            padding: "14px"
-          }}
-        >
-          <div style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px", color: RECOVERY_COLOR }}>
-            Recommendations
-          </div>
-          <div style={{ fontSize: "13px", color: "#ccc", lineHeight: "1.6" }}>
-            <div style={{ marginBottom: "8px" }}>
-              • Aim for 8+ hours of quality sleep tonight
-            </div>
-            <div style={{ marginBottom: "8px" }}>
-              • Increase water intake by 20%
-            </div>
-            <div style={{ marginBottom: "8px" }}>
-              • Light stretching or foam rolling session
-            </div>
-            <div>
-              • Consider an active recovery day over intense training
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          width: "100%",
-          height: "40px",
-          background: BLACK,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          padding: "0 16px",
-          boxSizing: "border-box",
-          zIndex: 20
-        }}
-      >
-        <div
-          style={{
-            color: RECOVERY_COLOR,
-            fontSize: "18px",
-            textDecoration: "underline",
-            cursor: "pointer"
-          }}
-          onClick={() => setMenuOpen(true)}
-        >
-          Return to Menu
-        </div>
-      </div>
-    </div>
-  );
+  const [records, setRecords] = useState([]);
+  const [form, setForm] = useState({ sleep_hours: "", soreness_level: "", readiness_score: "", notes: "" });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  useEffect(() => { let active = true; apiRequest("/recovery/").then((data) => { if (active) setRecords(data); }).catch((err) => active && setError(err.message || "Unable to load recovery logs.")).finally(() => active && setLoading(false)); return () => { active = false; }; }, []);
+  async function save(event) { event.preventDefault(); setSaving(true); setError(""); setMessage(""); try { const row = await apiRequest("/recovery/", { method: "POST", body: { sleep_hours: Number(form.sleep_hours), soreness_level: Number(form.soreness_level), readiness_score: Number(form.readiness_score), notes: form.notes || null } }); setRecords((old) => [row, ...old]); setMessage("Recovery check-in saved."); setForm({ sleep_hours: "", soreness_level: "", readiness_score: "", notes: "" }); } catch (err) { setError(err.message || "Unable to save recovery check-in."); } finally { setSaving(false); } }
+  const latest = records[0];
+  return <main style={{ minHeight: "100vh", background: "black", color: "#6ee7b7", padding: 20, boxSizing: "border-box" }}>
+    <h1>Recovery</h1><p>Recovery information comes from your check-ins, not estimates.</p>{loading && <p role="status">Loading recovery?</p>}{error && <p role="alert">{error}</p>}{message && <p role="status">{message}</p>}
+    {latest && <section><h2>Latest check-in</h2><p>{new Date(latest.recorded_at).toLocaleString()}</p><p>Sleep: {latest.sleep_hours} hours ? Soreness: {latest.soreness_level}/10 ? Readiness: {latest.readiness_score}/100</p>{latest.notes && <p>{latest.notes}</p>}</section>}
+    {!latest && !loading && <p>No recovery check-ins yet.</p>}
+    <form onSubmit={save} style={{ display: "grid", gap: 10, maxWidth: 420 }}><label>Sleep (hours)<input required type="number" min="0" max="24" step="0.25" value={form.sleep_hours} onChange={(e) => setForm({ ...form, sleep_hours: e.target.value })} /></label><label>Soreness (1?10)<input required type="number" min="1" max="10" value={form.soreness_level} onChange={(e) => setForm({ ...form, soreness_level: e.target.value })} /></label><label>Readiness (1?100)<input required type="number" min="1" max="100" value={form.readiness_score} onChange={(e) => setForm({ ...form, readiness_score: e.target.value })} /></label><label>Notes<textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></label><button type="submit" disabled={saving}>{saving ? "Saving?" : "Save check-in"}</button></form>
+    <button type="button" onClick={() => setMenuOpen(true)} style={{ color: "#6ee7b7", background: "none", border: 0, textDecoration: "underline", marginTop: 20 }}>Return to Menu</button>
+  </main>;
 }

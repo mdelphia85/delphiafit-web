@@ -1,5 +1,6 @@
 import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import { useContext } from "react";
+import { clearUserSession } from "./utils/api.js";
 
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
@@ -30,6 +31,7 @@ import AthleteAnalytics from "./pages/AthleteAnalytics.jsx";
 import CoachDashboard from "./pages/CoachDashboard.jsx";
 import CoachLogin from "./pages/CoachLogin.jsx";
 import CoachInviteAccept from "./pages/CoachInviteAccept.jsx";
+import ClientMessages from "./pages/ClientMessages.jsx";
 import CoachPasswordReset from "./pages/CoachPasswordReset.jsx";
 import ClientManagement from "./pages/ClientManagement.jsx";
 import PlanBuilder from "./pages/PlanBuilder.jsx";
@@ -57,6 +59,8 @@ import MedicalRehab from "./pages/MedicalRehab.jsx";
 import AutonomousCoaching from "./pages/AutonomousCoaching.jsx";
 import GovernmentMilitary from "./pages/GovernmentMilitary.jsx";
 import About from "./pages/About.jsx";
+import PrivacyPolicy from "./pages/Privacy_Policy.jsx";
+import TermsOfService from "./pages/Terms_of_Service.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 
@@ -80,6 +84,7 @@ import AdminAnnouncements from "./Admin/Announcements.jsx";
 import AdminLogs from "./Admin/Logs.jsx";
 import AdminMessages from "./Admin/Messages.jsx";
 import AdminUsers from "./Admin/Users.jsx";
+import AdminUserDetail from "./Admin/AdminUserDetail.jsx";
 
 // SETTINGS (moved out of admin)
 import Settings from "./pages/Settings.jsx";
@@ -138,11 +143,9 @@ function MenuOverlay() {
   }
 
   function logout() {
-    localStorage.removeItem("loggedIn");
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("token");
+    clearUserSession();
     setMenuOpen(false);
-    navigate("/login");
+    navigate("/login", { replace: true });
   }
 
   if (!menuOpen) return null;
@@ -192,7 +195,8 @@ function MenuOverlay() {
       <MenuItem label="Performance" onClick={() => go("/performance")} />
       <MenuItem label="Analytics" onClick={() => go("/analytics")} />
 
-      <MenuItem label="Coach Hub Login" onClick={() => go("/coach-login")} />
+      <MenuItem label={localStorage.getItem("coachToken") ? "Coach Hub" : "Coach Hub Login"} onClick={() => go(localStorage.getItem("coachToken") ? "/coach-dashboard" : "/coach-login")} />
+      <MenuItem label="My Coach" onClick={() => go("/my-coach")} />
       <MenuItem label="My Clients" onClick={() => go("/client-management")} />
       <MenuItem label="Plan Builder" onClick={() => go("/plan-builder")} />
       <MenuItem label="Drill Library" onClick={() => go("/drill-library")} />
@@ -327,6 +331,8 @@ function AppWithMenu() {
       <Route path="/coach-dashboard" element={<CoachDashboard />} />
       <Route path="/coach-login" element={<CoachLogin />} />
       <Route path="/coach/invite" element={<CoachInviteAccept />} />
+      <Route path="/invite" element={<CoachInviteAccept />} />
+      <Route path="/my-coach" element={<ClientMessages />} />
       <Route path="/coach/password-reset" element={<CoachPasswordReset />} />
       <Route path="/client-management" element={<ClientManagement />} />
       <Route path="/plan-builder" element={<PlanBuilder />} />
@@ -354,6 +360,8 @@ function AppWithMenu() {
       <Route path="/autonomous-coaching" element={<AutonomousCoaching />} />
       <Route path="/government-military" element={<GovernmentMilitary />} />
       <Route path="/about" element={<About />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsOfService />} />
 
       {/* TACTICAL */}
       <Route path="/tactical/firefighters" element={<Firefighters />} />
@@ -397,6 +405,7 @@ function AppWithMenu() {
       <Route path="/admin/logs" element={<AdminLogs />} />
       <Route path="/admin/messages" element={<AdminMessages />} />
       <Route path="/admin/users" element={<AdminUsers />} />
+      <Route path="/admin/users/:id" element={<AdminUserDetail />} />
 
       {/* UPDATED SETTINGS ROUTE */}
       <Route path="/settings" element={<Settings />} />

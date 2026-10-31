@@ -1,109 +1,62 @@
-import React, { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
+import { apiRequest } from "../utils/api.js";
 
-const marketplaceItems = [
-  { id: 1, type: "Program", title: "12-Week Strength", creator: "Coach Alex", price: "$49", rating: 4.8 },
-  { id: 2, type: "Meal Plan", title: "Macro Balanced", creator: "Nutritionist Jane", price: "$29", rating: 4.6 },
-  { id: 3, type: "Drill Set", title: "Soccer Skills", creator: "Coach Mike", price: "$19", rating: 4.9 },
-  { id: 4, type: "Template", title: "Race Training", creator: "Coach Sarah", price: "$39", rating: 4.7 }
-];
+const COLOR = "#06b6d4";
+const initialForm = { title: "", description: "", category: "", price: "0" };
 
 export default function CreatorMarketplace() {
   const { setMenuOpen } = useContext(MenuContext);
+  const [listings, setListings] = useState([]);
+  const [form, setForm] = useState(initialForm);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [userId, setUserId] = useState(null);
+  const [editingId, setEditingId] = useState(null);
 
-  const MARKET_COLOR = "#06b6d4";
+  async function load() {
+    try { const rows = await apiRequest("/creator/marketplace/listings"); setListings(Array.isArray(rows) ? rows : []); }
+    catch (e) { setError(e.message || "Unable to load marketplace listings."); }
+    finally { setLoading(false); }
+  }
+  useEffect(() => { let active = true; Promise.all([apiRequest("/creator/marketplace/listings"), apiRequest("/auth/me")]).then(([rows, user]) => { if (active) { setListings(Array.isArray(rows) ? rows : []); setUserId(user.id); } }).catch((e) => { if (active) setError(e.message || "Unable to load marketplace."); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, []);
 
-  return (
-    <div
-      style={{
-        width: "100vw",
-        minHeight: "100vh",
-        backgroundColor: "#000",
-        padding: "16px 16px 90px",
-        boxSizing: "border-box",
-        display: "flex",
-        justifyContent: "center",
-        overflowY: "auto",
-        color: "#fff"
-      }}
-    >
-      <div style={{ width: "360px", maxWidth: "100%" }}>
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <div style={{ color: MARKET_COLOR, fontSize: "28px", fontWeight: "700" }}>🛍️ Marketplace</div>
-        </div>
+  async function createListing(event) {
+    event.preventDefault();
+    setSaving(true); setError(""); setNotice("");
+    try {
+      const payload = { ...form, price: Number(form.price) || 0 };
+      if (editingId) await apiRequest(`/creator/marketplace/listings/${editingId}`, { method: "PUT", body: payload });
+      else await apiRequest("/creator/marketplace/listings", { method: "POST", body: payload });
+      setForm(initialForm); setEditingId(null); setNotice(editingId ? "Listing updated." : "Listing published."); await load();
+    }
+    catch (e) { setError(e.message || "Unable to publish listing."); }
+    finally { setSaving(false); }
+  }
+  function startEditing(listing) {
+    setEditingId(listing.id);
+    setForm({ title: listing.title, description: listing.description || "", category: listing.category || "", price: String(listing.price || 0) });
+    setNotice("");
+  }
+  async function requestAccess(listing) {
+    setError(""); setNotice("");
+    try { await apiRequest(`/creator/marketplace/listings/${listing.id}/interest`, { method: "POST", body: { message: "I am interested in learning more." } }); setNotice(`Interest sent to ${listing.creator_name}. No payment was made.`); }
+    catch (e) { setError(e.message || "Unable to send interest request."); }
+  }
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {marketplaceItems.map((item) => (
-            <div
-              key={item.id}
-              style={{
-                background: "#111",
-                border: "1px solid #2a2a2a",
-                borderRadius: "12px",
-                padding: "14px",
-                cursor: "pointer"
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.borderColor = MARKET_COLOR)}
-              onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#2a2a2a")}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-                <div style={{ fontWeight: "600" }}>{item.title}</div>
-                <div style={{ color: MARKET_COLOR, fontWeight: "600" }}>{item.price}</div>
-              </div>
-              <div style={{ fontSize: "12px", color: "#999", marginBottom: "8px" }}>
-                {item.type} • by {item.creator}
-              </div>
-              <div style={{ fontSize: "12px", color: "#fbbf24" }}>⭐ {item.rating}</div>
-            </div>
-          ))}
-        </div>
-
-        <button
-          style={{
-            width: "100%",
-            marginTop: "20px",
-            padding: "14px",
-            background: MARKET_COLOR,
-            color: "#000",
-            border: "none",
-            borderRadius: "8px",
-            fontSize: "16px",
-            fontWeight: "600",
-            cursor: "pointer"
-          }}
-        >
-          Become a Creator
-        </button>
-      </div>
-
-      <div
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          width: "100%",
-          height: "40px",
-          background: "#000",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          padding: "0 16px",
-          boxSizing: "border-box",
-          zIndex: 20
-        }}
-      >
-        <div
-          style={{
-            color: MARKET_COLOR,
-            fontSize: "18px",
-            textDecoration: "underline",
-            cursor: "pointer"
-          }}
-          onClick={() => setMenuOpen(true)}
-        >
-          Return to Menu
-        </div>
-      </div>
-    </div>
-  );
+  return <main style={pageStyle}><section style={{ width: 680, maxWidth: "100%" }}>
+    <h1 style={{ color: COLOR, textAlign: "center" }}>Creator Marketplace</h1>
+    <p style={{ color: "#aaa" }}>Browse real creator listings and request access. Checkout/payment is not available; requests do not charge you.</p>
+    <form onSubmit={createListing} style={formStyle}><h2>{editingId ? "Edit your listing" : "Publish a listing"}</h2><label>Title<input required maxLength={160} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} style={inputStyle} /></label><label>Category<input maxLength={80} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} style={inputStyle} /></label><label>Description<textarea maxLength={3000} rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} style={inputStyle} /></label><label>Reference price (no checkout)<input type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} style={inputStyle} /></label><button disabled={saving} style={buttonStyle}>{saving ? "Saving..." : editingId ? "Save listing changes" : "Become a Creator / Publish"}</button></form>
+    {error && <p role="alert" style={{ color: "#ff8b8b" }}>{error}</p>}{notice && <p role="status" style={{ color: COLOR }}>{notice}</p>}
+    <h2>Available listings</h2>{loading ? <p>Loading listings...</p> : listings.length === 0 ? <p>No creator listings are available yet.</p> : listings.map((item) => <article key={item.id} style={cardStyle}><header style={{ display: "flex", justifyContent: "space-between", gap: "10px" }}><strong>{item.title}</strong><span style={{ color: COLOR }}>{Number(item.price) > 0 ? `$${Number(item.price).toFixed(2)} reference price` : "Contact creator"}</span></header><p style={{ color: "#aaa" }}>{[item.category, `by ${item.creator_name}`].filter(Boolean).join(" | ")}</p>{item.description && <p>{item.description}</p>}{item.creator_user_id === userId ? <button type="button" onClick={() => startEditing(item)} style={buttonStyle}>Edit listing</button> : <button type="button" onClick={() => requestAccess(item)} style={buttonStyle}>Request access / express interest</button>}</article>)}
+  </section><button type="button" onClick={() => setMenuOpen(true)} style={menuStyle}>Return to Menu</button></main>;
 }
+const pageStyle = { width: "100vw", minHeight: "100vh", background: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", color: "#fff" };
+const formStyle = { display: "grid", gap: "10px", background: "#111", borderRadius: "12px", padding: "14px", marginBottom: "18px" };
+const cardStyle = { background: "#111", border: "1px solid #333", borderRadius: "12px", padding: "14px", marginTop: "10px" };
+const inputStyle = { display: "block", width: "100%", boxSizing: "border-box", padding: "9px", marginTop: "5px", background: "#000", color: "white", border: "1px solid #333", borderRadius: "7px" };
+const buttonStyle = { padding: "10px", background: COLOR, color: "#000", border: 0, borderRadius: "8px", cursor: "pointer", fontWeight: 700 };
+const menuStyle = { position: "fixed", bottom: "20px", right: "20px", color: COLOR, fontSize: "18px", textDecoration: "underline", background: "#000", border: 0, cursor: "pointer" };

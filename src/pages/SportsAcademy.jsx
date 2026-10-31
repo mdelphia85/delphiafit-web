@@ -1,6 +1,7 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
 import { readJson, writeJson } from "../utils/dataPersistence.js";
+import { apiRequest } from "../utils/api.js";
 
 const sportModules = [
   {
@@ -45,18 +46,50 @@ export default function SportsAcademy() {
   const { setMenuOpen } = useContext(MenuContext);
   const SPORTS_COLOR = "#f59e0b";
   const [selectedSportId, setSelectedSportId] = useState(() => readJson("delphia-sports-selected", sportModules[0].id));
-  const [completed, setCompleted] = useState(() => readJson("delphia-sports-completed", {}));
+  const [completed, setCompleted] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  useEffect(() => writeJson("delphia-sports-selected", selectedSportId), [selectedSportId]);
-  useEffect(() => writeJson("delphia-sports-completed", completed), [completed]);
+  useEffect(() => { writeJson("delphia-sports-selected", selectedSportId); }, [selectedSportId]);
+  useEffect(() => {
+    let active = true;
+    apiRequest("/sports-academy/progress")
+      .then(async (rows) => {
+        const saved = {};
+        (Array.isArray(rows) ? rows : []).forEach((row) => {
+          saved[`${row.sport.toLowerCase()}:${row.drill}`] = row.completed;
+        });
+        const legacy = readJson("delphia-sports-completed", {});
+        const pending = Object.entries(legacy).filter(([key, done]) => done && !saved[key]);
+        for (const [key] of pending) {
+          const separator = key.indexOf(":");
+          const sport = key.slice(0, separator);
+          const drill = key.slice(separator + 1);
+          await apiRequest("/sports-academy/progress", { method: "PUT", body: { sport, drill, completed: true } });
+          saved[key] = true;
+        }
+        if (active) setCompleted({ ...legacy, ...saved });
+      })
+      .catch((requestError) => { if (active) setError(requestError.message || "Unable to load academy progress."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
 
   const selectedSport = sportModules.find((sport) => sport.id === selectedSportId) || sportModules[0];
 
-  function toggleCompleted(drillName) {
-    setCompleted((prev) => ({
-      ...prev,
-      [`${selectedSport.id}:${drillName}`]: !prev[`${selectedSport.id}:${drillName}`]
-    }));
+  async function toggleCompleted(drillName) {
+    const key = `${selectedSport.id}:${drillName}`;
+    const next = !completed[key];
+    try {
+      await apiRequest("/sports-academy/progress", {
+        method: "PUT",
+        body: { sport: selectedSport.id, drill: drillName, completed: next },
+      });
+      setCompleted((prev) => ({ ...prev, [key]: next }));
+      setError("");
+    } catch (requestError) {
+      setError(requestError.message || "Unable to save academy progress.");
+    }
   }
 
   return (
@@ -66,6 +99,8 @@ export default function SportsAcademy() {
           <div style={{ color: SPORTS_COLOR, fontSize: "28px", fontWeight: "700" }}>⚽ Sports Academy</div>
         </div>
 
+        {error && <p role="alert" style={{ color: "#ff8b8b" }}>{error}</p>}
+        {loading && <p>Loading saved progress...</p>}
         <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "22px" }}>
           {sportModules.map((sport, idx) => (
             <div key={idx} onClick={() => setSelectedSportId(sport.id)} style={{ background: selectedSportId === sport.id ? "#1a1a1a" : "#111", border: selectedSportId === sport.id ? `1px solid ${SPORTS_COLOR}` : "1px solid #2a2a2a", borderRadius: "12px", padding: "14px", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }} onMouseEnter={(e) => (e.currentTarget.style.borderColor = SPORTS_COLOR)} onMouseLeave={(e) => (e.currentTarget.style.borderColor = selectedSportId === sport.id ? SPORTS_COLOR : "#2a2a2a")}>

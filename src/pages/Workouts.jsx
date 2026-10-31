@@ -1,6 +1,6 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
-import { API } from "../config/api.js";
+import { apiRequest } from "../utils/api.js";
 
 import {
   UI_MAIN_CATEGORIES,
@@ -24,7 +24,6 @@ export default function Workouts() {
   const WHITE = "rgb(255,255,255)";
   const DISABLED_GRAY = "rgb(90,90,90)";
 
-  const token = localStorage.getItem("token");
 
   // MODE
   const [mode, setMode] = useState("generator");
@@ -60,6 +59,7 @@ export default function Workouts() {
   const [currentBlock, setCurrentBlock] = useState(null);
   const [cooldownStarted, setCooldownStarted] = useState(false);
   const [saveEnabled, setSaveEnabled] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
 
   const timerRef = useRef(null);
 
@@ -217,125 +217,36 @@ export default function Workouts() {
 
   // ⭐ MANUAL MODE SAVE
   async function handleManualSave() {
-    if (!manualName || !manualDuration) return;
-
-    const payload = {
-      mode: "manual",
-      sport: manualName,
-      duration: manualDuration,
-      notes: manualNotes,
-      timestamp: new Date().toISOString(),
-      completed: true,
-      intensityScore: 0.5,
-      durationAccuracy: 0.9,
-      blockCompletion: {
-        warmup: 1,
-        main: 1,
-        finisher: 0,
-        cooldown: 1
-      }
-    };
-
-    try {
-      const res = await fetch(
-        `${API}/workouts`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify(payload)
-        }
-      );
-
-      if (!res.ok) {
-        console.error("Failed to save workout");
-        return;
-      }
-
-      const data = await res.json();
-      console.log("Workout saved:", data);
-
-      updatePersonalizationEngine(payload);
-      updateBehavior(payload);
-
-    } catch (err) {
-      console.error("Error saving workout:", err);
+    if (!manualName.trim() || Number(manualDuration) <= 0) {
+      setSaveMessage("Enter a workout name and duration greater than zero.");
+      return;
     }
-
-    setManualName("");
-    setManualDuration("");
-    setManualNotes("");
+    setSaveMessage("Saving workout?");
+    const payload = { mode: "manual", manual_name: manualName.trim(), duration_minutes: Math.round(Number(manualDuration)), manual_notes: manualNotes, timestamp: new Date().toISOString() };
+    try {
+      await apiRequest("/workouts/save", { method: "POST", body: payload });
+      updatePersonalizationEngine(payload); updateBehavior(payload);
+      setManualName(""); setManualDuration(""); setManualNotes(""); setSaveMessage("Workout saved.");
+    } catch (err) { setSaveMessage(err.message || "Unable to save workout."); }
   }
 
-  // ⭐ GENERATOR MODE SAVE — PHASE 4 COMPLETE
   async function handleSave() {
     if (!saveEnabled || !cooldownStarted) return;
-
+    setSaveMessage("Saving workout?");
     const payload = {
-      mode: "generator",
-      sport: workoutType,
-      category: CATEGORY_MAP[workoutType] || "",
-      level: "N/A",
-      drill: plan,
-      duration: duration,
-      notes: "",
-      timestamp: new Date().toISOString(),
-      completed: true
+      mode: "generator", workout_type: workoutType, duration_minutes: Math.max(1, Number.parseInt(duration, 10) || 30),
+      weight_unit: weightValue ? weightUnit : null, weight_value: weightValue ? Number(weightValue) : null,
+      plan_json: plan, block_durations_json: blockElapsed, equipment_json: plan.equipment || [], timestamp: new Date().toISOString()
     };
-
     try {
-      const res = await fetch(
-        `${API}/workouts`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify(payload)
-        }
-      );
-
-      if (!res.ok) {
-        console.error("Failed to save workout");
-        return;
-      }
-
-      const data = await res.json();
-      console.log("Workout saved:", data);
-
-      // ⭐ AI LEARNING PAYLOAD
-      const workoutForAI = {
-        ...payload,
-        blockCompletion: {
-          warmup: blockElapsed.warmup > 0 ? 1 : 0,
-          main: blockElapsed.main > 0 ? 1 : 0,
-          finisher: blockElapsed.finisher > 0 ? 1 : 0,
-          cooldown: blockElapsed.cooldown > 0 ? 1 : 0
-        },
-        intensityScore: weightValue ? 0.7 : 0.4,
-        durationAccuracy: 0.8
-      };
-
-      updatePersonalizationEngine(workoutForAI);
-      updateBehavior(workoutForAI);
-
-    } catch (err) {
-      console.error("Error saving workout:", err);
-    }
-
-    setSaveEnabled(false);
-    setCurrentBlock(null);
-
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
+      await apiRequest("/workouts/save", { method: "POST", body: payload });
+      const workoutForAI = { ...payload, blockCompletion: Object.fromEntries(Object.entries(blockElapsed).map(([key, seconds]) => [key, seconds > 0 ? 1 : 0])), intensityScore: weightValue ? 0.7 : 0.4, durationAccuracy: 0.8 };
+      updatePersonalizationEngine(workoutForAI); updateBehavior(workoutForAI);
+      setSaveMessage("Workout saved."); setSaveEnabled(false); setCurrentBlock(null);
+      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    } catch (err) { setSaveMessage(err.message || "Unable to save workout."); }
   }
 
-  // ⭐ FULL UI BELOW — COMPLETE
   const container = {
     width: "100vw",
     height: "100vh",
@@ -602,6 +513,7 @@ export default function Workouts() {
       </div>
 
       
+      {saveMessage && <p role="status" style={{ position: "fixed", bottom: 56, left: 20, color: SILVER }}>{saveMessage}</p>}
       <div onClick={handleSave} style={saveStyle}>
         Save Workout
       </div>

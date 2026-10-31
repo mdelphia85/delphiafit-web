@@ -1,131 +1,166 @@
-import React, { useContext, useEffect, useState } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
-import { readJson, writeJson } from "../utils/dataPersistence.js";
-
-const defaultConversations = [
-  { id: 1, name: "Alex Johnson", lastMessage: "How was my workout?", time: "2 min ago", unread: true },
-  { id: 2, name: "Sarah Chen", lastMessage: "Thanks for the feedback!", time: "1 hour ago", unread: false },
-  { id: 3, name: "Mike Davis", lastMessage: "Can we adjust the plan?", time: "3 hours ago", unread: false }
-];
-
-const defaultMessages = {
-  1: [
-    { id: 1, sender: "Alex", text: "How was my workout?", time: "2 min ago" },
-    { id: 2, sender: "Coach", text: "Great effort! Focus on form next time.", time: "1 min ago" }
-  ],
-  2: [
-    { id: 1, sender: "Sarah", text: "Thanks for the feedback!", time: "1 hour ago" },
-    { id: 2, sender: "Coach", text: "Glad to help. Keep the consistency up.", time: "58 min ago" }
-  ],
-  3: [
-    { id: 1, sender: "Mike", text: "Can we adjust the plan?", time: "3 hours ago" },
-    { id: 2, sender: "Coach", text: "Yes — I’ll revise your volume this week.", time: "2 hours ago" }
-  ]
-};
+import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import CoachShell from "../components/CoachShell.jsx";
+import StatusMessage from "../components/StatusMessage.jsx";
+import { COACH_COLOR, cardStyle, inputStyle, primaryButton, secondaryButton } from "../components/coachStyles.js";
+import { errorText, useCoachRequest } from "../utils/coachSession.js";
 
 export default function CoachMessaging() {
-  const { setMenuOpen } = useContext(MenuContext);
-  const [conversations, setConversations] = useState(() => readJson("delphia-conversations", defaultConversations));
-  const [selectedChat, setSelectedChat] = useState(() => readJson("delphia-selected-chat", null));
-  const [messagesByChat, setMessagesByChat] = useState(() => readJson("delphia-chat-messages", defaultMessages));
-  const [newMessage, setNewMessage] = useState("");
+  const request = useCoachRequest();
+  const [params, setParams] = useSearchParams();
+  const [threads, setThreads] = useState([]);
+  const [teams, setTeams] = useState([]);
+  const [status, setStatus] = useState("loading");
+  const [error, setError] = useState("");
+  const [thread, setThread] = useState(null);
+  const [draft, setDraft] = useState("");
+  const [broadcast, setBroadcast] = useState({ open: false, teamId: "", body: "" });
+  const [notice, setNotice] = useState("");
+  const [sending, setSending] = useState(false);
+  const clientId = params.get("client");
 
-  const COACH_COLOR = "#ec4899";
-  const BLACK = "#000";
-  const WHITE = "#fff";
+  const loadThreads = useCallback(async () => {
+    try {
+      const [threadData, teamData] = await Promise.all([request("/staff/messages/threads"), request("/staff/teams")]);
+      setThreads(threadData.threads || []);
+      setTeams(teamData.teams || []);
+      setStatus("ready");
+    } catch (e) {
+      setError(errorText(e, "Unable to load messages."));
+      setStatus("error");
+    }
+  }, [request]);
 
-  useEffect(() => writeJson("delphia-conversations", conversations), [conversations]);
-  useEffect(() => writeJson("delphia-selected-chat", selectedChat), [selectedChat]);
-  useEffect(() => writeJson("delphia-chat-messages", messagesByChat), [messagesByChat]);
+  useEffect(() => {
+    const timer = setTimeout(() => loadThreads(), 0);
+    return () => clearTimeout(timer);
+  }, [loadThreads]);
 
-  const activeMessages = selectedChat ? messagesByChat[selectedChat.id] || [] : [];
+  useEffect(() => {
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      if (!clientId) {
+        setThread(null);
+        return;
+      }
+      setThread(null);
+      try {
+        const data = await request(`/staff/messages/${clientId}`);
+        if (cancelled) return;
+        setThread(data);
+        setError("");
+        await request(`/staff/messages/${clientId}/read`, { method: "POST" });
+        if (!cancelled) loadThreads();
+      } catch (e) {
+        if (!cancelled) setError(errorText(e, "Unable to open that conversation."));
+      }
+    }, 0);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [clientId, request, loadThreads]);
 
-  function selectChat(conv) {
-    setSelectedChat(conv);
-    setConversations((prev) =>
-      prev.map((item) =>
-        item.id === conv.id ? { ...item, unread: false } : item
-      )
-    );
+  async function send() {
+    const body = draft.trim();
+    if (!body) return;
+    setSending(true);
+    try {
+      const message = await request(`/staff/messages/${clientId}`, { method: "POST", body: { body } });
+      setThread((current) => ({ ...current, messages: [...current.messages, message] }));
+      setDraft("");
+      setError("");
+      loadThreads();
+    } catch (e) {
+      setError(errorText(e, "Message failed to send."));
+    } finally {
+      setSending(false);
+    }
   }
 
-  const handleSendMessage = () => {
-    if (!selectedChat || !newMessage.trim()) return;
+  async function sendBroadcast() {
+    if (!broadcast.teamId || !broadcast.body.trim()) {
+      setNotice("Choose a team and write a message.");
+      return;
+    }
+    try {
+      const result = await request("/staff/messages/broadcast", { method: "POST", body: { team_id: Number(broadcast.teamId), body: broadcast.body.trim() } });
+      setNotice(`Sent to ${result.sent_to} client(s).`);
+      setBroadcast({ open: false, teamId: "", body: "" });
+      loadThreads();
+    } catch (e) {
+      setNotice(errorText(e, "Broadcast failed."));
+    }
+  }
 
-    const msg = {
-      id: Date.now(),
-      sender: "Coach",
-      text: newMessage.trim(),
-      time: "now"
-    };
-
-    setMessagesByChat((prev) => ({
-      ...prev,
-      [selectedChat.id]: [...(prev[selectedChat.id] || []), msg]
-    }));
-
-    setConversations((prev) =>
-      prev.map((conv) =>
-        conv.id === selectedChat.id
-          ? { ...conv, lastMessage: msg.text, time: "now", unread: false }
-          : conv
-      )
-    );
-
-    setNewMessage("");
-  };
-
-  return (
-    <div style={{ width: "100vw", minHeight: "100vh", backgroundColor: BLACK, padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", overflowY: "auto", color: WHITE }}>
-      <div style={{ width: "360px", maxWidth: "100%" }}>
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <div style={{ color: COACH_COLOR, fontSize: "28px", fontWeight: "700" }}>💬 Messages</div>
-        </div>
-
-        {!selectedChat ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {conversations.map((conv) => (
-              <div key={conv.id} onClick={() => selectChat(conv)} style={{ background: "#111", border: `1px solid ${conv.unread ? COACH_COLOR : "#2a2a2a"}`, borderRadius: "12px", padding: "14px", cursor: "pointer" }} onMouseEnter={(e) => (e.currentTarget.style.borderColor = COACH_COLOR)} onMouseLeave={(e) => (e.currentTarget.style.borderColor = conv.unread ? COACH_COLOR : "#2a2a2a")}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-                  <div style={{ fontWeight: "600" }}>{conv.name}</div>
-                  <div style={{ fontSize: "11px", color: "#999" }}>{conv.time}</div>
-                </div>
-                <div style={{ fontSize: "13px", color: "#bbb" }}>{conv.lastMessage}</div>
-                {conv.unread && <div style={{ marginTop: "8px", width: "8px", height: "8px", background: COACH_COLOR, borderRadius: "50%" }} />}
-              </div>
-            ))}
-          </div>
-        ) : (
+  if (clientId) {
+    return (
+      <CoachShell title="💬 Messages">
+        <button style={{ ...secondaryButton, marginBottom: "12px" }} onClick={() => setParams({})}>← All conversations</button>
+        {error && <StatusMessage error>{error}</StatusMessage>}
+        {!thread && !error && <StatusMessage>Loading conversation...</StatusMessage>}
+        {thread && (
           <>
-            <button onClick={() => setSelectedChat(null)} style={{ padding: "12px", background: "#222", color: WHITE, border: "none", borderRadius: "8px", cursor: "pointer", fontSize: "14px", marginBottom: "20px", width: "100%" }}>
-              ← Back
-            </button>
-
-            <div style={{ background: "#111", borderRadius: "12px", padding: "14px", marginBottom: "16px", minHeight: "300px", display: "flex", flexDirection: "column", gap: "12px", overflowY: "auto" }}>
-              {activeMessages.map((msg) => (
-                <div key={msg.id} style={{ display: "flex", justifyContent: msg.sender === "Coach" ? "flex-end" : "flex-start" }}>
-                  <div style={{ background: msg.sender === "Coach" ? COACH_COLOR : "#222", color: msg.sender === "Coach" ? BLACK : WHITE, borderRadius: "12px", padding: "10px 12px", maxWidth: "80%", fontSize: "13px" }}>
-                    {msg.text}
-                  </div>
+            <div style={{ color: COACH_COLOR, fontWeight: "700", marginBottom: "10px" }}>{thread.client.name}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
+              {thread.messages.length === 0 && <StatusMessage>No messages yet. Say hello below.</StatusMessage>}
+              {thread.messages.map((m) => (
+                <div key={m.id} style={{ alignSelf: m.sender === "coach" ? "flex-end" : "flex-start", maxWidth: "80%", background: m.sender === "coach" ? COACH_COLOR : "#222", color: m.sender === "coach" ? "#000" : "#fff", padding: "8px 12px", borderRadius: "12px", fontSize: "13px", wordBreak: "break-word" }}>
+                  {m.body}
                 </div>
               ))}
             </div>
-
-            <div style={{ display: "flex", gap: "8px" }}>
-              <input type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Type a message..." style={{ flex: 1, padding: "10px", background: "#111", border: `1px solid #2a2a2a`, borderRadius: "8px", color: WHITE, fontSize: "12px", boxSizing: "border-box" }} onKeyPress={(e) => e.key === "Enter" && handleSendMessage()} />
-              <button onClick={handleSendMessage} style={{ padding: "10px 16px", background: COACH_COLOR, color: BLACK, border: "none", borderRadius: "8px", fontSize: "12px", fontWeight: "600", cursor: "pointer" }}>
-                Send
-              </button>
-            </div>
+            <textarea aria-label="Message" value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Type a message" style={{ ...inputStyle, minHeight: "60px", marginBottom: "8px" }} />
+            <button style={{ ...primaryButton(sending), width: "100%" }} disabled={sending} onClick={send}>Send</button>
           </>
         )}
-      </div>
+      </CoachShell>
+    );
+  }
 
-      <div style={{ position: "fixed", bottom: 0, left: 0, width: "100%", height: "40px", background: BLACK, display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 16px", boxSizing: "border-box", zIndex: 20 }}>
-        <div style={{ color: COACH_COLOR, fontSize: "18px", textDecoration: "underline", cursor: "pointer" }} onClick={() => setMenuOpen(true)}>
-          Return to Menu
+  return (
+    <CoachShell title="💬 Coach Messages">
+      {teams.length > 0 && (
+        <div style={{ marginBottom: "14px" }}>
+          {!broadcast.open ? (
+            <button style={{ ...secondaryButton, width: "100%" }} onClick={() => setBroadcast({ ...broadcast, open: true })}>📣 Message a whole team</button>
+          ) : (
+            <div style={cardStyle}>
+              <select aria-label="Team" style={{ ...inputStyle, marginBottom: "8px" }} value={broadcast.teamId} onChange={(e) => setBroadcast({ ...broadcast, teamId: e.target.value })}>
+                <option value="">Choose team...</option>
+                {teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+              <textarea aria-label="Broadcast message" style={{ ...inputStyle, minHeight: "60px", marginBottom: "8px" }} value={broadcast.body} onChange={(e) => setBroadcast({ ...broadcast, body: e.target.value })} />
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button style={{ ...primaryButton(), flex: 1 }} onClick={sendBroadcast}>Send to Team</button>
+                <button style={{ ...secondaryButton, flex: 1 }} onClick={() => setBroadcast({ open: false, teamId: "", body: "" })}>Cancel</button>
+              </div>
+            </div>
+          )}
+          {notice && <div style={{ color: "#ccc", fontSize: "12px", marginTop: "8px", textAlign: "center" }}>{notice}</div>}
         </div>
-      </div>
-    </div>
+      )}
+      {status === "loading" && <StatusMessage>Loading conversations...</StatusMessage>}
+      {status === "error" && (
+        <div>
+          <StatusMessage error>{error}</StatusMessage>
+          <button style={{ ...secondaryButton, width: "100%" }} onClick={loadThreads}>Retry</button>
+        </div>
+      )}
+      {status === "ready" && threads.length === 0 && <StatusMessage>No clients to message yet. Invite a client from My Clients.</StatusMessage>}
+      {status === "ready" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {threads.map((t) => (
+            <div key={t.client_id} role="button" style={{ ...cardStyle, cursor: "pointer" }} onClick={() => setParams({ client: String(t.client_id) })}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ fontWeight: "600" }}>{t.name}</span>
+                {t.unread > 0 && <span style={{ background: COACH_COLOR, color: "#000", borderRadius: "10px", padding: "0 8px", fontSize: "12px" }}>{t.unread}</span>}
+              </div>
+              <div style={{ color: "#999", fontSize: "12px", marginTop: "4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.last_message || "No messages yet"}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </CoachShell>
   );
 }

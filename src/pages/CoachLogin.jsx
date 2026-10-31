@@ -1,8 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function CoachLogin() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (localStorage.getItem("coachToken")) navigate("/coach-dashboard", { replace: true });
+  }, [navigate]);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("idle");
@@ -35,10 +40,11 @@ export default function CoachLogin() {
       localStorage.setItem("coachToken", data.access_token);
       localStorage.setItem("coachEmail", email);
       if (data.coach_id) localStorage.setItem("coachId", String(data.coach_id));
+      localStorage.removeItem("coachTeamId");
       if (data.team_id) localStorage.setItem("coachTeamId", String(data.team_id));
 
       navigate("/coach-dashboard");
-    } catch (error) {
+    } catch {
       setStatus("error");
       setErrorMessage("Coach login is unavailable. Please try again.");
     }

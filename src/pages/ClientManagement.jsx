@@ -1,324 +1,266 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MenuContext } from "../context/MenuContext.jsx";
+import CoachShell from "../components/CoachShell.jsx";
+import StatusMessage from "../components/StatusMessage.jsx";
+import { COACH_COLOR, cardStyle, dangerButton, inputStyle, primaryButton, secondaryButton } from "../components/coachStyles.js";
+import { errorText, useCoachRequest } from "../utils/coachSession.js";
+
+const small = { ...secondaryButton, padding: "8px 10px", fontSize: "12px" };
 
 export default function ClientManagement() {
   const navigate = useNavigate();
-  const { setMenuOpen } = useContext(MenuContext);
+  const request = useCoachRequest();
   const [clients, setClients] = useState([]);
-  const [selectedClient, setSelectedClient] = useState(null);
-  const [newClientEmail, setNewClientEmail] = useState("");
+  const [plans, setPlans] = useState([]);
+  const [teams, setTeams] = useState([]);
+  const [invitations, setInvitations] = useState([]);
   const [status, setStatus] = useState("loading");
   const [errorMessage, setErrorMessage] = useState("");
+  const [notice, setNotice] = useState("");
+  const [email, setEmail] = useState("");
+  const [inviteLink, setInviteLink] = useState("");
+  const [panel, setPanel] = useState(null); // { type: "progress" | "assign" | "team" | "remove", client }
+  const [progress, setProgress] = useState(null);
+  const [panelError, setPanelError] = useState("");
+  const [planId, setPlanId] = useState("");
+  const [teamId, setTeamId] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const COACH_COLOR = "#ec4899";
-  const BLACK = "#000";
-  const WHITE = "#fff";
-  const staffToken = localStorage.getItem("coachToken") || localStorage.getItem("trainerToken");
+  const load = useCallback(async () => {
+    try {
+      const [clientData, planData, teamData, inviteData] = await Promise.all([
+        request("/staff/clients"),
+        request("/staff/plans"),
+        request("/staff/teams"),
+        request("/staff/invitations")
+      ]);
+      setClients(clientData.clients || []);
+      setPlans(planData.plans || []);
+      setTeams(teamData.teams || []);
+      setInvitations((inviteData.invitations || []).filter((i) => i.role === "client" && !i.accepted));
+      setStatus("ready");
+    } catch (error) {
+      setErrorMessage(errorText(error, "Unable to load clients."));
+      setStatus("error");
+    }
+  }, [request]);
 
   useEffect(() => {
-    if (!staffToken) {
-      navigate("/coach-login");
+    const timer = setTimeout(() => load(), 0);
+    return () => clearTimeout(timer);
+  }, [load]);
+
+  async function invite() {
+    setNotice("");
+    setInviteLink("");
+    if (!email.includes("@")) {
+      setNotice("Enter a valid client email.");
       return;
     }
-
-    async function loadClients() {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/staff/clients`, {
-          headers: { Authorization: `Bearer ${staffToken}` }
-        });
-
-        if (res.status === 401 || res.status === 403) {
-          navigate("/coach-login");
-          return;
-        }
-
-        if (!res.ok) throw new Error("Unable to load clients.");
-        const data = await res.json();
-        setClients(data.clients || []);
-        setStatus("ready");
-      } catch (error) {
-        setStatus("error");
-        setErrorMessage("Unable to load assigned clients.");
-      }
-    }
-
-    loadClients();
-  }, [navigate, staffToken]);
-
-  async function handleInviteClient() {
-    if (!newClientEmail.trim() || !staffToken) return;
-
+    setBusy(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/staff/clients/invite`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${staffToken}` },
-        body: JSON.stringify({ email: newClientEmail.trim() })
-      });
-
-      if (!res.ok) throw new Error("Invitation failed.");
-      setNewClientEmail("");
+      const data = await request("/staff/clients/invite", { method: "POST", body: { email: email.trim() } });
+      setEmail("");
+      setNotice(data.delivery_configured ? "Invitation emailed." : "Invitation created. Email delivery is not configured, so share this link with your client:");
+      if (!data.delivery_configured) setInviteLink(`${window.location.origin}/invite?token=${data.invite_token}`);
+      await load();
     } catch (error) {
-      setErrorMessage("Unable to invite this client.");
+      setNotice(errorText(error, "Invitation failed."));
+    } finally {
+      setBusy(false);
     }
   }
 
-  async function removeClient(clientId) {
-    if (!staffToken) return;
-
+  async function revoke(id) {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/staff/clients/${clientId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${staffToken}` }
-      });
-
-      if (!res.ok) throw new Error("Remove failed.");
-      setClients((prev) => prev.filter((client) => client.id !== clientId));
-      setSelectedClient(null);
+      await request(`/staff/invitations/${id}`, { method: "DELETE" });
+      setInvitations((list) => list.filter((i) => i.id !== id));
     } catch (error) {
-      setErrorMessage("Unable to remove this client.");
+      setNotice(errorText(error, "Could not revoke invitation."));
     }
-  };
+  }
 
-  if (!staffToken) return null;
+  function openPanel(type, client) {
+    setPanel({ type, client });
+    setPanelError("");
+    setProgress(null);
+    setPlanId("");
+    setTeamId(client.team_id ? String(client.team_id) : "");
+    if (type === "progress") {
+      request(`/staff/clients/${client.id}/progress`)
+        .then(setProgress)
+        .catch((error) => setPanelError(errorText(error, "Unable to load progress.")));
+    }
+  }
 
-  if (status === "loading") return <StatusScreen message="Loading assigned clients..." />;
-  if (status === "error") return <StatusScreen message={errorMessage} />;
+  async function submitPanel() {
+    const { type, client } = panel;
+    setBusy(true);
+    setPanelError("");
+    try {
+      if (type === "assign") {
+        if (!planId) throw new Error("Choose a plan first.");
+        await request(`/staff/plans/${planId}/assignments`, { method: "POST", body: { client_id: client.id } });
+        setNotice(`Plan assigned to ${client.name}.`);
+      } else if (type === "team") {
+        await request(`/staff/clients/${client.id}/team`, { method: "POST", body: { team_id: teamId ? Number(teamId) : null } });
+        setNotice(`Team updated for ${client.name}.`);
+      } else if (type === "remove") {
+        await request(`/staff/clients/${client.id}`, { method: "DELETE" });
+        setNotice(`${client.name} was removed.`);
+      }
+      setPanel(null);
+      await load();
+    } catch (error) {
+      setPanelError(errorText(error, "Action failed."));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const clientButtons = (client) => (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "10px" }}>
+      <button style={small} onClick={() => openPanel("progress", client)}>View Progress</button>
+      <button style={small} onClick={() => openPanel("assign", client)}>Assign Program</button>
+      <button style={small} onClick={() => navigate(`/coach-messaging?client=${client.id}`)}>Message</button>
+      {teams.length > 0 && <button style={small} onClick={() => openPanel("team", client)}>Team</button>}
+      <button style={{ ...small, ...dangerButton, padding: "8px 10px", fontSize: "12px" }} onClick={() => openPanel("remove", client)}>
+        Remove Client
+      </button>
+    </div>
+  );
 
   return (
-    <div
-      style={{
-        width: "100vw",
-        minHeight: "100vh",
-        backgroundColor: BLACK,
-        padding: "16px 16px 90px",
-        boxSizing: "border-box",
-        display: "flex",
-        justifyContent: "center",
-        overflowY: "auto",
-        color: WHITE
-      }}
-    >
-      <div style={{ width: "360px", maxWidth: "100%" }}>
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <div style={{ color: COACH_COLOR, fontSize: "28px", fontWeight: "700" }}>👥 Clients</div>
+    <CoachShell title="👥 My Clients">
+      <div style={{ ...cardStyle, marginBottom: "16px" }}>
+        <div style={{ color: COACH_COLOR, fontWeight: "700", marginBottom: "8px" }}>Invite a client</div>
+        <input
+          type="email"
+          aria-label="Client email"
+          placeholder="client@email.com"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          style={{ ...inputStyle, marginBottom: "8px" }}
+        />
+        <button style={{ ...primaryButton(busy), width: "100%" }} disabled={busy} onClick={invite}>
+          Send Invitation
+        </button>
+        {notice && <div style={{ color: "#ccc", fontSize: "12px", marginTop: "8px" }}>{notice}</div>}
+        {inviteLink && <input readOnly aria-label="Invitation link" value={inviteLink} onFocus={(e) => e.target.select()} style={{ ...inputStyle, marginTop: "6px" }} />}
+      </div>
+
+      {status === "loading" && <StatusMessage>Loading clients...</StatusMessage>}
+      {status === "error" && (
+        <div>
+          <StatusMessage error>{errorMessage}</StatusMessage>
+      <button style={{ ...secondaryButton, width: "100%" }} onClick={() => { setStatus("loading"); load(); }}>Retry</button>
         </div>
+      )}
 
-        {!selectedClient ? (
-          <>
-            {/* Add Client Form */}
-            <div style={{ marginBottom: "20px" }}>
-              <label style={{ fontSize: "12px", color: "#999", marginBottom: "6px", display: "block" }}>
-                Invite New Client
-              </label>
-              <div style={{ display: "flex", gap: "8px" }}>
-                <input
-                  type="email"
-                  value={newClientEmail}
-                  onChange={(e) => setNewClientEmail(e.target.value)}
-                  placeholder="client@example.com"
-                  style={{
-                    flex: 1,
-                    padding: "10px",
-                    background: "#111",
-                    border: `1px solid #2a2a2a`,
-                    borderRadius: "8px",
-                    color: WHITE,
-                    fontSize: "12px",
-                    boxSizing: "border-box"
-                  }}
-                />
-                <button
-                  onClick={handleInviteClient}
-                  style={{
-                    padding: "10px 16px",
-                    background: COACH_COLOR,
-                    color: BLACK,
-                    border: "none",
-                    borderRadius: "8px",
-                    fontSize: "12px",
-                    fontWeight: "600",
-                    cursor: "pointer"
-                  }}
-                >
-                  Invite
-                </button>
-              </div>
-            </div>
-
-            {/* Client List */}
+      {status === "ready" && (
+        <>
+          {clients.length === 0 ? (
+            <StatusMessage>No clients yet. Invite your first client above.</StatusMessage>
+          ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {clients.length === 0 && <div style={{ color: "#999", textAlign: "center", padding: "20px" }}>No assigned clients.</div>}
               {clients.map((client) => (
-                <div
-                  key={client.id}
-                  onClick={() => setSelectedClient(client)}
-                  style={{
-                    background: "#111",
-                    border: `1px solid #2a2a2a`,
-                    borderRadius: "12px",
-                    padding: "14px",
-                    cursor: "pointer"
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = COACH_COLOR)}
-                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#2a2a2a")}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-                    <div style={{ fontWeight: "600" }}>{client.name}</div>
-                    <div
-                      style={{
-                        fontSize: "11px",
-                        color: client.status === "Active" ? "#6ee7b7" : "#fbbf24",
-                        fontWeight: "600"
-                      }}
-                    >
-                      {client.status}
+                <div key={client.id} style={cardStyle}>
+                  <div style={{ fontWeight: "600" }}>{client.name}</div>
+                  <div style={{ color: "#999", fontSize: "12px" }}>{client.email}</div>
+                  <div style={{ color: "#777", fontSize: "11px" }}>
+                    {client.status}
+                    {client.joinDate ? ` · joined ${client.joinDate}` : ""}
+                    {client.team_id ? ` · ${(teams.find((t) => t.id === client.team_id) || {}).name || "team"}` : ""}
+                  </div>
+                  {clientButtons(client)}
+                  {panel && panel.client.id === client.id && (
+                    <div style={{ marginTop: "12px", borderTop: "1px solid #2a2a2a", paddingTop: "12px" }}>
+                      {panelError && <StatusMessage error>{panelError}</StatusMessage>}
+                      {panel.type === "progress" && <ProgressView progress={progress} error={panelError} />}
+                      {panel.type === "assign" && (
+                        plans.length === 0 ? (
+                          <StatusMessage>No plans yet. <span style={{ color: COACH_COLOR, cursor: "pointer", textDecoration: "underline" }} onClick={() => navigate("/plan-builder")}>Create one in Plan Builder.</span></StatusMessage>
+                        ) : (
+                          <select aria-label="Plan" value={planId} onChange={(e) => setPlanId(e.target.value)} style={inputStyle}>
+                            <option value="">Choose a plan...</option>
+                            {plans.map((plan) => <option key={plan.id} value={plan.id}>{plan.name}</option>)}
+                          </select>
+                        )
+                      )}
+                      {panel.type === "team" && (
+                        <select aria-label="Team" value={teamId} onChange={(e) => setTeamId(e.target.value)} style={inputStyle}>
+                          <option value="">No team</option>
+                          {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
+                        </select>
+                      )}
+                      {panel.type === "remove" && (
+                        <div style={{ color: "#f87171", fontSize: "13px", marginBottom: "8px" }}>
+                          Remove {client.name} from your clients? They will lose access to your plans and messages.
+                        </div>
+                      )}
+                      <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                        {panel.type !== "progress" && (
+                          <button style={panel.type === "remove" ? { ...dangerButton, flex: 1 } : { ...primaryButton(busy), flex: 1 }} disabled={busy} onClick={submitPanel}>
+                            {panel.type === "remove" ? "Confirm Remove" : panel.type === "assign" ? "Assign" : "Save"}
+                          </button>
+                        )}
+                        <button style={{ ...secondaryButton, flex: 1 }} onClick={() => setPanel(null)}>
+                          {panel.type === "progress" ? "Close" : "Cancel"}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  <div style={{ fontSize: "12px", color: "#999" }}>{client.email}</div>
-                  <div style={{ fontSize: "11px", color: "#666", marginTop: "4px" }}>
-                    Joined {client.joinDate}
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
-          </>
-        ) : (
-          <>
-            {/* Client Detail */}
-            <button
-              onClick={() => setSelectedClient(null)}
-              style={{
-                padding: "12px",
-                background: "#222",
-                color: WHITE,
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontSize: "14px",
-                marginBottom: "20px",
-                width: "100%"
-              }}
-            >
-              ← Back
-            </button>
+          )}
 
-            <div
-              style={{
-                background: "#111",
-                border: `1px solid ${COACH_COLOR}`,
-                borderRadius: "12px",
-                padding: "16px",
-                marginBottom: "20px"
-              }}
-            >
-              <div style={{ fontSize: "20px", fontWeight: "700", marginBottom: "12px", color: COACH_COLOR }}>
-                {selectedClient.name}
-              </div>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px", fontSize: "14px" }}>
-                <div>
-                  <div style={{ color: "#999", fontSize: "12px" }}>Email</div>
-                  <div>{selectedClient.email}</div>
+          {invitations.length > 0 && (
+            <div style={{ marginTop: "20px" }}>
+              <div style={{ color: COACH_COLOR, fontWeight: "700", marginBottom: "8px" }}>Pending invitations</div>
+              {invitations.map((invite) => (
+                <div key={invite.id} style={{ ...cardStyle, display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                  <div style={{ fontSize: "12px" }}>
+                    {invite.email}
+                    {invite.expired && <span style={{ color: "#f87171" }}> (expired)</span>}
+                  </div>
+                  <button style={small} onClick={() => revoke(invite.id)}>Revoke</button>
                 </div>
-                <div>
-                  <div style={{ color: "#999", fontSize: "12px" }}>Status</div>
-                  <div>{selectedClient.status}</div>
-                </div>
-                <div>
-                  <div style={{ color: "#999", fontSize: "12px" }}>Joined</div>
-                  <div>{selectedClient.joinDate}</div>
-                </div>
-              </div>
+              ))}
             </div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <button
-                onClick={() => removeClient(selectedClient.id)}
-                style={{
-                  padding: "12px",
-                  background: COACH_COLOR,
-                  color: BLACK,
-                  border: "none",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  cursor: "pointer"
-                }}
-              >
-                View Progress
-              </button>
-              <button
-                style={{
-                  padding: "12px",
-                  background: "#222",
-                  color: WHITE,
-                  border: "none",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  cursor: "pointer"
-                }}
-              >
-                Assign Program
-              </button>
-              <button
-                style={{
-                  padding: "12px",
-                  background: "#333",
-                  color: "#f87171",
-                  border: "none",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  cursor: "pointer"
-                }}
-              >
-                Remove Client
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          width: "100%",
-          height: "40px",
-          background: BLACK,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          padding: "0 16px",
-          boxSizing: "border-box",
-          zIndex: 20
-        }}
-      >
-        <div
-          style={{
-            color: COACH_COLOR,
-            fontSize: "18px",
-            textDecoration: "underline",
-            cursor: "pointer"
-          }}
-          onClick={() => setMenuOpen(true)}
-        >
-          Return to Menu
-        </div>
-      </div>
-    </div>
+          )}
+        </>
+      )}
+    </CoachShell>
   );
 }
 
-function StatusScreen({ message }) {
+function ProgressView({ progress, error }) {
+  if (error) return null;
+  if (!progress) return <StatusMessage>Loading progress...</StatusMessage>;
+  const { summary, weights, workouts, daily_logs: logs, plans, has_account: hasAccount } = progress;
+  const row = { display: "flex", justifyContent: "space-between", fontSize: "12px", padding: "3px 0", color: "#ccc" };
+  const day = (value) => (value ? String(value).slice(0, 10) : "—");
   return (
-    <div style={{ minHeight: "100vh", background: "#000", color: "#ec4899", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", textAlign: "center" }}>
-      {message}
+    <div>
+      {!hasAccount && <StatusMessage>This client has not created an account yet, so there is no activity to show.</StatusMessage>}
+      <div style={row}><span>Latest weight</span><span>{summary.latest_weight_kg != null ? `${summary.latest_weight_kg} kg` : "—"}</span></div>
+      <div style={row}><span>Weight change</span><span>{summary.weight_change_kg != null ? `${summary.weight_change_kg} kg` : "—"}</span></div>
+      <div style={row}><span>Workouts (7d / 30d)</span><span>{summary.workouts_7d} / {summary.workouts_30d}</span></div>
+      <div style={row}><span>Minutes (30d)</span><span>{summary.minutes_30d}</span></div>
+      <div style={row}><span>Last activity</span><span>{day(summary.last_activity)}</span></div>
+
+      <div style={{ color: COACH_COLOR, fontSize: "12px", margin: "10px 0 4px" }}>Assigned plans</div>
+      {plans.length === 0 ? <div style={{ color: "#777", fontSize: "12px" }}>None</div> : plans.map((p) => <div key={p.assignment_id} style={row}><span>{p.name}</span></div>)}
+
+      <div style={{ color: COACH_COLOR, fontSize: "12px", margin: "10px 0 4px" }}>Recent workouts</div>
+      {workouts.length === 0 ? <div style={{ color: "#777", fontSize: "12px" }}>No workouts logged</div> : workouts.slice(0, 5).map((w) => <div key={w.id} style={row}><span>{day(w.date)} · {w.name}</span><span>{w.duration_minutes ?? "—"} min</span></div>)}
+
+      <div style={{ color: COACH_COLOR, fontSize: "12px", margin: "10px 0 4px" }}>Weight log</div>
+      {weights.length === 0 ? <div style={{ color: "#777", fontSize: "12px" }}>No weigh-ins</div> : weights.slice(-5).map((w) => <div key={w.date} style={row}><span>{day(w.date)}</span><span>{w.weight_kg} kg</span></div>)}
+
+      <div style={{ color: COACH_COLOR, fontSize: "12px", margin: "10px 0 4px" }}>Daily logs</div>
+      {logs.length === 0 ? <div style={{ color: "#777", fontSize: "12px" }}>No daily logs</div> : logs.slice(0, 5).map((d) => <div key={d.date} style={row}><span>{day(d.date)}</span><span>{d.calories ?? 0} kcal · {d.protein ?? 0} g protein</span></div>)}
     </div>
   );
 }

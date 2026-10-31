@@ -1,11 +1,8 @@
-import React, { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.jsx";
 
-// ⭐ Phase 4 AI imports
-import { updatePersonalizationEngine } from "../ai/personalizationEngine";
-import { updateBehavior } from "../ai/behaviorEngine";
-import { API } from "../config/api.js";
+import { apiRequest } from "../utils/api.js";
 
 export default function Sports() {
   const navigate = useNavigate();
@@ -27,6 +24,8 @@ export default function Sports() {
   const [manualSport, setManualSport] = useState("");
   const [manualDuration, setManualDuration] = useState("");
   const [manualNotes, setManualNotes] = useState("");
+  const [saveError, setSaveError] = useState("");
+  const [saveMessage, setSaveMessage] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -45,14 +44,7 @@ export default function Sports() {
       if (!token) return;
 
       try {
-        const res = await fetch(
-          `${API}/sports`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        const data = await res.json();
+        const data = await apiRequest("/sports");
         setSportsList(data.sports || []);
       } catch (err) {
         console.error("Error loading sports:", err);
@@ -71,14 +63,7 @@ export default function Sports() {
       if (!sport || !token) return;
 
       try {
-        const res = await fetch(
-          `${API}/sports/${sport}/skills`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        const data = await res.json();
+        const data = await apiRequest(`/sports/${encodeURIComponent(sport)}/skills`);
         setCategories(data.skills || []);
         setCategory("");
         setLevel("");
@@ -100,14 +85,7 @@ export default function Sports() {
       if (!sport || !category || !token) return;
 
       try {
-        const res = await fetch(
-          `${API}/sports/${sport}/${category}/levels`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        const data = await res.json();
+        const data = await apiRequest(`/sports/${encodeURIComponent(sport)}/${encodeURIComponent(category)}/levels`);
         setLevels(data.levels || []);
         setLevel("");
         setDrill(null);
@@ -127,14 +105,7 @@ export default function Sports() {
     if (!sport || !category || !level || !token) return;
 
     try {
-      const res = await fetch(
-        `${API}/sports/${sport}/${category}/${level}/drills`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      const data = await res.json();
+      const data = await apiRequest(`/sports/${encodeURIComponent(sport)}/${encodeURIComponent(category)}/${encodeURIComponent(level)}/drills`);
       setDrill(data.drill || null);
     } catch (err) {
       console.error("Error loading drill:", err);
@@ -147,69 +118,40 @@ export default function Sports() {
   // -----------------------------
   async function handleSaveWorkout() {
     if (!token) return;
-
-    const basePayload =
-      mode === "manual"
-        ? {
-            mode: "manual",
-            sport: manualSport,
-            duration: manualDuration,
-            notes: manualNotes,
-          }
-        : {
-            mode: "generator",
-            sport,
-            category,
-            level,
-            drill,
-            duration,
-            notes,
-          };
+    const selectedSport = mode === "manual" ? manualSport.trim() : sport;
+    const rawDuration = mode === "manual" ? manualDuration : duration;
+    const durationMinutes = Number.parseInt(rawDuration, 10);
+    if (!selectedSport || !Number.isFinite(durationMinutes) || durationMinutes <= 0) {
+      setSaveError("Enter a sport and a duration greater than zero before saving.");
+      setSaveMessage("");
+      return;
+    }
 
     const payload = {
-      ...basePayload,
+      mode,
+      duration_minutes: durationMinutes,
+      manual_name: mode === "manual" ? selectedSport : undefined,
+      manual_notes: mode === "manual" ? manualNotes.trim() || undefined : notes.trim() || undefined,
+      workout_type: selectedSport,
+      plan_json: mode === "generator" ? { sport, category, level, drill } : undefined,
       timestamp: new Date().toISOString(),
-      completed: true,
     };
 
+    setSaveError("");
+    setSaveMessage("");
+    let workoutSaved = false;
     try {
-      const res = await fetch(
-        `${API}/workouts`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!res.ok) {
-        console.error("Failed to save workout");
-        return;
-      }
-
-      const data = await res.json();
-      console.log("Workout saved:", data);
-
-      // ⭐ Phase 4 AI learning payload
-      const workoutForAI = {
-        ...payload,
-        intensityScore: 0.5,
-        durationAccuracy: 0.9,
-        blockCompletion: {
-          warmup: 1,
-          main: 1,
-          finisher: 0,
-          cooldown: 1,
-        },
-      };
-
-      updatePersonalizationEngine(workoutForAI);
-      updateBehavior(workoutForAI);
-    } catch (err) {
-      console.error("Error saving workout:", err);
+      await apiRequest("/workouts/save", { method: "POST", body: payload });
+      workoutSaved = true;
+      await apiRequest("/sports/logs/", {
+        method: "POST",
+        body: { sport: selectedSport, duration_minutes: durationMinutes, date: payload.timestamp },
+      });
+      setSaveMessage("Workout and sports session saved to your account.");
+    } catch (error) {
+      setSaveError(workoutSaved
+        ? `Workout details saved, but leaderboard session logging failed: ${error.message}`
+        : error.message || "Unable to save workout.");
     }
   }
 
@@ -507,7 +449,10 @@ export default function Sports() {
       )}
 
       {/* SAVE WORKOUT (BOTTOM LEFT) */}
-      <div
+      {saveError && <p role="alert" style={{ color: "#ff8b8b" }}>{saveError}</p>}
+      {saveMessage && <p role="status" style={{ color: ACCENT }}>{saveMessage}</p>}
+      <button
+        type="button"
         onClick={handleSaveWorkout}
         style={{
           position: "fixed",
@@ -520,7 +465,7 @@ export default function Sports() {
         }}
       >
         Save Workout
-      </div>
+      </button>
 
       {/* RETURN TO MENU (BOTTOM RIGHT) */}
       <div

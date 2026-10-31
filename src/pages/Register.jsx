@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiRequest } from "../utils/api.js";
 import homescreen from "../assets/homescreen.png";
 
 export default function Register() {
@@ -12,50 +13,12 @@ export default function Register() {
   const [errorMessage, setErrorMessage] = useState("");
 
   async function handleRegister() {
-    if (!email.includes("@") || password.length < 10 || name.length < 2) {
-      setStatus("error");
-      setErrorMessage("Please enter a valid name, email, and password (10+ chars).");
-      return;
-    }
-
+    if (!email.includes("@") || password.length < 10 || name.trim().length < 2) { setStatus("error"); setErrorMessage("Please enter a valid name, email, and password (10+ chars)."); return; }
     setStatus("loading");
-
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      // ⭐ CHECK THIS FIRST
-      if (!res.ok) {
-        let errorText = "Registration failed.";
-
-        try {
-          const errData = await res.json();
-          if (errData.detail) errorText = errData.detail;
-        } catch (_) {
-          // ignore JSON parse errors
-        }
-
-        setStatus("error");
-        setErrorMessage(errorText);
-        return;
-      }
-
-      // ⭐ SUCCESS — safe to parse JSON now
-      await res.json();
-
-      setStatus("success");
-
-      setTimeout(() => {
-        navigate("/login");
-      }, 800);
-
-    } catch (err) {
-      setStatus("error");
-      setErrorMessage("Server error. Please try again.");
-    }
+      await apiRequest("/auth/register", { method: "POST", body: { name: name.trim(), email: email.trim(), password } });
+      setStatus("success"); setTimeout(() => navigate("/login"), 800);
+    } catch (err) { setStatus("error"); setErrorMessage(err.message || "Registration failed."); }
   }
 
   const inputStyle = {
@@ -138,7 +101,7 @@ export default function Register() {
           style={inputStyle}
         />
 
-        <div
+        <button type="button" disabled={status === "loading"}
           onClick={handleRegister}
           style={{
             color:
@@ -160,7 +123,7 @@ export default function Register() {
             : status === "success"
             ? "Success!"
             : "Register"}
-        </div>
+        </button>
 
         {status === "error" && (
           <p style={{ color: "red", marginTop: "12px" }}>

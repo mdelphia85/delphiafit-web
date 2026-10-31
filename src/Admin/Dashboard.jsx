@@ -1,70 +1,45 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "./Admin.jsx";
+import { adminFetch, formatDateTime } from "./adminApi.js";
+import { ACCENT, BORDER, CARD_BG, TEXT_MAIN, TEXT_MUTED, card, container, errorBox, subtitle, title } from "./adminTheme.js";
 
 export default function AdminDashboard() {
-  const BG = "rgb(0,0,0)";
-  const CARD_BG = "rgb(15,15,15)";
-  const BORDER = "rgb(60,60,60)";
-  const TEXT_MAIN = "rgb(240,240,240)";
-  const TEXT_MUTED = "rgb(160,160,160)";
-  const ACCENT = "rgb(128,0,128)";
-
   const [dashboard, setDashboard] = useState(null);
   const [system, setSystem] = useState(null);
   const [actions, setActions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // ⭐ Fetch ALL real-time admin data
   useEffect(() => {
     async function load() {
       try {
-        const token = localStorage.getItem("adminToken");
-
-        const headers = { Authorization: `Bearer ${token}` };
-
-        // Dashboard stats
-        const dashRes = await fetch(
-          `${import.meta.env.VITE_API_URL}/admin/dashboard`,
-          { headers }
-        );
-        const dashJson = await dashRes.json();
-        setDashboard(dashJson);
-
-        // System health
-        const sysRes = await fetch(
-          `${import.meta.env.VITE_API_URL}/admin/system/health`,
-          { headers }
-        );
-        const sysJson = await sysRes.json();
-        setSystem(sysJson);
-
-        // Recent admin actions
-        const actRes = await fetch(
-          `${import.meta.env.VITE_API_URL}/admin/actions/recent`,
-          { headers }
-        );
-        const actJson = await actRes.json();
-        setActions(actJson.actions || actJson);
-
+        const [dash, sys, act] = await Promise.all([
+          adminFetch("/admin/dashboard"),
+          adminFetch("/admin/system/health"),
+          adminFetch("/admin/actions/recent"),
+        ]);
+        setDashboard(dash);
+        setSystem(sys);
+        setActions(act?.actions || []);
       } catch (err) {
         console.error("Dashboard load error:", err);
+        setError(err.message || "Unable to load the dashboard.");
       }
-
-      setLoading(false);
     }
 
     load();
   }, []);
 
-  // ⭐ Loading screen
-  if (loading || !dashboard || !system) {
+  if (error) {
+    return <AdminLayout><div style={container}><div style={errorBox}>{error}</div></div></AdminLayout>;
+  }
+
+  if (!dashboard || !system) {
     return (
       <AdminLayout>
         <div
           style={{
             width: "100%",
             height: "100%",
-            backgroundColor: BG,
             color: TEXT_MAIN,
             display: "flex",
             justifyContent: "center",
@@ -78,55 +53,14 @@ export default function AdminDashboard() {
     );
   }
 
-  // ⭐ Styles
-  const container = {
-    width: "100%",
-    height: "100%",
-    backgroundColor: BG,
-    color: TEXT_MAIN,
-    padding: "20px",
-    boxSizing: "border-box",
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px",
-    overflow: "auto"
-  };
-
-  const title = { fontSize: "26px", fontWeight: "600" };
-  const subtitle = { fontSize: "14px", color: TEXT_MUTED };
-
   const grid = {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
     gap: "16px"
   };
-
-  const card = {
-    backgroundColor: CARD_BG,
-    border: `1px solid ${BORDER}`,
-    borderRadius: "10px",
-    padding: "16px",
-    boxSizing: "border-box"
-  };
-
-  const cardLabel = {
-    fontSize: "14px",
-    color: TEXT_MUTED,
-    marginBottom: "6px"
-  };
-
-  const cardValue = {
-    fontSize: "24px",
-    fontWeight: "600",
-    color: ACCENT
-  };
-
-  const sectionTitle = {
-    fontSize: "18px",
-    fontWeight: "500",
-    marginBottom: "10px"
-  };
-
+  const cardLabel = { fontSize: "14px", color: TEXT_MUTED, marginBottom: "6px" };
+  const cardValue = { fontSize: "24px", fontWeight: "600", color: ACCENT };
+  const sectionTitle = { fontSize: "18px", fontWeight: "500", marginBottom: "10px" };
   const listItem = {
     padding: "10px 0",
     borderBottom: `1px solid ${BORDER}`,
@@ -134,64 +68,54 @@ export default function AdminDashboard() {
     justifyContent: "space-between"
   };
 
+  const stats = [
+    ["Total Users", dashboard.total_users],
+    ["New Users (7 days)", dashboard.new_users_last_7_days],
+    ["Logins (7 days)", dashboard.logins_last_7_days],
+    ["Unread Messages", dashboard.unread_messages],
+    ["Active Announcements", dashboard.active_announcements],
+    ["Suspended Users", dashboard.suspended_users],
+    ["Total Logs", dashboard.total_logs],
+  ];
+
   return (
     <AdminLayout>
       <div style={container}>
-        {/* HEADER */}
         <div>
           <div style={title}>Admin Dashboard</div>
           <div style={subtitle}>Live system activity, health, and admin actions.</div>
         </div>
 
-        {/* QUICK STATS (LIVE DATA) */}
         <div style={grid}>
-          <div style={card}>
-            <div style={cardLabel}>Total Users</div>
-            <div style={cardValue}>{dashboard.total_users}</div>
-          </div>
-
-          <div style={card}>
-            <div style={cardLabel}>New Users (7 days)</div>
-            <div style={cardValue}>{dashboard.new_users_last_7_days}</div>
-          </div>
-
-          <div style={card}>
-            <div style={cardLabel}>Unread Messages</div>
-            <div style={cardValue}>{dashboard.unread_messages}</div>
-          </div>
-
-          <div style={card}>
-            <div style={cardLabel}>Total Logs</div>
-            <div style={cardValue}>{dashboard.total_logs}</div>
-          </div>
+          {stats.map(([label, value]) => (
+            <div key={label} style={card}>
+              <div style={cardLabel}>{label}</div>
+              <div style={cardValue}>{value ?? 0}</div>
+            </div>
+          ))}
         </div>
 
-        {/* SYSTEM STATUS (LIVE) */}
-        <div style={card}>
+        <div style={{ ...card, backgroundColor: CARD_BG }}>
           <div style={sectionTitle}>System Status</div>
 
           <div style={listItem}>
             <span>API</span>
             <span style={{ color: ACCENT }}>{system.api_status}</span>
           </div>
-
           <div style={listItem}>
             <span>Database</span>
             <span style={{ color: ACCENT }}>{system.database_status}</span>
           </div>
-
           <div style={listItem}>
             <span>Uptime</span>
             <span style={{ color: ACCENT }}>{system.uptime}</span>
           </div>
-
           <div style={listItem}>
-            <span>Errors (24h)</span>
-            <span style={{ color: ACCENT }}>{system.errors_24h}</span>
+            <span>Failed admin actions (24h)</span>
+            <span style={{ color: ACCENT }}>{system.failed_admin_actions_24h ?? 0}</span>
           </div>
         </div>
 
-        {/* RECENT ADMIN ACTIONS (LIVE) */}
         <div style={card}>
           <div style={sectionTitle}>Recent Admin Actions</div>
 
@@ -199,9 +123,12 @@ export default function AdminDashboard() {
             actions.map(a => (
               <div key={a.id} style={listItem}>
                 <div>
-                  <div style={{ fontSize: "14px" }}>{a.action}</div>
+                  <div style={{ fontSize: "14px", color: a.success === false ? "red" : TEXT_MAIN }}>
+                    {a.summary || a.action}
+                  </div>
                   <div style={{ fontSize: "12px", color: TEXT_MUTED }}>
-                    {a.admin} • {a.timestamp}
+                    {a.admin} • {formatDateTime(a.timestamp)}
+                    {a.detail ? ` • ${a.detail}` : ""}
                   </div>
                 </div>
               </div>

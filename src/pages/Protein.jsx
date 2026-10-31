@@ -4,6 +4,7 @@ import { MenuContext } from "../context/MenuContext.jsx";
 import useNutritionTargets from "../hooks/useNutritionTargets.js";
 import TargetPanel from "../components/TargetPanel.jsx";
 import { MissingDataNotice } from "../components/NutritionNotices.jsx";
+import useDailyConsumption from "../hooks/useDailyConsumption.js";
 
 export default function Protein() {
   const proteinColor = "rgb(255, 50, 50)"; // your exact red
@@ -11,7 +12,9 @@ export default function Protein() {
   const { data: targets, error: targetError, saveOverrides } = useNutritionTargets();
   const personalized = targets && targets.status === "ready";
 
-  const [protein, setProtein] = useState(0);
+  const [localProtein, setProtein] = useState(null);
+  const { savedTotal, status: saveStatus, save } = useDailyConsumption("protein");
+  const protein = localProtein ?? savedTotal;
   const target = personalized ? targets.effective.protein_g : 160;
   const [showCelebration, setShowCelebration] = useState(false);
 
@@ -20,7 +23,7 @@ export default function Protein() {
 
   function addProtein(amount) {
     setProtein(prev => {
-      const updated = prev + amount;
+      const updated = (prev ?? savedTotal) + amount;
       checkCelebration(updated);
       return updated;
     });
@@ -41,6 +44,7 @@ export default function Protein() {
 
   function saveProtein() {
     checkCelebration(protein);
+    save(protein);
   }
 
   const remaining = Math.max(target - protein, 0);
@@ -171,6 +175,7 @@ export default function Protein() {
       >
         Save
       </div>
+      {saveStatus && <div role="status" style={{ textAlign: "center", marginTop: 8 }}>{saveStatus}</div>}
 
       {/* CELEBRATION */}
       {showCelebration && (

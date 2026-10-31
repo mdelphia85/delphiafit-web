@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { API } from "../config/api";
+import { ADMIN_TOKEN_KEY } from "./adminApi.js";
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -14,42 +16,34 @@ export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  async function handleLogin() {
+  async function handleLogin(event) {
+    event?.preventDefault();
     if (!email.trim() || !password.trim()) return;
 
     setLoading(true);
+    setError("");
 
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/admin/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            email: email,
-            password: password
-          })
-        }
-      );
+      const res = await fetch(`${API}/admin/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), password })
+      });
 
       if (!res.ok) {
-        alert("Invalid admin credentials");
+        setError(res.status === 403 ? "This account does not have admin access." : "Invalid admin credentials.");
         setLoading(false);
         return;
       }
 
       const data = await res.json();
-
-      // Save admin token
-      localStorage.setItem("adminToken", data.access_token);
-
+      localStorage.setItem(ADMIN_TOKEN_KEY, data.access_token);
       navigate("/admin/dashboard");
     } catch (err) {
       console.error(err);
-      alert("Server error — unable to log in");
+      setError("Server error — unable to log in.");
     }
 
     setLoading(false);
@@ -116,13 +110,16 @@ export default function AdminLogin() {
 
   return (
     <div style={container}>
-      <div style={card}>
+      <form style={card} onSubmit={handleLogin}>
         <div style={title}>Admin Login</div>
         <div style={subtitle}>Access to the DelphiaFit admin panel</div>
 
         <input
           style={input}
+          type="email"
           placeholder="Admin Email"
+          aria-label="Admin Email"
+          autoComplete="username"
           value={email}
           onChange={e => setEmail(e.target.value)}
         />
@@ -131,14 +128,18 @@ export default function AdminLogin() {
           style={input}
           type="password"
           placeholder="Admin Password"
+          aria-label="Admin Password"
+          autoComplete="current-password"
           value={password}
           onChange={e => setPassword(e.target.value)}
         />
 
-        <button style={button} onClick={handleLogin} disabled={loading}>
+        {error && <div role="alert" style={{ color: "red", fontSize: "14px" }}>{error}</div>}
+
+        <button style={button} type="submit" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
-      </div>
+      </form>
     </div>
   );
 }

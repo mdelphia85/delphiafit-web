@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 export default function CoachPasswordReset() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(searchParams.get("email") || "");
   const [token, setToken] = useState(searchParams.get("token") || "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -30,7 +30,7 @@ export default function CoachPasswordReset() {
       if (!res.ok) throw new Error();
       setStatus("success");
       setMessage("If that coach account exists, reset instructions have been sent.");
-    } catch (error) {
+    } catch {
       setStatus("error");
       setMessage("Unable to request a reset link right now.");
     }
@@ -57,7 +57,7 @@ export default function CoachPasswordReset() {
       setStatus("success");
       setMessage("Password updated. Redirecting to Coach Login...");
       setTimeout(() => navigate("/coach-login"), 900);
-    } catch (error) {
+    } catch {
       setStatus("error");
       setMessage(error.message || "Unable to reset the password.");
     }

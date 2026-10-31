@@ -1,151 +1,56 @@
-import React, { useState, useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
-import { API } from "../config/api.js";
+import { apiRequest } from "../utils/api.js";
 
-const PROGRESS_COLOR = "yellow";
+const COLOR = "yellow";
+const fields = ["protein", "water", "calories", "meals", "workouts", "supplements"];
+const today = () => new Date().toISOString().slice(0, 10);
 
-function Field({ label, keyName, value, onChange }) {
-  return (
-    <div style={{ marginBottom: "22px" }}>
-      <p style={{ color: PROGRESS_COLOR, margin: 0, fontSize: "22px" }}>
-        {label}
-      </p>
-
-      <input
-        type="number"
-        inputMode="numeric"
-        value={value}
-        onChange={(e) => onChange(keyName, e.target.value)}
-        style={{
-          width: "100%",
-          padding: "14px",
-          fontSize: "20px",
-          borderRadius: "6px",
-          border: `2px solid ${PROGRESS_COLOR}`,
-          backgroundColor: "black",
-          color: PROGRESS_COLOR,
-          outline: "none",
-        }}
-        placeholder={label}
-      />
-    </div>
-  );
+function Field({ label, value, onChange }) {
+  return <label style={{ display: "block", marginBottom: 22, color: COLOR, fontSize: 22 }}>{label}<input type="number" min="0" step="any" value={value} onChange={onChange} style={{ display: "block", width: "100%", padding: 14, fontSize: 20, borderRadius: 6, border: `2px solid ${COLOR}`, background: "black", color: COLOR, boxSizing: "border-box" }} /></label>;
 }
 
 export default function DailyLog() {
   const { setMenuOpen } = useContext(MenuContext);
+  const [form, setForm] = useState(Object.fromEntries(fields.map((field) => [field, ""])));
+  const [recordId, setRecordId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
-  const [form, setForm] = useState({
-    protein: "",
-    water: "",
-    calories: "",
-    meals: "",
-    workouts: "",
-    supplements: ""
-  });
-
-  function normalize(value) {
-    return value === "" ? "0" : String(value);
-  }
-
-  function updateField(key, value) {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  }
+  useEffect(() => {
+    let active = true;
+    apiRequest("/daily-log/").then((records) => {
+      const record = records.find((item) => String(item.date).slice(0, 10) === today());
+      if (active && record) {
+        setRecordId(record.id);
+        setForm(Object.fromEntries(fields.map((key) => [key, record[key] == null ? "" : String(record[key])])));
+      }
+    }).catch((err) => active && setError(err.message || "Unable to load daily log."))
+      .finally(() => active && setLoading(false));
+    return () => { active = false; };
+  }, []);
 
   async function saveLog() {
+    setSaving(true); setError(""); setMessage("");
     try {
-      const email = localStorage.getItem("userEmail");
-      const today = new Date().toISOString().split("T")[0];
-
-      const payload = {
-        email,
-        date: today,
-        protein: normalize(form.protein),
-        water: normalize(form.water),
-        calories: normalize(form.calories),
-        meals: normalize(form.meals),
-        workouts: normalize(form.workouts),
-        supplements: normalize(form.supplements)
-      };
-
-      const url = `${API}/api/progress/log`;
-
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        alert("Daily log saved");
-      } else {
-        alert(data.detail || "Error saving log");
-      }
-    } catch (e) {
-      console.log("Error saving log:", e);
-      alert("Error saving log");
-    }
+      const body = Object.fromEntries(fields.map((key) => [key, Number(form[key]) || 0]));
+      const payload = { ...body, date: `${today()}T12:00:00` };
+      const saved = recordId
+        ? await apiRequest(`/daily-log/${recordId}`, { method: "PUT", body: payload })
+        : await apiRequest("/daily-log/", { method: "POST", body: payload });
+      setRecordId(saved.id);
+      setMessage("Daily log saved.");
+    } catch (err) {
+      setError(err.message || "Unable to save daily log.");
+    } finally { setSaving(false); }
   }
 
-  return (
-    <div
-      style={{
-        height: "100vh",
-        width: "100vw",
-        backgroundColor: "black",
-        padding: "20px",
-        overflowY: "auto",
-        boxSizing: "border-box",
-        position: "relative"
-      }}
-    >
-      <h1 style={{ color: PROGRESS_COLOR, marginBottom: "30px" }}>
-        Daily Log
-      </h1>
-
-      <Field label="Protein (g)" keyName="protein" value={form.protein} onChange={updateField} />
-      <Field label="Water (oz)" keyName="water" value={form.water} onChange={updateField} />
-      <Field label="Calories" keyName="calories" value={form.calories} onChange={updateField} />
-      <Field label="Meals" keyName="meals" value={form.meals} onChange={updateField} />
-      <Field label="Workouts" keyName="workouts" value={form.workouts} onChange={updateField} />
-      <Field label="Supplements" keyName="supplements" value={form.supplements} onChange={updateField} />
-
-      <p
-        onClick={saveLog}
-        style={{
-          color: PROGRESS_COLOR,
-          fontSize: "26px",
-          fontWeight: "bold",
-          textDecoration: "underline",
-          cursor: "pointer",
-          marginTop: "40px",
-          background: "none",
-          border: "none",
-          padding: 0,
-          display: "inline"
-        }}
-      >
-        Save Log
-      </p>
-
-      <p
-        onClick={() => setMenuOpen(true)}
-        style={{
-          position: "absolute",
-          bottom: "20px",
-          right: "20px",
-          color: PROGRESS_COLOR,
-          fontSize: "22px",
-          textDecoration: "underline",
-          cursor: "pointer"
-        }}
-      >
-        Return to Menu
-      </p>
-    </div>
-  );
+  return <div style={{ minHeight: "100vh", width: "100%", background: "black", padding: 20, overflowY: "auto", boxSizing: "border-box", color: COLOR, position: "relative" }}>
+    <h1>Daily Log</h1>{loading && <p role="status">Loading daily log…</p>}{error && <p role="alert">{error}</p>}{message && <p role="status">{message}</p>}
+    {fields.map((key) => <Field key={key} label={`${key[0].toUpperCase()}${key.slice(1)}${key === "protein" ? " (g)" : key === "water" ? " (oz)" : ""}`} value={form[key]} onChange={(e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))} />)}
+    <button type="button" disabled={saving || loading} onClick={saveLog} style={{ color: COLOR, background: "none", border: 0, fontSize: 26, fontWeight: "bold", textDecoration: "underline", cursor: "pointer" }}>{saving ? "Saving…" : "Save Log"}</button>
+    <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "absolute", bottom: 20, right: 20, color: COLOR, fontSize: 22, textDecoration: "underline", background: "none", border: 0, cursor: "pointer" }}>Return to Menu</button>
+  </div>;
 }

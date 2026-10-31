@@ -1,246 +1,198 @@
-import React, { useContext, useState } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { useCallback, useEffect, useState } from "react";
+import CoachShell from "../components/CoachShell.jsx";
+import StatusMessage from "../components/StatusMessage.jsx";
+import { COACH_COLOR, cardStyle, dangerButton, inputStyle, labelStyle, primaryButton, secondaryButton } from "../components/coachStyles.js";
+import { errorText, useCoachRequest } from "../utils/coachSession.js";
 
-const planTemplates = [
-  { id: 1, name: "8-Week Strength", type: "Training", duration: "8 weeks", difficulty: "Intermediate" },
-  { id: 2, name: "Marathon Prep", type: "Training", duration: "16 weeks", difficulty: "Advanced" },
-  { id: 3, name: "Balanced Nutrition", type: "Meal", duration: "4 weeks", difficulty: "Beginner" },
-  { id: 4, name: "Muscle Gain", type: "Meal", duration: "12 weeks", difficulty: "Intermediate" }
-];
+const EMPTY = { name: "", description: "", plan_type: "workout", duration_weeks: 4, difficulty: "", itemsText: "" };
+const small = { ...secondaryButton, padding: "8px 10px", fontSize: "12px" };
 
 export default function PlanBuilder() {
-  const { setMenuOpen } = useContext(MenuContext);
-  const [view, setView] = useState("templates");
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
-  const [planName, setPlanName] = useState("");
-  const [planType, setPlanType] = useState("Training");
-  const [planDuration, setPlanDuration] = useState(4);
+  const request = useCoachRequest();
+  const [plans, setPlans] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [teams, setTeams] = useState([]);
+  const [status, setStatus] = useState("loading");
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [form, setForm] = useState(null); // null = list view; otherwise { id?, ...fields }
+  const [assigning, setAssigning] = useState(null); // plan being assigned
+  const [target, setTarget] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const COACH_COLOR = "#ec4899";
-  const BLACK = "#000";
-  const WHITE = "#fff";
-
-  const handleCreatePlan = () => {
-    if (planName.trim()) {
-      alert(`Created: ${planName} (${planType}, ${planDuration} weeks)`);
-      setPlanName("");
+  const load = useCallback(async () => {
+    try {
+      const [planData, clientData, teamData] = await Promise.all([request("/staff/plans"), request("/staff/clients"), request("/staff/teams")]);
+      setPlans(planData.plans || []);
+      setClients(clientData.clients || []);
+      setTeams(teamData.teams || []);
+      setStatus("ready");
+    } catch (e) {
+      setError(errorText(e, "Unable to load plans."));
+      setStatus("error");
     }
-  };
+  }, [request]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => load(), 0);
+    return () => clearTimeout(timer);
+  }, [load]);
+
+  function edit(plan) {
+    setNotice("");
+    setError("");
+    setForm(
+      plan
+        ? { id: plan.id, name: plan.name, description: plan.description || "", plan_type: plan.plan_type || "workout", duration_weeks: plan.duration_weeks || 4, difficulty: plan.difficulty || "", itemsText: (plan.items || []).join("\n") }
+        : { ...EMPTY }
+    );
+  }
+
+  async function save() {
+    if (form.name.trim().length < 2) {
+      setError("Give the plan a name.");
+      return;
+    }
+    setBusy(true);
+    setError("");
+    const body = {
+      name: form.name.trim(),
+      description: form.description || null,
+      plan_type: form.plan_type,
+      duration_weeks: Number(form.duration_weeks) || 4,
+      difficulty: form.difficulty || null,
+      items: form.itemsText.split("\n").map((line) => line.trim()).filter(Boolean)
+    };
+    try {
+      if (form.id) await request(`/staff/plans/${form.id}`, { method: "PUT", body });
+      else await request("/staff/plans", { method: "POST", body });
+      setNotice(form.id ? "Plan updated." : "Plan created.");
+      setForm(null);
+      await load();
+    } catch (e) {
+      setError(errorText(e, "Could not save the plan."));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function remove(plan) {
+    if (!window.confirm(`Delete "${plan.name}"? Clients will no longer see it.`)) return;
+    try {
+      await request(`/staff/plans/${plan.id}`, { method: "DELETE" });
+      setNotice("Plan deleted.");
+      await load();
+    } catch (e) {
+      setError(errorText(e, "Could not delete the plan."));
+    }
+  }
+
+  async function assign() {
+    if (!target) {
+      setError("Choose who to assign this plan to.");
+      return;
+    }
+    const [kind, id] = target.split(":");
+    setBusy(true);
+    setError("");
+    try {
+      const body = kind === "team" ? { team_id: Number(id) } : { client_id: Number(id) };
+      const result = await request(`/staff/plans/${assigning.id}/assignments`, { method: "POST", body });
+      setNotice(`Assigned to ${result.assigned_client_ids.length} client(s).`);
+      setAssigning(null);
+      setTarget("");
+      await load();
+    } catch (e) {
+      setError(errorText(e, "Could not assign the plan."));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const set = (key) => (event) => setForm({ ...form, [key]: event.target.value });
+
+  if (form) {
+    return (
+      <CoachShell title="📋 Plan Builder">
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <label style={labelStyle} htmlFor="plan-name">Plan name</label>
+          <input id="plan-name" style={inputStyle} value={form.name} onChange={set("name")} />
+          <label style={labelStyle} htmlFor="plan-desc">Description</label>
+          <textarea id="plan-desc" style={{ ...inputStyle, minHeight: "60px" }} value={form.description} onChange={set("description")} />
+          <label style={labelStyle} htmlFor="plan-type">Type</label>
+          <select id="plan-type" style={inputStyle} value={form.plan_type} onChange={set("plan_type")}>
+            <option value="workout">Workout</option>
+            <option value="nutrition">Nutrition</option>
+            <option value="recovery">Recovery</option>
+          </select>
+          <label style={labelStyle} htmlFor="plan-weeks">Duration (weeks)</label>
+          <input id="plan-weeks" type="number" min="1" max="104" style={inputStyle} value={form.duration_weeks} onChange={set("duration_weeks")} />
+          <label style={labelStyle} htmlFor="plan-diff">Difficulty</label>
+          <select id="plan-diff" style={inputStyle} value={form.difficulty} onChange={set("difficulty")}>
+            <option value="">Not set</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+          <label style={labelStyle} htmlFor="plan-items">Plan items (one per line)</label>
+          <textarea id="plan-items" style={{ ...inputStyle, minHeight: "120px" }} value={form.itemsText} onChange={set("itemsText")} placeholder={"Day 1 - Squats 4x8\nDay 2 - Rest"} />
+          {error && <StatusMessage error>{error}</StatusMessage>}
+          <button style={primaryButton(busy)} disabled={busy} onClick={save}>{form.id ? "Save Changes" : "Create Plan"}</button>
+          <button style={secondaryButton} onClick={() => setForm(null)}>Cancel</button>
+        </div>
+      </CoachShell>
+    );
+  }
 
   return (
-    <div
-      style={{
-        width: "100vw",
-        minHeight: "100vh",
-        backgroundColor: BLACK,
-        padding: "16px 16px 90px",
-        boxSizing: "border-box",
-        display: "flex",
-        justifyContent: "center",
-        overflowY: "auto",
-        color: WHITE
-      }}
-    >
-      <div style={{ width: "360px", maxWidth: "100%" }}>
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <div style={{ color: COACH_COLOR, fontSize: "28px", fontWeight: "700" }}>📋 Plan Builder</div>
+    <CoachShell title="📋 Plan Builder">
+      <button style={{ ...primaryButton(), width: "100%", marginBottom: "14px" }} onClick={() => edit(null)}>+ New Plan</button>
+      {notice && <div style={{ color: "#ccc", fontSize: "12px", marginBottom: "10px", textAlign: "center" }}>{notice}</div>}
+      {status === "loading" && <StatusMessage>Loading plans...</StatusMessage>}
+      {status === "error" && (
+        <div>
+          <StatusMessage error>{error}</StatusMessage>
+          <button style={{ ...secondaryButton, width: "100%" }} onClick={() => { setStatus("loading"); load(); }}>Retry</button>
         </div>
-
-        {/* Tab Navigation */}
-        <div style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
-          <button
-            onClick={() => setView("templates")}
-            style={{
-              flex: 1,
-              padding: "12px",
-              background: view === "templates" ? COACH_COLOR : "#222",
-              color: view === "templates" ? BLACK : WHITE,
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "14px",
-              fontWeight: "600",
-              cursor: "pointer"
-            }}
-          >
-            Templates
-          </button>
-          <button
-            onClick={() => setView("create")}
-            style={{
-              flex: 1,
-              padding: "12px",
-              background: view === "create" ? COACH_COLOR : "#222",
-              color: view === "create" ? BLACK : WHITE,
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "14px",
-              fontWeight: "600",
-              cursor: "pointer"
-            }}
-          >
-            Create
-          </button>
-        </div>
-
-        {/* Templates View */}
-        {view === "templates" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {planTemplates.map((template) => (
-              <div
-                key={template.id}
-                onClick={() => setSelectedTemplate(template)}
-                style={{
-                  background: "#111",
-                  border: `1px solid #2a2a2a`,
-                  borderRadius: "12px",
-                  padding: "14px",
-                  cursor: "pointer"
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.borderColor = COACH_COLOR)}
-                onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#2a2a2a")}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-                  <div style={{ fontWeight: "600" }}>{template.name}</div>
-                  <div style={{ fontSize: "11px", color: COACH_COLOR, fontWeight: "600" }}>
-                    {template.type}
+      )}
+      {status === "ready" && plans.length === 0 && <StatusMessage>No plans yet. Create your first training plan.</StatusMessage>}
+      {status === "ready" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {plans.map((plan) => (
+            <div key={plan.id} style={cardStyle}>
+              <div style={{ color: COACH_COLOR, fontWeight: "700" }}>{plan.name}</div>
+              <div style={{ color: "#999", fontSize: "12px" }}>
+                {plan.plan_type} · {plan.duration_weeks} wk{plan.difficulty ? ` · ${plan.difficulty}` : ""} · {plan.assigned_clients} assigned
+              </div>
+              {plan.description && <div style={{ color: "#ccc", fontSize: "12px", marginTop: "6px" }}>{plan.description}</div>}
+              {plan.items.length > 0 && (
+                <ul style={{ color: "#ccc", fontSize: "12px", paddingLeft: "18px", margin: "6px 0" }}>
+                  {plan.items.map((item, index) => <li key={index}>{item}</li>)}
+                </ul>
+              )}
+              <div style={{ display: "flex", gap: "6px", marginTop: "8px" }}>
+                <button style={small} onClick={() => { setAssigning(plan); setTarget(""); setError(""); }}>Assign</button>
+                {plan.owned && <button style={small} onClick={() => edit(plan)}>Edit</button>}
+                {plan.owned && <button style={{ ...dangerButton, padding: "8px 10px", fontSize: "12px" }} onClick={() => remove(plan)}>Delete</button>}
+              </div>
+              {assigning && assigning.id === plan.id && (
+                <div style={{ marginTop: "10px" }}>
+                  <select aria-label="Assign to" style={inputStyle} value={target} onChange={(e) => setTarget(e.target.value)}>
+                    <option value="">Assign to...</option>
+                    {clients.map((c) => <option key={`c${c.id}`} value={`client:${c.id}`}>{c.name}</option>)}
+                    {teams.map((t) => <option key={`t${t.id}`} value={`team:${t.id}`}>Whole team: {t.name}</option>)}
+                  </select>
+                  {error && <StatusMessage error>{error}</StatusMessage>}
+                  <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                    <button style={{ ...primaryButton(busy), flex: 1 }} disabled={busy} onClick={assign}>Confirm Assign</button>
+                    <button style={{ ...secondaryButton, flex: 1 }} onClick={() => setAssigning(null)}>Cancel</button>
                   </div>
                 </div>
-                <div style={{ fontSize: "12px", color: "#999" }}>
-                  {template.duration} • {template.difficulty}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Template Detail */}
-        {view === "templates" && selectedTemplate && (
-          <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.8)" }} />
-        )}
-
-        {/* Create View */}
-        {view === "create" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            <div style={{ fontSize: "18px", fontWeight: "600", marginBottom: "12px" }}>Create New Plan</div>
-
-            <div>
-              <label style={{ fontSize: "12px", color: "#999", marginBottom: "6px", display: "block" }}>
-                Plan Name
-              </label>
-              <input
-                type="text"
-                value={planName}
-                onChange={(e) => setPlanName(e.target.value)}
-                placeholder="e.g., Client X Strength Phase"
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  background: "#111",
-                  border: `1px solid #2a2a2a`,
-                  borderRadius: "8px",
-                  color: WHITE,
-                  fontSize: "14px",
-                  boxSizing: "border-box"
-                }}
-              />
+              )}
             </div>
-
-            <div>
-              <label style={{ fontSize: "12px", color: "#999", marginBottom: "6px", display: "block" }}>
-                Plan Type
-              </label>
-              <select
-                value={planType}
-                onChange={(e) => setPlanType(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  background: "#111",
-                  border: `1px solid #2a2a2a`,
-                  borderRadius: "8px",
-                  color: WHITE,
-                  fontSize: "14px",
-                  boxSizing: "border-box"
-                }}
-              >
-                <option>Training</option>
-                <option>Meal</option>
-              </select>
-            </div>
-
-            <div>
-              <label style={{ fontSize: "12px", color: "#999", marginBottom: "6px", display: "block" }}>
-                Duration (weeks)
-              </label>
-              <input
-                type="number"
-                value={planDuration}
-                onChange={(e) => setPlanDuration(parseInt(e.target.value))}
-                min="1"
-                max="52"
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  background: "#111",
-                  border: `1px solid #2a2a2a`,
-                  borderRadius: "8px",
-                  color: WHITE,
-                  fontSize: "14px",
-                  boxSizing: "border-box"
-                }}
-              />
-            </div>
-
-            <button
-              onClick={handleCreatePlan}
-              style={{
-                padding: "14px",
-                background: COACH_COLOR,
-                color: BLACK,
-                border: "none",
-                borderRadius: "8px",
-                fontSize: "16px",
-                fontWeight: "600",
-                cursor: "pointer",
-                marginTop: "12px"
-              }}
-            >
-              Create Plan
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          width: "100%",
-          height: "40px",
-          background: BLACK,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          padding: "0 16px",
-          boxSizing: "border-box",
-          zIndex: 20
-        }}
-      >
-        <div
-          style={{
-            color: COACH_COLOR,
-            fontSize: "18px",
-            textDecoration: "underline",
-            cursor: "pointer"
-          }}
-          onClick={() => setMenuOpen(true)}
-        >
-          Return to Menu
+          ))}
         </div>
-      </div>
-    </div>
+      )}
+    </CoachShell>
   );
 }

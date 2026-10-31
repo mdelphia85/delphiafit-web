@@ -1,245 +1,43 @@
-import React, { useEffect, useState, useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
-import { API } from "../config/api.js";
+import { apiRequest } from "../utils/api.js";
+import useInsights from "../hooks/useInsights.js";
+
+const sourceKeys = ["workouts", "free_training", "sports", "daily_log", "water", "nutrition", "journal", "weight"];
 
 export default function Progress() {
-  const { setMenuOpen, refreshProgress, setRefreshProgress } = useContext(MenuContext);
-
-  const PROGRESS_COLOR = "yellow";
-
-  const [history, setHistory] = useState([]);
-  const [summary, setSummary] = useState([]);
-
-  const [metrics, setMetrics] = useState({
-    protein: { today: 0, short: 0, long: 0 },
-    water: { today: 0, short: 0, long: 0 },
-    calories: { today: 0, short: 0, long: 0 },
-    meals: { today: 0, short: 0, long: 0 },
-    workouts: { today: 0, short: 0, long: 0 },
-    supplements: { today: 0, short: 0, long: 0 },
-    consistency: { days: 0, consistency: 0 }
-  });
-
-  // ---------------------------------------------------------
-  // LOAD DATA ON MOUNT + WHEN DAILY LOG SAVES
-  // ---------------------------------------------------------
+  const { setMenuOpen } = useContext(MenuContext);
+  const { data, loading, error } = useInsights("/insights/summary", "Unable to load progress.");
+  const [weights, setWeights] = useState([]);
   useEffect(() => {
-    loadHistory();
-    loadSummary(7);
-
-    if (refreshProgress) {
-      loadHistory();
-      loadSummary(7);
-      setRefreshProgress(false);
-    }
-  }, [refreshProgress]);
-
-  // ---------------------------------------------------------
-  // LOAD HISTORY
-  // ---------------------------------------------------------
-  async function loadHistory() {
-    try {
-      const email = localStorage.getItem("userEmail");
-
-      const res = await fetch(
-        `${API}/api/progress/history?email=${email}`
-      );
-
-      const data = await res.json();
-
-      if (data.success) {
-        setHistory(data.history);
-        computeAllMetrics(data.history);
-      }
-    } catch (e) {
-      console.log("Error loading history:", e);
-    }
-  }
-
-  // ---------------------------------------------------------
-  // LOAD SUMMARY
-  // ---------------------------------------------------------
-  async function loadSummary(days) {
-    try {
-      const email = localStorage.getItem("userEmail");
-
-      const res = await fetch(
-        `${API}/api/progress/summary?email=${email}&days=${days}`
-      );
-
-      const data = await res.json();
-
-      if (data.success) {
-        setSummary(data.entries);
-      }
-    } catch (e) {
-      console.log("Error loading summary:", e);
-    }
-  }
-
-  // ---------------------------------------------------------
-  // METRIC CALCULATIONS
-  // ---------------------------------------------------------
-  function computeAllMetrics(data) {
-    const subsystems = [
-      "protein",
-      "water",
-      "calories",
-      "meals",
-      "workouts",
-      "supplements"
-    ];
-
-    const results = {};
-
-    subsystems.forEach((key) => {
-      results[key] = computeTrend(data, key);
-    });
-
-    results["consistency"] = computeConsistency(data);
-
-    setMetrics(results);
-  }
-
-  function computeTrend(data, key) {
-    if (!data || data.length === 0) {
-      return { today: 0, short: 0, long: 0 };
-    }
-
-    const sorted = [...data].sort(
-      (a, b) => new Date(a.date) - new Date(b.date)
-    );
-
-    const todayEntry = sorted[sorted.length - 1];
-    const yesterdayEntry =
-      sorted.length > 1 ? sorted[sorted.length - 2] : null;
-
-    const today = Number(todayEntry?.[key] || 0);
-    const yesterday = Number(yesterdayEntry?.[key] || 0);
-
-    let total = 0;
-    sorted.forEach((d) => {
-      total += Number(d[key] || 0);
-    });
-
-    const lifetimeAvg = total / sorted.length;
-
-    let shortTerm = 0;
-    let longTerm = 0;
-
-    if (yesterday > 0) {
-      shortTerm = ((today - yesterday) / yesterday) * 100;
-    }
-
-    if (lifetimeAvg > 0) {
-      longTerm = ((today - lifetimeAvg) / lifetimeAvg) * 100;
-    }
-
-    return {
-      today,
-      short: Number(shortTerm.toFixed(1)),
-      long: Number(longTerm.toFixed(1))
-    };
-  }
-
-  function computeConsistency(data) {
-    if (!data || data.length === 0) {
-      return { days: 0, consistency: 0 };
-    }
-
-    const daysTrained = data.filter((d) => Number(d.workouts) > 0).length;
-    const consistency = (daysTrained / data.length) * 100;
-
-    return {
-      days: daysTrained,
-      consistency: Number(consistency.toFixed(1))
-    };
-  }
-
-  function getTrendArrow(value) {
-    if (value > 0) return { arrow: "▲", color: "lime" };
-    if (value < 0) return { arrow: "▼", color: "red" };
-    return { arrow: "■", color: "yellow" };
-  }
-
-  function Row({ label, today, short, long }) {
-    const shortTrend = getTrendArrow(short);
-    const longTrend = getTrendArrow(long);
-
-    return (
-      <div style={{ marginBottom: "25px" }}>
-        <p style={{ color: PROGRESS_COLOR, fontSize: "26px", margin: 0 }}>
-          {label}
-        </p>
-
-        <p style={{ color: "white", margin: 0 }}>Today: {today}</p>
-
-        <p style={{ color: shortTrend.color, margin: 0 }}>
-          Short-Term: {shortTrend.arrow} {short}%
-        </p>
-
-        <p style={{ color: longTrend.color, margin: 0 }}>
-          Long-Term: {longTrend.arrow} {long}%
-        </p>
+    let active = true;
+    apiRequest("/weight/").then((rows) => active && setWeights(rows)).catch(() => {});
+    return () => { active = false; };
+  }, []);
+  const empty = data && sourceKeys.every((key) => data.counts[key].total === 0);
+  return <main style={{ minHeight: "100vh", background: "black", color: "yellow", padding: 20, boxSizing: "border-box" }}>
+    <h1>Progress</h1>
+    <p>Totals computed from everything you have logged: workouts, free training, sports, daily logs, water, nutrition, journal and body weight.</p>
+    {loading && <p role="status">Loading progress...</p>}
+    {error && <p role="alert">{error}</p>}
+    {empty && <p>No progress data recorded yet.</p>}
+    {data && <>
+      <div style={{ display: "grid", gap: 12 }}>
+        {sourceKeys.map((key) => <article key={key} style={{ border: "1px solid #444", borderRadius: 8, padding: 14 }}>
+          <strong>{key.replace("_", " ").replace(/^./, (c) => c.toUpperCase())}</strong>
+          <p>{data.counts[key].total} total</p>
+          <small>{data.counts[key].last_7_days} in the last 7 days / {data.counts[key].last_30_days} in the last 30</small>
+        </article>)}
       </div>
-    );
-  }
-
-  return (
-    <div
-      style={{
-        height: "100vh",
-        width: "100vw",
-        backgroundColor: "black",
-        padding: "20px",
-        overflowY: "auto",
-        boxSizing: "border-box",
-        position: "relative"
-      }}
-    >
-      <Row label="Protein" {...metrics.protein} />
-      <Row label="Water" {...metrics.water} />
-      <Row label="Calories" {...metrics.calories} />
-      <Row label="Meals" {...metrics.meals} />
-      <Row label="Workouts" {...metrics.workouts} />
-      <Row label="Supplements" {...metrics.supplements} />
-
-      <div style={{ marginTop: "40px" }}>
-        <p style={{ color: PROGRESS_COLOR, fontSize: "26px", margin: 0 }}>
-          Training Consistency
-        </p>
-        <p style={{ color: "white", margin: 0 }}>
-          Days Trained: {metrics.consistency.days}
-        </p>
-        <p style={{ color: "white", margin: 0 }}>
-          Consistency: {metrics.consistency.consistency}%
-        </p>
-      </div>
-
-      <div style={{ marginTop: "40px" }}>
-        <p style={{ color: PROGRESS_COLOR, fontSize: "26px", margin: 0 }}>
-          Weekly Summary
-        </p>
-        <p style={{ color: "white", margin: 0 }}>
-          Entries: {summary.length}
-        </p>
-      </div>
-
-      <div
-        onClick={() => setMenuOpen(true)}
-        style={{
-          position: "fixed",
-          bottom: "20px",
-          right: "20px",
-          color: PROGRESS_COLOR,
-          fontSize: "22px",
-          textDecoration: "underline",
-          cursor: "pointer",
-          zIndex: 10
-        }}
-      >
-        Return to Menu
-      </div>
-    </div>
-  );
+      <article style={{ marginTop: 16, border: "1px solid #444", padding: 14 }}>
+        <strong>Training consistency</strong>
+        <p>{data.training.active_days_last_30} active days in the last 30 / {data.training.total_minutes} minutes total</p>
+      </article>
+      <article style={{ marginTop: 16, border: "1px solid #444", padding: 14 }}>
+        <strong>Body weight entries</strong>
+        {weights.length ? [...weights].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10).map((entry) => <p key={entry.id}>{new Date(entry.date).toLocaleDateString()} - {entry.weight}{entry.body_fat != null ? ` - ${entry.body_fat}% body fat` : ""}</p>) : <p>No body weight entries recorded yet.</p>}
+      </article>
+    </>}
+    <button type="button" onClick={() => setMenuOpen(true)} style={{ color: "yellow", background: "none", border: 0, textDecoration: "underline", marginTop: 20 }}>Return to Menu</button>
+  </main>;
 }

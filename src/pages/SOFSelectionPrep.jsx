@@ -1,6 +1,7 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
+import TacticalActivityLog from "../components/TacticalActivityLog.jsx";
+import { useContext } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
-import { readJson, writeJson } from "../utils/dataPersistence.js";
 
 const initialPhases = [
   { id: 1, name: "Ultra Conditioning Phase 1", duration: "10 weeks", focus: "Strength & Power", completed: false },
@@ -13,10 +14,9 @@ const initialPhases = [
 
 export default function SOFSelectionPrep() {
   const { setMenuOpen } = useContext(MenuContext);
-  const [phases, setPhases] = useState(() => readJson("sof-selection-prep", initialPhases));
+  const [phases, setPhases, progress] = useTacticalProgress("sof-selection-prep", "sof-selection-prep", initialPhases);
   const TACTICAL_COLOR = "#2d5f3a";
 
-  useEffect(() => writeJson("sof-selection-prep", phases), [phases]);
 
   function togglePhase(id) {
     setPhases((prev) =>
@@ -28,6 +28,7 @@ export default function SOFSelectionPrep() {
 
   return (
     <div style={{ width: "100vw", minHeight: "100vh", backgroundColor: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", overflowY: "auto", color: "#fff" }}>
+      {(progress.loading || progress.error) && <div role="status" aria-live="polite" style={{ position: "fixed", top: "8px", left: "8px", zIndex: 50, background: "#111", color: "#fff", border: "1px solid #555", borderRadius: "6px", padding: "8px", fontSize: "12px" }}>{progress.loading ? "Syncing saved progress..." : `Progress unavailable: ${progress.error}`}</div>}
       <div style={{ width: "360px", maxWidth: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: "20px" }}>
           <div style={{ color: TACTICAL_COLOR, fontSize: "28px", fontWeight: "700" }}>⚡ SOF Selection Prep</div>
@@ -55,6 +56,8 @@ export default function SOFSelectionPrep() {
           <div>{phases.filter((p) => p.completed).length} of {phases.length} phases completed</div>
         </div>
       </div>
+
+      <div style={{ position: "relative", zIndex: 2, width: "min(500px, 100%)", marginTop: "24px" }}><TacticalActivityLog module="sof-selection-prep" title="SOFSelectionPrep" /></div>
 
       <div onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: "20px", right: "20px", color: TACTICAL_COLOR, fontSize: "22px", textDecoration: "underline", cursor: "pointer", zIndex: 20 }}>
         Return to Menu

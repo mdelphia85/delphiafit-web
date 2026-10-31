@@ -12,7 +12,7 @@ export default function PrivacyPolicy() {
       <ul>
         <li>Name</li>
         <li>Email address</li>
-        <li>Password (encrypted)</li>
+        <li>Password (stored as a one-way hash, not plaintext)</li>
         <li>Profile details you choose to enter</li>
         <li>Daily log entries</li>
         <li>Basic device and session data for login functionality</li>
@@ -25,7 +25,7 @@ export default function PrivacyPolicy() {
       <p>Your data is stored securely using industry standard encryption and access controls. We take reasonable measures to protect your information from unauthorized access.</p>
 
       <h2>4. Cookies</h2>
-      <p>We use basic session cookies only to keep you logged in. No tracking, analytics, or advertising cookies are used during soft launch.</p>
+      <p>This web app stores the authentication token in browser local storage for signed API requests. This build does not use tracking, analytics, or advertising cookies.</p>
 
       <h2>5. Your Rights</h2>
       <p>You may request access to your data, correction of your data, or deletion of your account and associated data. Contact us at delphiadesignsllc@gmail.com for any request.</p>

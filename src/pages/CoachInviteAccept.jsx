@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { apiRequest } from "../utils/api.js";
 
 export default function CoachInviteAccept() {
   const navigate = useNavigate();
@@ -9,10 +10,20 @@ export default function CoachInviteAccept() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [invite, setInvite] = useState(null);
+  const invitationToken = searchParams.get("token");
+
+  useEffect(() => {
+    if (!invitationToken) return;
+    apiRequest(`/staff/invitations/lookup?token=${encodeURIComponent(invitationToken)}`)
+      .then(setInvite)
+      .catch(() => {
+        setStatus("error");
+        setErrorMessage("This invitation is invalid, expired or already used.");
+      });
+  }, [invitationToken]);
 
   async function acceptInvitation() {
-    const invitationToken = searchParams.get("token");
-
     if (!invitationToken) {
       setStatus("error");
       setErrorMessage("This invitation link is missing its token.");
@@ -32,31 +43,29 @@ export default function CoachInviteAccept() {
     }
 
     setStatus("loading");
+    const isClient = invite && invite.role === "client";
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/coach/invitations/accept`, {
+      await apiRequest(isClient ? "/staff/invitations/accept" : "/coach/invitations/accept", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ invitation_token: invitationToken, name, password })
+        body: { invitation_token: invitationToken, name, password }
       });
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        setStatus("error");
-        setErrorMessage(data.detail || "This invitation could not be accepted.");
-        return;
-      }
-
       setStatus("success");
-      setTimeout(() => navigate("/coach-login"), 900);
+      setTimeout(() => navigate(isClient ? "/login" : "/coach-login"), 900);
     } catch (error) {
       setStatus("error");
-      setErrorMessage("Unable to accept the invitation right now.");
+      setErrorMessage(error.message || "Unable to accept the invitation right now.");
     }
   }
 
+  const isClient = invite && invite.role === "client";
+
   return (
-    <CoachForm title="Accept Coach Invitation" subtitle="Create access for your assigned team">
+    <CoachForm
+      title={isClient ? "Accept Coaching Invitation" : "Accept Coach Invitation"}
+      subtitle={isClient ? "Create your account to connect with your coach" : "Create access for your assigned team"}
+    >
+      {invite && <div style={{ color: "#ccc", fontSize: "12px", textAlign: "center", marginBottom: "12px" }}>Invitation for {invite.email}</div>}
       <input placeholder="Full name" value={name} onChange={(event) => setName(event.target.value)} style={inputStyle} />
       <input type="password" placeholder="Password (min 10 chars)" value={password} onChange={(event) => setPassword(event.target.value)} style={inputStyle} />
       <input type="password" placeholder="Confirm password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} style={inputStyle} />

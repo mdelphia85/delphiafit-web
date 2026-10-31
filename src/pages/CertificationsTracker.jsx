@@ -1,103 +1,92 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
-import { readJson, writeJson } from "../utils/dataPersistence.js";
+import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
 
-const initialCertifications = [
-  { id: 1, name: "Fire Academy Level I", status: "Completed", date: "2026-06-15", organization: "State Fire Marshal", verified: true },
-  { id: 2, name: "Police Academy Level I", status: "In Progress", progress: 65, date: null, organization: "State Police", verified: false },
-  { id: 3, name: "EMS Paramedic", status: "Completed", date: "2026-03-20", organization: "National Registry", verified: true },
-  { id: 4, name: "Military Combatives Certified", status: "Completed", date: "2026-05-10", organization: "Armed Forces", verified: true },
-  { id: 5, name: "SOF Selection Qualified", status: "In Progress", progress: 42, date: null, organization: "SOCOM", verified: false },
-  { id: 6, name: "SWAT Operator Certification", status: "Not Started", progress: 0, date: null, organization: "State Police", verified: false }
-];
+const initialCertifications = [];
+const color = "#2d5f3a";
 
 export default function CertificationsTracker() {
   const { setMenuOpen } = useContext(MenuContext);
-  const [certs, setCerts] = useState(() => readJson("certifications", initialCertifications));
+  const [certifications, setCertifications, progress] = useTacticalProgress("certifications", "certifications", initialCertifications);
   const [filter, setFilter] = useState("all");
-  const TACTICAL_COLOR = "#2d5f3a";
+  const [name, setName] = useState("");
+  const [organization, setOrganization] = useState("");
+  const [status, setStatus] = useState("In Progress");
+  const [completion, setCompletion] = useState(0);
+  const filtered = certifications.filter((item) => filter === "all" || item.status === filter);
+  const completed = certifications.filter((item) => item.status === "Completed").length;
+  const inProgress = certifications.filter((item) => item.status === "In Progress").length;
 
-  useEffect(() => writeJson("certifications", certs), [certs]);
+  function addCertification(event) {
+    event.preventDefault();
+    const item = {
+      id: Date.now(),
+      name: name.trim(),
+      organization: organization.trim(),
+      status,
+      progress: status === "Completed" ? 100 : status === "Not Started" ? 0 : Number(completion),
+      date: status === "Completed" ? new Date().toISOString().slice(0, 10) : null,
+      verified: false
+    };
+    setCertifications((current) => [item, ...current]);
+    setName("");
+    setOrganization("");
+    setCompletion(0);
+  }
 
-  const filteredCerts = certs.filter((cert) => {
-    if (filter === "all") return true;
-    return cert.status === filter;
-  });
+  function updateCertification(id, nextStatus, nextProgress) {
+    setCertifications((current) => current.map((item) => {
+      if (item.id !== id) return item;
+      const completedStatus = nextStatus === "Completed";
+      return {
+        ...item,
+        status: nextStatus,
+        progress: completedStatus ? 100 : nextStatus === "Not Started" ? 0 : nextProgress ?? item.progress ?? 0,
+        date: completedStatus ? item.date || new Date().toISOString().slice(0, 10) : null
+      };
+    }));
+  }
 
-  const completed = certs.filter((c) => c.status === "Completed").length;
-  const inProgress = certs.filter((c) => c.status === "In Progress").length;
-
-  const getStatusColor = (status) => {
-    if (status === "Completed") return "#10b981";
-    if (status === "In Progress") return "#f59e0b";
-    return "#6b7280";
-  };
+  function removeCertification(id) {
+    setCertifications((current) => current.filter((item) => item.id !== id));
+  }
 
   return (
     <div style={{ width: "100vw", minHeight: "100vh", backgroundColor: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", overflowY: "auto", color: "#fff" }}>
-      <div style={{ width: "360px", maxWidth: "100%" }}>
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <div style={{ color: TACTICAL_COLOR, fontSize: "28px", fontWeight: "700" }}>🏆 Certifications</div>
-          <div style={{ color: "#999", fontSize: "12px", marginTop: "4px" }}>Achievement Tracking</div>
+      {(progress.loading || progress.error) && <div role="status" aria-live="polite" style={{ position: "fixed", top: 8, left: 8, zIndex: 50, background: "#111", border: "1px solid #555", borderRadius: 6, padding: 8 }}>{progress.loading ? "Syncing saved progress..." : `Progress unavailable: ${progress.error}`}</div>}
+      <div style={{ width: 360, maxWidth: "100%" }}>
+        <header style={{ textAlign: "center", marginBottom: 20 }}>
+          <h1 style={{ color, fontSize: 28 }}>Certifications</h1>
+          <p style={{ color: "#999", fontSize: 12 }}>Track your own credentials and progress</p>
+        </header>
+        <form onSubmit={addCertification} style={{ display: "grid", gap: 10, padding: 12, marginBottom: 16, background: "#111", border: `1px solid ${color}`, borderRadius: 10 }}>
+          <label>Certification name<input required value={name} onChange={(event) => setName(event.target.value)} style={fieldStyle} /></label>
+          <label>Issuing organization<input required value={organization} onChange={(event) => setOrganization(event.target.value)} style={fieldStyle} /></label>
+          <label>Status<select value={status} onChange={(event) => setStatus(event.target.value)} style={fieldStyle}><option>Not Started</option><option>In Progress</option><option>Completed</option></select></label>
+          {status === "In Progress" && <label>Progress ({completion}%)<input type="range" min="0" max="100" value={completion} onChange={(event) => setCompletion(event.target.value)} /></label>}
+          <button type="submit" style={buttonStyle}>Add certification</button>
+        </form>
+        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+          {["all", "Completed", "In Progress", "Not Started"].map((value) => <button key={value} onClick={() => setFilter(value)} style={{ ...buttonStyle, flex: 1, background: filter === value ? color : "#222" }}>{value === "all" ? `All (${certifications.length})` : value}</button>)}
         </div>
-
-        <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
-          <button onClick={() => setFilter("all")} style={{ flex: 1, padding: "8px", background: filter === "all" ? TACTICAL_COLOR : "#222", color: filter === "all" ? "black" : "white", border: "none", borderRadius: "6px", fontWeight: "700", cursor: "pointer", fontSize: "12px" }}>
-            All ({certs.length})
-          </button>
-          <button onClick={() => setFilter("Completed")} style={{ flex: 1, padding: "8px", background: filter === "Completed" ? TACTICAL_COLOR : "#222", color: filter === "Completed" ? "black" : "white", border: "none", borderRadius: "6px", fontWeight: "700", cursor: "pointer", fontSize: "12px" }}>
-            Complete ({completed})
-          </button>
-          <button onClick={() => setFilter("In Progress")} style={{ flex: 1, padding: "8px", background: filter === "In Progress" ? TACTICAL_COLOR : "#222", color: filter === "In Progress" ? "black" : "white", border: "none", borderRadius: "6px", fontWeight: "700", cursor: "pointer", fontSize: "12px" }}>
-            Progress ({inProgress})
-          </button>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {filteredCerts.map((cert) => (
-            <div key={cert.id} style={{ background: "#111", border: `1px solid ${getStatusColor(cert.status)}`, borderRadius: "10px", padding: "12px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-                <div style={{ color: "white", fontSize: "16px", fontWeight: "600" }}>{cert.name}</div>
-                <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-                  <div style={{ color: getStatusColor(cert.status), fontSize: "11px", fontWeight: "700" }}>{cert.status}</div>
-                  {cert.verified && <div style={{ color: "#10b981", fontSize: "14px" }}>✓</div>}
-                </div>
-              </div>
-
-              <div style={{ fontSize: "12px", color: "#999", marginBottom: "8px" }}>
-                <div>{cert.organization}</div>
-              </div>
-
-              {cert.status === "In Progress" && (
-                <div style={{ background: "#000", borderRadius: "6px", padding: "8px" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                    <div style={{ fontSize: "11px", color: "#999" }}>Progress</div>
-                    <div style={{ fontSize: "11px", color: TACTICAL_COLOR, fontWeight: "700" }}>{cert.progress}%</div>
-                  </div>
-                  <div style={{ width: "100%", height: "4px", background: "#333", borderRadius: "2px", overflow: "hidden" }}>
-                    <div style={{ width: `${cert.progress}%`, height: "100%", background: TACTICAL_COLOR }}></div>
-                  </div>
-                </div>
-              )}
-
-              {cert.status === "Completed" && (
-                <div style={{ fontSize: "12px", color: "#999" }}>Awarded: {cert.date}</div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        <div style={{ marginTop: "20px", padding: "12px", background: "#111", border: `1px solid ${TACTICAL_COLOR}`, borderRadius: "10px", fontSize: "13px", color: "#ccc" }}>
-          <div style={{ color: TACTICAL_COLOR, fontWeight: "700", marginBottom: "8px" }}>Summary</div>
-          <div>Total Certifications: {certs.length}</div>
-          <div style={{ color: "#10b981", marginTop: "4px" }}>Completed: {completed}</div>
-          <div style={{ color: "#f59e0b", marginTop: "4px" }}>In Progress: {inProgress}</div>
-        </div>
+        {filtered.length === 0 ? <p role="status" style={{ color: "#999" }}>{certifications.length ? "No certifications match this filter." : "No certifications added yet."}</p> : filtered.map((item) => (
+          <article key={item.id} style={{ background: "#111", border: "1px solid #444", borderRadius: 10, padding: 12, marginBottom: 10 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><strong>{item.name}</strong><button type="button" onClick={() => removeCertification(item.id)} aria-label={`Delete ${item.name}`}>Delete</button></div>
+            <p style={{ color: "#999" }}>{item.organization}</p>
+            <label>Status<select value={item.status} onChange={(event) => updateCertification(item.id, event.target.value)} style={fieldStyle}><option>Not Started</option><option>In Progress</option><option>Completed</option></select></label>
+            {item.status === "In Progress" && <label>Progress ({item.progress || 0}%)<input type="range" min="0" max="100" value={item.progress || 0} onChange={(event) => updateCertification(item.id, "In Progress", Number(event.target.value))} /></label>}
+            {item.date && <p>Awarded: {item.date}</p>}
+            {item.verified && <p>Verified</p>}
+          </article>
+        ))}
+        <section style={{ marginTop: 20, padding: 12, background: "#111", border: `1px solid ${color}`, borderRadius: 10 }}>
+          <strong>Summary</strong><div>Total Certifications: {certifications.length}</div><div>Completed: {completed}</div><div>In Progress: {inProgress}</div>
+        </section>
       </div>
-
-      <div onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: "20px", right: "20px", color: TACTICAL_COLOR, fontSize: "22px", textDecoration: "underline", cursor: "pointer", zIndex: 20 }}>
-        Return to Menu
-      </div>
+      <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color, background: "#111", border: `1px solid ${color}`, padding: 10 }}>Return to Menu</button>
     </div>
   );
 }
+
+const fieldStyle = { display: "block", width: "100%", boxSizing: "border-box", padding: 8, marginTop: 4, color: "#fff", background: "#000", border: "1px solid #444", borderRadius: 6 };
+const buttonStyle = { padding: 8, color: "#fff", background: "#222", border: "1px solid #555", borderRadius: 6, cursor: "pointer" };

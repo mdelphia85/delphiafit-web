@@ -1,90 +1,140 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
-import { readJson, writeJson } from "../utils/dataPersistence.js";
+import { apiRequest } from "../utils/api.js";
 
-const initialReplays = [
-  { id: 1, name: "Urban Rescue - 2026-08-14", duration: "1:23:45", score: "92%", mistakes: 3, timestamp: "Today" },
-  { id: 2, name: "Desert Patrol - 2026-08-12", duration: "0:45:22", score: "88%", mistakes: 5, timestamp: "2 days ago" },
-  { id: 3, name: "Maritime Op - 2026-08-10", duration: "2:10:15", score: "95%", mistakes: 1, timestamp: "4 days ago" },
-  { id: 4, name: "Mountain Extraction - 2026-08-08", duration: "1:55:30", score: "85%", mistakes: 8, timestamp: "1 week ago" }
-];
+const color = "#2d5f3a";
 
 export default function MissionReplay() {
   const { setMenuOpen } = useContext(MenuContext);
-  const [replays, setReplays] = useState(() => readJson("mission-replays", initialReplays));
-  const [selectedReplay, setSelectedReplay] = useState(null);
-  const TACTICAL_COLOR = "#2d5f3a";
+  const [replays, setReplays] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [steps, setSteps] = useState([]);
+  const [missionType, setMissionType] = useState("training");
+  const [missionId, setMissionId] = useState("1");
+  const [action, setAction] = useState("");
+  const [description, setDescription] = useState("");
+  const [score, setScore] = useState("100");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  useEffect(() => writeJson("mission-replays", replays), [replays]);
+  useEffect(() => {
+    let active = true;
+    apiRequest("/mission_replay/list").then((records) => {
+      if (active) setReplays(records);
+    }).catch((requestError) => {
+      if (active) setError(requestError.message || "Unable to load your mission replays.");
+    }).finally(() => {
+      if (active) setLoading(false);
+    });
+    return () => { active = false; };
+  }, []);
 
-  const getScoreColor = (score) => {
-    const num = parseInt(score);
-    if (num >= 90) return "#10b981";
-    if (num >= 80) return "#f59e0b";
-    return "#ef4444";
-  };
+  async function startReplay(event) {
+    event.preventDefault();
+    try {
+      const replay = await apiRequest("/mission_replay/start", {
+        method: "POST",
+        body: { mission_type: missionType.trim(), mission_id: Number(missionId) }
+      });
+      setReplays((current) => [replay, ...current]);
+      setSelectedId(replay.id);
+      setSteps([]);
+      setError("");
+    } catch (requestError) {
+      setError(requestError.message || "Unable to start a replay.");
+    }
+  }
+
+  async function selectReplay(replay) {
+    setSelectedId(replay.id);
+    try {
+      const [detail, recordedSteps] = await Promise.all([
+        apiRequest(`/mission_replay/${replay.id}`),
+        apiRequest(`/mission_replay/step/${replay.id}`)
+      ]);
+      setReplays((current) => current.map((item) => item.id === detail.id ? detail : item));
+      setSteps(recordedSteps);
+      setError("");
+    } catch (requestError) {
+      setError(requestError.message || "Unable to load this replay.");
+    }
+  }
+
+  async function addStep(event) {
+    event.preventDefault();
+    if (!selectedId) return;
+    try {
+      const step = await apiRequest("/mission_replay/step", {
+        method: "POST",
+        body: { replay_id: selectedId, action_type: action.trim(), description: description.trim() || null }
+      });
+      setSteps((current) => [...current, step]);
+      setAction("");
+      setDescription("");
+      setError("");
+    } catch (requestError) {
+      setError(requestError.message || "Unable to record this replay step.");
+    }
+  }
+
+  async function completeReplay(event) {
+    event.preventDefault();
+    if (!selectedId) return;
+    try {
+      const replay = await apiRequest(`/mission_replay/${selectedId}/complete`, {
+        method: "POST", body: { score: Number(score) }
+      });
+      setReplays((current) => current.map((item) => item.id === replay.id ? replay : item));
+      setError("");
+    } catch (requestError) {
+      setError(requestError.message || "Unable to complete this replay.");
+    }
+  }
+
+  const selected = replays.find((replay) => replay.id === selectedId);
 
   return (
     <div style={{ width: "100vw", minHeight: "100vh", backgroundColor: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", overflowY: "auto", color: "#fff" }}>
-      <div style={{ width: "360px", maxWidth: "100%" }}>
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <div style={{ color: TACTICAL_COLOR, fontSize: "28px", fontWeight: "700" }}>▶️ Mission Replay</div>
-          <div style={{ color: "#999", fontSize: "12px", marginTop: "4px" }}>Review & Analysis</div>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {replays.map((replay) => (
-            <div key={replay.id} onClick={() => setSelectedReplay(replay.id)} style={{ background: selectedReplay === replay.id ? "#1a2a1f" : "#111", border: `1px solid ${selectedReplay === replay.id ? TACTICAL_COLOR : "#333"}`, borderRadius: "10px", padding: "12px", cursor: "pointer" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-                <div style={{ color: "white", fontSize: "16px", fontWeight: "600" }}>{replay.name}</div>
-                <div style={{ color: getScoreColor(replay.score), fontSize: "14px", fontWeight: "700" }}>{replay.score}</div>
-              </div>
-
-              <div style={{ fontSize: "12px", color: "#999", display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                <span>{replay.duration}</span>
-                <span>•</span>
-                <span style={{ color: TACTICAL_COLOR }}>{replay.mistakes} mistakes</span>
-                <span>•</span>
-                <span>{replay.timestamp}</span>
-              </div>
-            </div>
+      <main style={{ width: 440, maxWidth: "100%" }}>
+        <header style={{ textAlign: "center", marginBottom: 20 }}><h1 style={{ color }}>Mission Replay</h1><p style={{ color: "#999" }}>Record and review your mission sessions</p></header>
+        {error && <p role="alert" style={{ color: "#fecaca", background: "#441b1b", padding: 10 }}>{error}</p>}
+        <form onSubmit={startReplay} style={panelStyle}>
+          <h2 style={{ color }}>Start a replay</h2>
+          <label>Mission type<input required value={missionType} onChange={(event) => setMissionType(event.target.value)} style={fieldStyle} /></label>
+          <label>Mission ID<input required type="number" min="1" value={missionId} onChange={(event) => setMissionId(event.target.value)} style={fieldStyle} /></label>
+          <button type="submit" style={buttonStyle}>Start session</button>
+        </form>
+        <section aria-busy={loading}>
+          <h2 style={{ color }}>Your replays</h2>
+          {loading ? <p role="status">Loading replays?</p> : replays.length === 0 ? <p role="status">No mission replays recorded yet.</p> : replays.map((replay) => (
+            <button type="button" key={replay.id} onClick={() => selectReplay(replay)} style={{ ...panelStyle, display: "block", width: "100%", textAlign: "left", cursor: "pointer" }}>
+              <strong>Replay #{replay.id}: {replay.mission_type} / {replay.mission_id}</strong>
+              <div>{replay.completed ? `Completed ? Score ${replay.score}` : "In progress"}</div>
+              <small>{replay.started_at}</small>
+            </button>
           ))}
-        </div>
-
-        {selectedReplay && (
-          <div style={{ background: "#111", border: `1px solid ${TACTICAL_COLOR}`, borderRadius: "10px", padding: "14px", marginTop: "20px" }}>
-            <div style={{ color: TACTICAL_COLOR, fontSize: "16px", fontWeight: "700", marginBottom: "12px" }}>Analysis</div>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "13px", color: "#ccc" }}>
-              <div style={{ padding: "10px", background: "#000", borderRadius: "6px" }}>
-                <div style={{ color: TACTICAL_COLOR, fontWeight: "700", marginBottom: "4px" }}>Movement Patterns</div>
-                <div>Analyzed 127 position changes</div>
-              </div>
-
-              <div style={{ padding: "10px", background: "#000", borderRadius: "6px" }}>
-                <div style={{ color: TACTICAL_COLOR, fontWeight: "700", marginBottom: "4px" }}>Team Coordination</div>
-                <div>Sync score: 94% • Communication: Clear</div>
-              </div>
-
-              <div style={{ padding: "10px", background: "#000", borderRadius: "6px" }}>
-                <div style={{ color: TACTICAL_COLOR, fontWeight: "700", marginBottom: "4px" }}>Gear Impact</div>
-                <div>Load affected mobility by 18%</div>
-              </div>
-
-              <div style={{ padding: "10px", background: "#000", borderRadius: "6px" }}>
-                <div style={{ color: TACTICAL_COLOR, fontWeight: "700", marginBottom: "4px" }}>Key Mistakes</div>
-                <div>• Delayed formation breach (0:12:30)</div>
-                <div>• Missed sector sweep (0:45:15)</div>
-                <div>• Slow equipment transition (1:05:22)</div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: "20px", right: "20px", color: TACTICAL_COLOR, fontSize: "22px", textDecoration: "underline", cursor: "pointer", zIndex: 20 }}>
-        Return to Menu
-      </div>
+        </section>
+        {selected && <section style={{ ...panelStyle, marginTop: 16 }}>
+          <h2 style={{ color }}>Replay #{selected.id} steps</h2>
+          {steps.length === 0 ? <p>No steps recorded yet.</p> : steps.map((step) => <article key={step.id} style={{ borderTop: "1px solid #444", padding: "8px 0" }}><strong>{step.action_type}</strong>{step.description && <p>{step.description}</p>}</article>)}
+          {!selected.completed && <>
+            <form onSubmit={addStep} style={{ display: "grid", gap: 8 }}>
+              <label>Action<input required value={action} onChange={(event) => setAction(event.target.value)} style={fieldStyle} /></label>
+              <label>Notes<input value={description} onChange={(event) => setDescription(event.target.value)} style={fieldStyle} /></label>
+              <button type="submit" style={buttonStyle}>Record step</button>
+            </form>
+            <form onSubmit={completeReplay} style={{ display: "flex", alignItems: "end", gap: 8, marginTop: 12 }}>
+              <label>Final score (0-100)<input type="number" min="0" max="100" value={score} onChange={(event) => setScore(event.target.value)} style={fieldStyle} /></label>
+              <button type="submit" style={buttonStyle}>Complete replay</button>
+            </form>
+          </>}
+        </section>}
+      </main>
+      <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color, background: "#111", border: `1px solid ${color}`, padding: 10 }}>Return to Menu</button>
     </div>
   );
 }
+
+const panelStyle = { background: "#111", border: "1px solid #444", borderRadius: 10, padding: 12, marginBottom: 10, color: "#fff" };
+const fieldStyle = { display: "block", width: "100%", boxSizing: "border-box", padding: 8, marginTop: 4, color: "#fff", background: "#000", border: "1px solid #444", borderRadius: 6 };
+const buttonStyle = { padding: 10, color: "#fff", background: "#111", border: `1px solid ${color}`, borderRadius: 6, cursor: "pointer" };

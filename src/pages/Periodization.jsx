@@ -1,38 +1,8 @@
-import React, { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { apiRequest } from "../utils/api.js";
 import { MenuContext } from "../context/MenuContext.jsx";
 
-const initialBlocks = [
-  {
-    id: 1,
-    name: "Base Building",
-    phase: "Accumulation",
-    weeks: 4,
-    progress: 75,
-    startDate: "2026-08-01",
-    endDate: "2026-08-28",
-    focus: "Aerobic capacity"
-  },
-  {
-    id: 2,
-    name: "Strength Phase",
-    phase: "Intensification",
-    weeks: 3,
-    progress: 40,
-    startDate: "2026-08-29",
-    endDate: "2026-09-18",
-    focus: "Max strength"
-  },
-  {
-    id: 3,
-    name: "Power Development",
-    phase: "Realization",
-    weeks: 2,
-    progress: 0,
-    startDate: "2026-09-19",
-    endDate: "2026-10-02",
-    focus: "Power output"
-  }
-];
+const initialBlocks = [];
 
 const phases = [
   { name: "Accumulation", desc: "High volume, moderate intensity" },
@@ -44,40 +14,57 @@ const phases = [
 export default function Periodization() {
   const { setMenuOpen } = useContext(MenuContext);
   const [blocks, setBlocks] = useState(initialBlocks);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [view, setView] = useState("overview");
   const [selectedBlock, setSelectedBlock] = useState(null);
   const [newBlockName, setNewBlockName] = useState("");
   const [newBlockPhase, setNewBlockPhase] = useState("Accumulation");
   const [newBlockWeeks, setNewBlockWeeks] = useState(4);
 
+
+  useEffect(() => {
+    let active = true;
+    apiRequest("/periodization/").then((records) => {
+      if (!active) return;
+      setBlocks(records.map((record) => {
+        const start = new Date(record.start_date);
+        const end = new Date(record.end_date);
+        const total = Math.max(1, end.getTime() - start.getTime());
+        const progress = Math.max(0, Math.min(100, Math.round((Date.now() - start.getTime()) / total * 100)));
+        return { id: record.id, name: record.block_name, phase: record.focus, weeks: Math.max(1, Math.ceil(total / (7 * 86400000))), progress, startDate: record.start_date.slice(0, 10), endDate: record.end_date.slice(0, 10), focus: record.focus };
+      }));
+    }).catch((err) => active && setError(err.message || "Unable to load training blocks."))
+      .finally(() => active && setLoading(false));
+    return () => { active = false; };
+  }, []);
+
   const PERIODIZATION_COLOR = "#00d4ff";
   const BLACK = "#000";
   const WHITE = "#fff";
 
-  const handleCreateBlock = () => {
-    if (newBlockName.trim()) {
-      const newBlock = {
-        id: blocks.length + 1,
-        name: newBlockName,
-        phase: newBlockPhase,
-        weeks: newBlockWeeks,
-        progress: 0,
-        startDate: new Date().toISOString().split("T")[0],
-        endDate: new Date(Date.now() + newBlockWeeks * 7 * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split("T")[0],
-        focus: "TBD"
-      };
-      setBlocks([...blocks, newBlock]);
-      setNewBlockName("");
-      setNewBlockPhase("Accumulation");
-      setNewBlockWeeks(4);
-    }
+  const handleCreateBlock = async () => {
+    if (!newBlockName.trim()) return;
+    const startDate = new Date();
+    const endDate = new Date(startDate.getTime() + Number(newBlockWeeks) * 7 * 86400000);
+    setError("");
+    try {
+      const record = await apiRequest("/periodization/", { method: "POST", body: {
+        block_name: newBlockName.trim(), focus: newBlockPhase,
+        start_date: startDate.toISOString(), end_date: endDate.toISOString()
+      } });
+      setBlocks((current) => [{ id: record.id, name: record.block_name, phase: record.focus, weeks: Number(newBlockWeeks), progress: 0, startDate: record.start_date.slice(0, 10), endDate: record.end_date.slice(0, 10), focus: record.focus }, ...current]);
+      setNewBlockName(""); setNewBlockPhase("Accumulation"); setNewBlockWeeks(4);
+    } catch (err) { setError(err.message || "Unable to save training block."); }
   };
 
-  const handleDeleteBlock = (id) => {
-    setBlocks(blocks.filter((b) => b.id !== id));
-    setSelectedBlock(null);
+  const handleDeleteBlock = async (id) => {
+    setError("");
+    try {
+      await apiRequest(`/periodization/${id}`, { method: "DELETE" });
+      setBlocks((current) => current.filter((block) => block.id !== id));
+      setSelectedBlock(null);
+    } catch (err) { setError(err.message || "Unable to delete training block."); }
   };
 
   return (
@@ -95,6 +82,9 @@ export default function Periodization() {
       }}
     >
       <div style={{ width: "360px", maxWidth: "100%" }}>
+        {loading && <p role="status">Loading training blocks?</p>}
+        {error && <p role="alert">{error}</p>}
+        {!loading && !error && blocks.length === 0 && <p>No training blocks yet.</p>}
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: "20px" }}>
           <div style={{ color: PERIODIZATION_COLOR, fontSize: "28px", fontWeight: "700" }}>
