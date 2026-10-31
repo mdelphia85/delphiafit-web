@@ -10,7 +10,7 @@ describe("DelphiaFit Kids", () => {
     render(<MenuContext.Provider value={{ setMenuOpen: vi.fn() }}><DelphiaKids /></MenuContext.Provider>);
     fireEvent.change(await screen.findByLabelText("Child nickname"), { target: { value: "Runner" } });
     fireEvent.click(screen.getByRole("button", { name: "Add child profile" }));
-    fireEvent.click(await screen.findByRole("button", { name: "movement ? Mark complete" }));
+    fireEvent.click(await screen.findByRole("button", { name: "movement | Mark complete" }));
     fireEvent.click(screen.getByRole("button", { name: "Parent controls: On" }));
     expect(await screen.findByRole("button", { name: "Parent controls: Off" })).toBeInTheDocument();
     expect(globalThis.fetch.mock.calls.some(([url]) => url.includes("/kids/children/2/progress"))).toBe(true);

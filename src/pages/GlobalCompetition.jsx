@@ -10,6 +10,10 @@ export default function GlobalCompetition() {
   const [tournaments, setTournaments] = useState({});
   const [seasons, setSeasons] = useState([]);
   const [ladders, setLadders] = useState({});
+  const [userId, setUserId] = useState(null);
+  const [tournamentName, setTournamentName] = useState("");
+  const [tournamentFormat, setTournamentFormat] = useState("round_robin");
+  const [creatingFor, setCreatingFor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -35,9 +39,10 @@ export default function GlobalCompetition() {
 
   useEffect(() => {
     let active = true;
-    apiRequest("/competition/list")
-      .then(async (rows) => {
+    Promise.all([apiRequest("/competition/list"), apiRequest("/auth/me")])
+      .then(async ([rows, user]) => {
         if (!active) return;
+        setUserId(user.id);
         const list = Array.isArray(rows) ? rows : [];
         setCompetitions(list);
         const [seasonRows, tournamentItems, ladderItems] = await Promise.all([
@@ -57,6 +62,23 @@ export default function GlobalCompetition() {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, []);
+
+  async function createTournament(event, competition) {
+    event.preventDefault();
+    if (!tournamentName.trim()) return;
+    try {
+      await apiRequest("/tournament/create", { method: "POST", body: { competition_id: competition.id, name: tournamentName.trim(), format: tournamentFormat } });
+      setTournamentName(""); setCreatingFor(null); setError(""); await loadCompetitions();
+    } catch (requestError) { setError(requestError.message || "Unable to create tournament."); }
+  }
+
+  async function toggleTournamentRegistration(tournament) {
+    try {
+      await apiRequest(`/tournament/${tournament.id}/register`, { method: tournament.registered ? "DELETE" : "POST" });
+      setError("");
+      await loadCompetitions();
+    } catch (requestError) { setError(requestError.message || "Unable to update tournament registration."); }
+  }
 
   async function toggleRegistration(competition) {
     try {
@@ -79,9 +101,18 @@ export default function GlobalCompetition() {
           {competition.season_id && <p style={{ color: "#aaa" }}>Season: {seasons.find((season) => season.id === competition.season_id)?.name || `Season ${competition.season_id}`}</p>}
           <p style={{ color: "#888" }}>{competition.registered_count || 0} registered</p>
           <button type="button" onClick={() => toggleRegistration(competition)} style={buttonStyle}>{competition.registered ? "Withdraw" : "Register"}</button>
+          {competition.owner_id === userId && <div style={{ marginTop: "10px" }}>
+            {creatingFor === competition.id ? <form onSubmit={(event) => createTournament(event, competition)} style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+              <input aria-label="Tournament name" required maxLength={160} value={tournamentName} onChange={(event) => setTournamentName(event.target.value)} placeholder="Tournament name" style={inputStyle} />
+              <select aria-label="Tournament format" value={tournamentFormat} onChange={(event) => setTournamentFormat(event.target.value)} style={inputStyle}><option value="round_robin">Round robin</option><option value="single_elimination">Single elimination</option><option value="swiss">Swiss</option></select>
+              <button type="submit" style={buttonStyle}>Save tournament</button>
+            </form> : <button type="button" onClick={() => setCreatingFor(competition.id)} style={buttonStyle}>Create tournament</button>}
+          </div>}
           {(ladders[competition.id] || []).map((ladder) => <p key={`ladder-${ladder.id}`} style={{ color: "#aaa" }}>Ladder: {ladder.name} | {ladder.ranking_method || "points"}</p>)}
           {(tournaments[competition.id] || []).map((tournament) => <div key={tournament.id} style={{ borderTop: "1px solid #333", marginTop: "12px", paddingTop: "10px" }}>
             <strong>{tournament.name}</strong>{tournament.format && <span style={{ color: "#aaa" }}> | {tournament.format}</span>}
+            <p style={{ color: "#888" }}>{tournament.registered_count || 0} registered</p>
+            <button type="button" aria-label={`${tournament.registered ? "Withdraw" : "Register"} for ${tournament.name}`} onClick={() => toggleTournamentRegistration(tournament)} style={buttonStyle}>{tournament.registered ? "Withdraw from tournament" : "Register for tournament"}</button>
             {tournament.start_date && <small style={{ display: "block", color: "#888" }}>{new Date(tournament.start_date).toLocaleDateString()}</small>}
           </div>)}
         </article>)}
@@ -92,6 +123,7 @@ export default function GlobalCompetition() {
 }
 
 const pageStyle = { width: "100vw", minHeight: "100vh", background: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", color: "#fff" };
+const inputStyle = { minWidth: "140px", padding: "8px", background: "#000", color: "white", border: "1px solid #444", borderRadius: "6px" };
 const cardStyle = { background: "#111", border: "1px solid #333", borderRadius: "12px", padding: "14px", marginTop: "12px" };
 const buttonStyle = { padding: "10px 14px", background: COLOR, color: "#000", border: 0, borderRadius: "8px", cursor: "pointer", fontWeight: 700 };
 const menuStyle = { position: "fixed", bottom: "20px", right: "20px", color: COLOR, fontSize: "18px", textDecoration: "underline", background: "#000", border: 0, cursor: "pointer" };
