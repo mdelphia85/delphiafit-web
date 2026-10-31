@@ -1,5 +1,8 @@
 import { useContext, useState, useEffect } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
+import useNutritionTargets from "../hooks/useNutritionTargets.js";
+import { generateMealPlan, getLatestMealPlan } from "../utils/nutritionApi.js";
+import { EstimateNote, MissingDataNotice } from "../components/NutritionNotices.jsx";
 
 import {
   generateDailyMeals,
@@ -9,10 +12,59 @@ import {
   loadGoToMeals
 } from "../generators/mealGenerator.js";
 
+const ROLE_FIELD = { protein: "protein", carbs: "carbs", veggies: "veggies", fats: "fats" };
+
+// Fills the existing meal inputs from a plan; nothing is logged as consumed.
+function planToInputs(plan) {
+  const out = {};
+  for (const m of plan.meals) {
+    const fields = {};
+    for (const it of m.items) {
+      const f = ROLE_FIELD[it.role];
+      if (!f || (f === "fats" && m.meal !== "dinner")) continue;
+      const text = `${it.food} — ${it.portion}`;
+      fields[f] = fields[f] ? `${fields[f]}; ${text}` : text;
+    }
+    out[m.meal] = fields;
+  }
+  return out;
+}
+
 export default function Meals() {
   const { openMenu } = useContext(MenuContext);
   const orange = "rgb(255, 140, 0)";
+  const { data: targets, error: targetError } = useNutritionTargets();
+  const [plan, setPlan] = useState(null);
+  const [planMsg, setPlanMsg] = useState("");
+  const [busy, setBusy] = useState(false);
 
+  useEffect(() => {
+    if (!localStorage.getItem("token")) return;
+    getLatestMealPlan()
+      .then(r => r && r.plan && setPlan(r.plan))
+      .catch(() => {});
+  }, []);
+
+  async function generatePersonalPlan() {
+    setBusy(true);
+    setPlanMsg("");
+    try {
+      const res = await generateMealPlan();
+      setPlan(res.plan);
+      const inputs = planToInputs(res.plan);
+      setMeals(prev => {
+        const next = { ...prev };
+        for (const [k, v] of Object.entries(inputs)) {
+          if (next[k]) next[k] = { ...next[k], ...v };
+        }
+        return next;
+      });
+    } catch (e) {
+      setPlanMsg(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
   const [meals, setMeals] = useState({
     breakfast: { protein: "", carbs: "", veggies: "" },
     snack1: { protein: "", carbs: "", veggies: "" },
@@ -150,11 +202,15 @@ export default function Meals() {
           <div
             style={generatorItem}
             onClick={() => {
+              if (targets && targets.status === "ready") {
+                generatePersonalPlan();
+                return;
+              }
               const generated = generateDailyMeals();
               setMeals(prev => ({ ...prev, ...generated }));
             }}
           >
-            Generate Daily Meals
+            {busy ? "Generating..." : "Generate Daily Meals"}
           </div>
 
           <div
@@ -194,6 +250,46 @@ export default function Meals() {
             Save Go-To Meals
           </div>
         </div>
+
+        {planMsg && <div style={{ color: orange, marginTop: "8px" }}>{planMsg}</div>}
+
+        {!(targets && targets.status === "ready") && (
+          <div style={{ marginTop: "12px" }}>
+            <MissingDataNotice targets={targets} error={targetError} color={orange} />
+          </div>
+        )}
+
+        {plan && (
+          <div style={{ marginTop: "12px", border: `1px solid ${orange}`, padding: "10px", color: orange }}>
+            <div style={{ fontSize: "18px", marginBottom: "6px" }}>Your Meal Plan</div>
+            <div style={{ fontSize: "14px", marginBottom: "6px" }}>
+              Targets: {plan.targets.calories} kcal · {plan.targets.protein_g}g P · {plan.targets.carbs_g}g C ·{" "}
+              {plan.targets.fat_g}g F
+              <br />
+              Plan total: {plan.totals.calories} kcal · {plan.totals.protein_g}g P · {plan.totals.carbs_g}g C ·{" "}
+              {plan.totals.fat_g}g F
+            </div>
+            {plan.meals.map(m => (
+              <div key={m.meal} style={{ marginBottom: "8px", fontSize: "14px" }}>
+                <div style={{ fontWeight: 600, textTransform: "capitalize" }}>
+                  {m.meal.replace("snack", "snack ")} — {m.totals.calories} kcal, {m.totals.protein_g}g P,{" "}
+                  {m.totals.carbs_g}g C, {m.totals.fat_g}g F
+                </div>
+                {m.items.map(it => (
+                  <div key={it.food}>
+                    {it.food}: {it.portion} ({it.calories} kcal)
+                  </div>
+                ))}
+              </div>
+            ))}
+            {(plan.notes || []).map(n => (
+              <div key={n} style={{ fontSize: "13px" }}>{n}</div>
+            ))}
+            <EstimateNote color={orange}>
+              {plan.estimate_label} Generating a plan does not log any food as eaten.
+            </EstimateNote>
+          </div>
+        )}
       </div>
 
       <div

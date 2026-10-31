@@ -1,6 +1,9 @@
 import { useState, useContext } from "react";
 import caloriesImage from "../assets/cals.png";
 import { MenuContext } from "../context/MenuContext.jsx";
+import useNutritionTargets from "../hooks/useNutritionTargets.js";
+import TargetPanel from "../components/TargetPanel.jsx";
+import { EstimateNote, MissingDataNotice } from "../components/NutritionNotices.jsx";
 
 export default function Calories() {
   const caloriesColor = "rgb(0, 255, 0)"; // Correct green for Calories screen
@@ -11,8 +14,11 @@ export default function Calories() {
 
   const { openMenu } = useContext(MenuContext);
 
-  // Auto target based on gender
-  const target = gender === "male" ? 2500 : 2000;
+  const { data: targets, error: targetError, saveOverrides } = useNutritionTargets();
+  const personalized = targets && targets.status === "ready";
+
+  // Personalized target when available, otherwise the original gender default
+  const target = personalized ? targets.effective.calories : gender === "male" ? 2500 : 2000;
   const remaining = Math.max(target - calories, 0);
 
   function addCalories(amount) {
@@ -33,7 +39,10 @@ export default function Calories() {
   function checkCelebration(value) {
     let min, max;
 
-    if (gender === "male") {
+    if (personalized) {
+      min = target * 0.95;
+      max = target * 1.05;
+    } else if (gender === "male") {
       min = 2200;
       max = 3000;
     } else {
@@ -68,7 +77,7 @@ export default function Calories() {
     >
 
       {/* LEFT SIDE */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto" }}>
 
         {/* TOP IMAGE */}
         <img
@@ -83,7 +92,12 @@ export default function Calories() {
           }}
         />
 
-        {/* GENDER SELECTOR */}
+        {!personalized && (
+          <MissingDataNotice targets={targets} error={targetError} color={caloriesColor} />
+        )}
+
+        {/* GENDER SELECTOR (default target only when no personalized estimate) */}
+        {!personalized && (
         <div
           style={{
             display: "flex",
@@ -105,6 +119,7 @@ export default function Calories() {
             color={caloriesColor}
           />
         </div>
+        )}
 
         {/* TARGET / CURRENT / REMAINING */}
         <div
@@ -190,10 +205,24 @@ export default function Calories() {
           display: "flex",
           flexDirection: "column",
           gap: "15px",
-          color: caloriesColor
+          color: caloriesColor,
+          overflowY: "auto"
         }}
       >
+        {personalized && (
+          <>
+            <h3 style={{ margin: 0, textAlign: "center" }}>Your Daily Target</h3>
+            <TargetPanel
+              targets={targets}
+              color={caloriesColor}
+              field="calories"
+              onSaveOverride={saveOverrides}
+            />
+          </>
+        )}
+
         <h3 style={{ margin: 0, textAlign: "center" }}>Recommended Intake</h3>
+        {!personalized && <EstimateNote color={caloriesColor}>General ranges only, not personalized.</EstimateNote>}
 
         <div>
           <p style={{ margin: 0, fontSize: "18px" }}>Male:</p>

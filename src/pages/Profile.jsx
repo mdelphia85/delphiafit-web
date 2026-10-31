@@ -22,6 +22,8 @@ export default function Profile() {
   const [goalWeight, setGoalWeight] = useState("");
 
   const [height, setHeight] = useState("");
+  const [sex, setSex] = useState("");
+  const [activityLevel, setActivityLevel] = useState("");
 
   const [avatar, setAvatar] = useState(null);
 
@@ -54,6 +56,8 @@ export default function Profile() {
           setCurrentWeight(data.current_weight || "");
           setGoalWeight(data.goal_weight || "");
           setHeight(data.height || "");
+          setSex(data.sex || "");
+          setActivityLevel(data.activity_level || "");
         }
       } catch (err) {
         console.log("Profile load error:", err);
@@ -128,7 +132,9 @@ export default function Profile() {
       starting_weight: startingWeight,
       current_weight: currentWeight,
       goal_weight: goalWeight,
-      height
+      height,
+      ...(sex ? { sex } : {}),
+      ...(activityLevel ? { activity_level: activityLevel } : {})
     };
 
     try {
@@ -220,6 +226,33 @@ export default function Profile() {
           <Input label="Height" value={height} onChange={setHeight} color={profileColor} />
 
           <Display label="Body Mass Index" value={bmi} color={profileColor} />
+
+          <Selector
+            label="Sex (used only as a calorie-equation reference)"
+            options={[
+              { value: "", label: "Select..." },
+              { value: "male", label: "Male" },
+              { value: "female", label: "Female" }
+            ]}
+            value={sex}
+            onChange={setSex}
+            color={profileColor}
+          />
+
+          <Selector
+            label="Activity Level"
+            options={[
+              { value: "", label: "Select..." },
+              { value: "sedentary", label: "Sedentary (little or no exercise)" },
+              { value: "light", label: "Lightly active (1-3 days/week)" },
+              { value: "moderate", label: "Moderately active (3-5 days/week)" },
+              { value: "very_active", label: "Very active (6-7 days/week)" },
+              { value: "extra_active", label: "Extra active (hard daily training or physical job)" }
+            ]}
+            value={activityLevel}
+            onChange={setActivityLevel}
+            color={profileColor}
+          />
 
           <p
             onClick={saveProfile}
@@ -354,11 +387,15 @@ function Selector({ label, options, value, onChange, color }) {
           color
         }}
       >
-        {options.map(opt => (
-          <option key={opt} value={opt} style={{ color: "black" }}>
-            {opt}
-          </option>
-        ))}
+        {options.map(opt => {
+          const v = typeof opt === "string" ? opt : opt.value;
+          const l = typeof opt === "string" ? opt : opt.label;
+          return (
+            <option key={v} value={v} style={{ color: "black" }}>
+              {l}
+            </option>
+          );
+        })}
       </select>
     </div>
   );

@@ -1,14 +1,18 @@
 import { useState, useContext } from "react";
 import proteinImage from "../assets/protein.png";
 import { MenuContext } from "../context/MenuContext.jsx";
+import useNutritionTargets from "../hooks/useNutritionTargets.js";
+import TargetPanel from "../components/TargetPanel.jsx";
+import { MissingDataNotice } from "../components/NutritionNotices.jsx";
 
 export default function Protein() {
   const proteinColor = "rgb(255, 50, 50)"; // your exact red
 
-  const profileComplete = false;
+  const { data: targets, error: targetError, saveOverrides } = useNutritionTargets();
+  const personalized = targets && targets.status === "ready";
 
   const [protein, setProtein] = useState(0);
-  const [target, setTarget] = useState(160);
+  const target = personalized ? targets.effective.protein_g : 160;
   const [showCelebration, setShowCelebration] = useState(false);
 
   // Access global menu controls
@@ -70,7 +74,10 @@ export default function Protein() {
       />
 
       {/* PROFILE WARNING */}
-      {!profileComplete && (
+      {!personalized && (
+        <MissingDataNotice targets={targets} error={targetError} color={proteinColor} />
+      )}
+      {!personalized && !targets && targetError !== "unauthenticated" && (
         <div
           style={{
             backgroundColor: "rgba(255, 50, 50, 0.2)",
@@ -82,7 +89,17 @@ export default function Protein() {
             color: proteinColor
           }}
         >
-          Profile must be created before accurate protein intake can be properly tracked.
+          Personalized protein target unavailable. Showing the default of 160g.
+        </div>
+      )}
+      {personalized && (
+        <div style={{ marginBottom: "15px", overflowY: "auto", maxHeight: "28vh" }}>
+          <TargetPanel
+            targets={targets}
+            color={proteinColor}
+            field="protein"
+            onSaveOverride={saveOverrides}
+          />
         </div>
       )}
 
