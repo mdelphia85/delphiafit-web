@@ -33,6 +33,11 @@ export async function apiRequest(path, { as = "user", method = "GET", body, head
   }
 
   if (!res.ok) {
+    if (res.status === 401 && as === "user" && token && !path.startsWith("/auth/login")) {
+      // The stored token was rejected (expired): drop it and send the user to sign in again.
+      clearUserSession();
+      if (typeof window !== "undefined" && window.location.pathname !== "/login") window.location.assign("/login");
+    }
     const detail = data && data.detail;
     const message =
       (detail && (detail.message || (typeof detail === "string" ? detail : null))) ||
