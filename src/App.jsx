@@ -38,8 +38,6 @@ import PlanBuilder from "./pages/PlanBuilder.jsx";
 import CoachMessaging from "./pages/CoachMessaging.jsx";
 import DrillLibraries from "./pages/DrillLibraries.jsx";
 import CreatorMarketplace from "./pages/CreatorMarketplace.jsx";
-import HardwareIntegrations from "./pages/HardwareIntegrations.jsx";
-import EnterpriseDashboard from "./pages/EnterpriseDashboard.jsx";
 import DelphiaProAnalytics from "./pages/DelphiaProAnalytics.jsx";
 import DelphiaKids from "./pages/DelphiaKids.jsx";
 import NutritionPro from "./pages/NutritionPro.jsx";
@@ -50,7 +48,6 @@ import TeamCommunications from "./pages/TeamCommunications.jsx";
 import TeamPerformance from "./pages/TeamPerformance.jsx";
 import RecruitingProfiles from "./pages/RecruitingProfiles.jsx";
 import CompetitionEvents from "./pages/CompetitionEvents.jsx";
-import PermissionsLayer from "./pages/PermissionsLayer.jsx";
 import OrganizationLayer from "./pages/OrganizationLayer.jsx";
 import GlobalCompetition from "./pages/GlobalCompetition.jsx";
 import FederationLayer from "./pages/FederationLayer.jsx";
@@ -204,8 +201,6 @@ function MenuOverlay() {
       <MenuItem label="Coach Messages" onClick={() => go("/coach-messaging")} />
 
       <MenuItem label="Marketplace" onClick={() => go("/marketplace")} />
-      <MenuItem label="Integrations" onClick={() => go("/integrations")} />
-      <MenuItem label="Enterprise" onClick={() => go("/enterprise")} />
       <MenuItem label="DelphiaFit Pro" onClick={() => go("/pro-analytics")} />
       <MenuItem label="DelphiaFit Kids" onClick={() => go("/delphia-kids")} />
       <MenuItem label="Nutrition Pro" onClick={() => go("/nutrition-pro")} />
@@ -216,7 +211,6 @@ function MenuOverlay() {
       <MenuItem label="Team Performance" onClick={() => go("/team-performance")} />
       <MenuItem label="Recruiting" onClick={() => go("/recruiting-profiles")} />
       <MenuItem label="Competition" onClick={() => go("/competition-events")} />
-      <MenuItem label="Permissions" onClick={() => go("/permissions")} />
       <MenuItem label="Organization" onClick={() => go("/organization")} />
 
       <MenuItem label="Global Competitions" onClick={() => go("/global-competitions")} />
@@ -341,8 +335,6 @@ function AppWithMenu() {
       <Route path="/coach-messaging" element={<CoachMessaging />} />
       <Route path="/drill-library" element={<DrillLibraries />} />
       <Route path="/marketplace" element={<CreatorMarketplace />} />
-      <Route path="/integrations" element={<HardwareIntegrations />} />
-      <Route path="/enterprise" element={<EnterpriseDashboard />} />
       <Route path="/pro-analytics" element={<DelphiaProAnalytics />} />
       <Route path="/delphia-kids" element={<DelphiaKids />} />
       <Route path="/nutrition-pro" element={<NutritionPro />} />
@@ -353,7 +345,6 @@ function AppWithMenu() {
       <Route path="/team-performance" element={<TeamPerformance />} />
       <Route path="/recruiting-profiles" element={<RecruitingProfiles />} />
       <Route path="/competition-events" element={<CompetitionEvents />} />
-      <Route path="/permissions" element={<PermissionsLayer />} />
       <Route path="/organization" element={<OrganizationLayer />} />
       <Route path="/global-competitions" element={<GlobalCompetition />} />
       <Route path="/federations" element={<FederationLayer />} />

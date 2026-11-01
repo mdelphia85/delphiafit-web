@@ -1,17 +1,33 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import CoachShell from "../components/CoachShell.jsx";
 import StatusMessage from "../components/StatusMessage.jsx";
 import TeamPicker from "../components/TeamPicker.jsx";
 import { COACH_COLOR, cardStyle, inputStyle, primaryButton } from "../components/coachStyles.js";
-import { errorText, useCoachRequest } from "../utils/coachSession.js";
-import useTeamRoster from "../utils/useTeamRoster.js";
+import { apiRequest } from "../utils/api.js";
+import useMyTeams, { apiErrorText } from "../utils/useMyTeams.js";
 
 export default function TeamCommunications() {
-  const request = useCoachRequest();
-  const { teams, teamId, setTeamId, roster, status, error } = useTeamRoster(request);
+  const { teams, teamId, setTeamId, roster, status, error } = useMyTeams();
+  const [posts, setPosts] = useState([]);
   const [body, setBody] = useState("");
   const [notice, setNotice] = useState("");
   const [sending, setSending] = useState(false);
+
+  const loadPosts = useCallback(async () => {
+    if (!teamId) {
+      setPosts([]);
+      return;
+    }
+    try {
+      setPosts(await apiRequest(`/social/posts/group/${teamId}`));
+    } catch (e) {
+      setNotice(apiErrorText(e, "Could not load team messages."));
+    }
+  }, [teamId]);
+
+  useEffect(() => {
+    loadPosts();
+  }, [loadPosts]);
 
   async function send() {
     if (!body.trim()) {
@@ -20,32 +36,46 @@ export default function TeamCommunications() {
     }
     setSending(true);
     try {
-      const result = await request("/staff/messages/broadcast", { method: "POST", body: { team_id: Number(teamId), body: body.trim() } });
-      setNotice(`Sent to ${result.sent_to} athlete(s). Replies arrive in Coach Messages.`);
+      await apiRequest(`/social/posts?content=${encodeURIComponent(body.trim())}&group_id=${teamId}`, { method: "POST" });
       setBody("");
+      setNotice("");
+      await loadPosts();
     } catch (e) {
-      setNotice(errorText(e, "Broadcast failed."));
+      setNotice(apiErrorText(e, "Message failed."));
     } finally {
       setSending(false);
     }
   }
 
+  const names = Object.fromEntries((roster?.members || []).map((m) => [m.id, m.is_you ? "You" : m.name]));
+
   return (
-    <CoachShell title="💬 Team Comms">
+    <CoachShell title="💬 Team Comms" requireSession={false} home>
       <TeamPicker teams={teams} value={teamId} onChange={setTeamId} />
       {status === "error" && <StatusMessage error>{error}</StatusMessage>}
       {status === "loading" && <StatusMessage>Loading team...</StatusMessage>}
-      {status === "ready" && teams.length === 0 && <StatusMessage>You have no teams yet. Create one in Team Operations.</StatusMessage>}
-      {roster && status === "ready" && (
-        <div style={cardStyle}>
-          <div style={{ color: COACH_COLOR, fontWeight: "700", marginBottom: "4px" }}>Announcement to {roster.team.name}</div>
-          <div style={{ color: "#999", fontSize: "12px", marginBottom: "8px" }}>{roster.clients.length} athlete(s) will receive this in their inbox.</div>
-          <textarea aria-label="Announcement" style={{ ...inputStyle, minHeight: "100px", marginBottom: "8px" }} value={body} onChange={(e) => setBody(e.target.value)} />
-          <button style={{ ...primaryButton(sending || roster.clients.length === 0), width: "100%" }} disabled={sending || roster.clients.length === 0} onClick={send}>
-            Send Announcement
-          </button>
-          {notice && <div style={{ color: "#ccc", fontSize: "12px", marginTop: "8px", textAlign: "center" }}>{notice}</div>}
-        </div>
+      {status === "ready" && teams.length === 0 && <StatusMessage>You are not on a team yet. Create or join one in Team Roster.</StatusMessage>}
+      {teamId && status === "ready" && (
+        <>
+          <div style={{ ...cardStyle, marginBottom: "14px" }}>
+            <div style={{ color: COACH_COLOR, fontWeight: "700", marginBottom: "8px" }}>Message {roster?.group.name}</div>
+            <textarea aria-label="Team message" style={{ ...inputStyle, minHeight: "80px", marginBottom: "8px" }} value={body} onChange={(e) => setBody(e.target.value)} />
+            <button style={{ ...primaryButton(sending), width: "100%" }} disabled={sending} onClick={send}>Send</button>
+            {notice && <div style={{ color: "#ccc", fontSize: "12px", marginTop: "8px", textAlign: "center" }}>{notice}</div>}
+          </div>
+          {posts.length === 0 ? (
+            <StatusMessage>No messages yet.</StatusMessage>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {posts.map((p) => (
+                <div key={p.id} style={cardStyle}>
+                  <div style={{ color: "#999", fontSize: "11px" }}>{names[p.user_id] || "Member"} · {p.created_at ? new Date(p.created_at).toLocaleString() : ""}</div>
+                  <div>{p.content}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
     </CoachShell>
   );
