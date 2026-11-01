@@ -1,5 +1,5 @@
 import { useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.jsx";
 import { hasSession } from "../utils/api.js";
 import { COACH_COLOR } from "./coachStyles.js";
@@ -8,12 +8,13 @@ import { COACH_COLOR } from "./coachStyles.js";
 // coach session, and keeps "Coach Hub" / "Return to Menu" in the footer.
 export default function CoachShell({ title, children, color = COACH_COLOR, home = false, requireSession = true }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { setMenuOpen } = useContext(MenuContext);
   const signedIn = hasSession("coach");
 
   useEffect(() => {
-    if (requireSession && !signedIn) navigate("/coach-login", { replace: true });
-  }, [requireSession, signedIn, navigate]);
+    if (requireSession && !signedIn) navigate("/coach-login", { replace: true, state: { from: location.pathname + location.search } });
+  }, [requireSession, signedIn, navigate, location]);
 
   if (requireSession && !signedIn) return null;
 

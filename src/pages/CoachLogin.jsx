@@ -1,14 +1,16 @@
 import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.jsx";
 
 export default function CoachLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { setMenuOpen } = useContext(MenuContext);
+  const destination = location.state?.from || "/coach-dashboard";
 
   useEffect(() => {
-    if (localStorage.getItem("coachToken")) navigate("/coach-dashboard", { replace: true });
-  }, [navigate]);
+    if (localStorage.getItem("coachToken")) navigate(destination, { replace: true });
+  }, [navigate, destination]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,7 +47,7 @@ export default function CoachLogin() {
       localStorage.removeItem("coachTeamId");
       if (data.team_id) localStorage.setItem("coachTeamId", String(data.team_id));
 
-      navigate("/coach-dashboard");
+      navigate(destination);
     } catch {
       setStatus("error");
       setErrorMessage("Coach login is unavailable. Please try again.");
