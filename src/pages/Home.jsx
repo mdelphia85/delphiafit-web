@@ -1,6 +1,7 @@
 import { useContext } from "react";
 import { MenuContext } from "../context/MenuContext.jsx";
 import homescreen from "../assets/homescreen.png";
+import menuImage from "../assets/menu.png";
 
 export default function Home() {
   const { setMenuOpen } = useContext(MenuContext);
@@ -17,25 +18,21 @@ export default function Home() {
         position: "relative"
       }}
     >
-      <button
+      <img
+        src={menuImage}
+        alt="Menu"
         onClick={() => setMenuOpen(true)}
         style={{
           position: "fixed",
           top: 20,
           left: 20,
-          padding: "12px 22px",
-          fontSize: 20,
-          fontWeight: 600,
-          backgroundColor: "black",
-          color: "white",
-          border: "2px solid white",
-          borderRadius: 10,
+          width: 120,
+          height: 120,
+          objectFit: "contain",
           cursor: "pointer",
           zIndex: 20
         }}
-      >
-        Menu
-      </button>
+      />
     </div>
   );
 }
