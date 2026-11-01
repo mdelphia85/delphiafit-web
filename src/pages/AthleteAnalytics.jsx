@@ -17,7 +17,7 @@ export default function AthleteAnalytics() {
     { label: "Avg water ml (logged days, 30d)", value: data.water.avg_ml_per_logged_day },
     { label: "Journal entries", value: data.counts.journal.total },
   ] : [];
-  return <main style={{ minHeight: "100vh", background: "black", color: "white", padding: 20, boxSizing: "border-box" }}>
+  return <main style={{ minHeight: "100vh", background: "black", color: "white", padding: "20px 20px 80px", boxSizing: "border-box" }}>
     <h1 style={{ color: "#a78bfa", textAlign: "center" }}>Athlete Analytics</h1>
     <p>Computed on the server from your own logs only; estimated training-load and stress values are not shown.</p>
     {loading && <p role="status">Loading analytics...</p>}
@@ -27,6 +27,6 @@ export default function AthleteAnalytics() {
       <h2>Weekly trend</h2>
       {data.weekly_trend.map((week) => <p key={week.week_start}>Week of {week.week_start}: {week.sessions} sessions, {week.minutes} min</p>)}
     </>}
-    <button type="button" onClick={() => setMenuOpen(true)} style={{ color: "#a78bfa", background: "none", border: 0, textDecoration: "underline" }}>Return to Menu</button>
+    <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "#a78bfa", background: "none", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</button>
   </main>;
 }

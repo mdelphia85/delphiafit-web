@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import homescreen from "../assets/homescreen.png";
+import { MenuContext } from "../context/MenuContext.jsx";
 import { apiRequest } from "../utils/api.js";
 
 export default function Login() {
   const navigate = useNavigate();
+  const menu = useContext(MenuContext);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,7 +23,9 @@ export default function Login() {
       localStorage.setItem("token", data.access_token);
       localStorage.setItem("userEmail", email);
       localStorage.setItem("loggedIn", "true");
-      setStatus("success"); navigate("/profile", { replace: true });
+      setStatus("success");
+      navigate("/", { replace: true });
+      menu?.setMenuOpen(true);
     } catch (err) { setStatus("error"); setErrorMessage(err.status === 401 ? "Invalid email or password." : err.message || "Server error. Please try again."); }
   }
 
