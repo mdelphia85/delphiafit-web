@@ -67,21 +67,22 @@ export default function Calories() {
   return (
     <div
       style={{
-        height: "100vh",
+        minHeight: "100vh",
         width: "100vw",
+        boxSizing: "border-box",
         backgroundColor: "black",
         color: caloriesColor,
         display: "flex",
         flexDirection: "row",
-        padding: "20px",
-        overflow: "hidden",
+        padding: "20px 20px 80px",
+        overflowX: "hidden",
         position: "relative",
         gap: "20px"
       }}
     >
 
       {/* LEFT SIDE */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
 
         {/* TOP IMAGE */}
         <img
@@ -210,8 +211,7 @@ export default function Calories() {
           display: "flex",
           flexDirection: "column",
           gap: "15px",
-          color: caloriesColor,
-          overflowY: "auto"
+          color: caloriesColor
         }}
       >
         {personalized && (
