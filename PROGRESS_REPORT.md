@@ -53,8 +53,8 @@ Legend: Implemented = code complete and covered by automated tests. Partial = wo
 - Gap: `/tactical/team-ops` is the coach `TeamOperations` page.
 
 ### Pro, enterprise, auth, public (`test_pro_area_auth.py`, `AuthFlow.test.jsx`, `NutritionPro.test.jsx`, `MedicalRehab.test.jsx`)
-- Implemented, tested: AICoach (rule-based), AutonomousCoaching, PermissionsLayer, OrganizationLayer, Login, Register, Landing, About, legal pages and footer.
-- Partial: EnterpriseDashboard (no usage, API-call or uptime metrics), DelphiaProAnalytics, AIPerformanceLab (no camera tracking), MedicalRehab (records only), GovernmentMilitary, HardwareIntegrations (vendor OAuth and sync return 501), ForgotPassword and ResetPassword (email needs SMTP).
+- Implemented, tested: AICoach (rule-based, with on-device adaptive card), AutonomousCoaching, OrganizationLayer, Login, Register, Landing, About, legal pages and footer. Team Roster/Comms/Performance use social groups for regular users (Coach Hub stays coach-only).
+- Partial: DelphiaProAnalytics, AIPerformanceLab (no camera tracking), MedicalRehab (records only), GovernmentMilitary, ForgotPassword and ResetPassword (email needs SMTP). Enterprise, Integrations and Permissions were removed.
 
 ### Demos
 - `/demo/*` pages and `src/demo/*` left untouched and separate from production data.

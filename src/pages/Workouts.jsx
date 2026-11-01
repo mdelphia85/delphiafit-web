@@ -15,6 +15,7 @@ import { generateWorkout } from "../generators/workoutGenerator.js";
 import { smartAdjust } from "../ai/smartMode";
 import { updatePersonalizationEngine } from "../ai/personalizationEngine";
 import { updateBehavior } from "../ai/behaviorEngine";
+import AdaptiveCoachCard from "../components/AdaptiveCoachCard.jsx";
 
 export default function Workouts() {
   const { openMenu } = useContext(MenuContext);
@@ -354,6 +355,7 @@ export default function Workouts() {
         <div style={clickable} onClick={openMenu}>
           Menu
         </div>
+        <AdaptiveCoachCard />
 
         {/* MODE SELECTOR */}
         <div style={sectionHeader}>Mode</div>

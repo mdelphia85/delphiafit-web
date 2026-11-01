@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiRequest } from "../utils/api.js";
+import AdaptiveCoachCard from "../components/AdaptiveCoachCard.jsx";
 
 export default function AICoach() {
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ export default function AICoach() {
     <div style={{ width: 560, maxWidth: "100%", margin: "0 auto" }}>
       <h1 style={{ color: AI_COLOR, textAlign: "center" }}>AI Coach</h1>
       <p style={{ color: "#aaa", fontSize: 13 }}>Rule-based coaching tools. This is not an LLM or medical advice.</p>
+      <AdaptiveCoachCard />
       <section aria-live="polite" style={{ background: "#111", borderRadius: 12, padding: 16, minHeight: 180, marginBottom: 14 }}>
         {busy && <p role="status">Preparing guidance…</p>}
         {reply && <div><strong>Coach guidance</strong><p style={{ whiteSpace: "pre-wrap" }}>{reply}</p></div>}
