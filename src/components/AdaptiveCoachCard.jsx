@@ -1,8 +1,14 @@
+import { useEffect, useState } from "react";
 import { PersonalizationModel } from "../ai/personalizationModel";
+import { syncAdaptiveProfile } from "../ai/adaptiveSync";
 import { getRecommendation } from "../ai/recommendations";
 
 // Shows what the on-device adaptive model has learned. Renders nothing until real workout history exists.
 export default function AdaptiveCoachCard({ style }) {
+  const [, refresh] = useState(0);
+  useEffect(() => {
+    syncAdaptiveProfile().then(() => refresh((n) => n + 1));
+  }, []);
   const learned = PersonalizationModel.completionRate > 0 || Object.keys(PersonalizationModel.preferredCategories || {}).length > 0;
   if (!learned) return null;
   const rec = getRecommendation();

@@ -7,6 +7,7 @@ export default function AICoach() {
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
   const [reply, setReply] = useState("");
+  const [lastAdaptive, setLastAdaptive] = useState(null);
   const [fatigue, setFatigue] = useState("3");
   const [sleepHours, setSleepHours] = useState("7");
   const [busy, setBusy] = useState(false);
@@ -19,6 +20,7 @@ export default function AICoach() {
     catch (e) { setError(e.status === 401 ? "Log in to use personalized coaching." : e.message); }
   }
   useEffect(() => { const timer = setTimeout(() => { loadHistory(); }, 0); return () => clearTimeout(timer); }, []);
+  const adaptiveUsed = reply && lastAdaptive && Object.keys(lastAdaptive).length > 0 ? lastAdaptive : null;
 
   async function sendMessage(event) {
     event.preventDefault();
@@ -27,6 +29,7 @@ export default function AICoach() {
     setBusy(true); setError(""); setReply("");
     try {
       const result = await apiRequest("/ai/coach", { method: "POST", body: { user_data: { fatigue: Number(fatigue), sleep_hours: Number(sleepHours) }, message: prompt } });
+      setLastAdaptive(result && result.adaptive_inputs ? result.adaptive_inputs : null);
       setReply(typeof result === "string" ? result : result.coach_response || result.response || result.message || JSON.stringify(result));
       setMessage(""); await loadHistory();
     } catch (e) { setError(e.status === 401 ? "Log in to use personalized coaching." : e.message); }
@@ -40,7 +43,7 @@ export default function AICoach() {
       <AdaptiveCoachCard />
       <section aria-live="polite" style={{ background: "#111", borderRadius: 12, padding: 16, minHeight: 180, marginBottom: 14 }}>
         {busy && <p role="status">Preparing guidance…</p>}
-        {reply && <div><strong>Coach guidance</strong><p style={{ whiteSpace: "pre-wrap" }}>{reply}</p></div>}
+        {reply && <div><strong>Coach guidance</strong><p style={{ whiteSpace: "pre-wrap" }}>{reply}</p>{adaptiveUsed && <small style={{ color: "#aaa" }}>Adapted using your history: {adaptiveUsed.workouts_logged ?? 0} workouts logged{adaptiveUsed.difficulty ? `, ${adaptiveUsed.difficulty} difficulty` : ""}{adaptiveUsed.preferred_category ? `, favours ${adaptiveUsed.preferred_category}` : ""}.</small>}</div>}
         {!reply && !busy && <p>Ask a training question to receive guidance from DelphiaFit's rule-based coaching engine.</p>}
         {error && <p role="alert" style={{ color: "#f87171" }}>{error}</p>}
       </section>

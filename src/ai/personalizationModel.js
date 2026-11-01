@@ -1,3 +1,5 @@
+import { pushAdaptiveProfile } from "./adaptiveSync";
+
 const STORAGE_KEY = "delphiafit-personalization-model";
 
 function loadModel() {
@@ -44,4 +46,5 @@ export function persistPersonalizationModel() {
   } catch {
     return;
   }
+  pushAdaptiveProfile();
 }

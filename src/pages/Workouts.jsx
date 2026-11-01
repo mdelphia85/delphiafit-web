@@ -16,6 +16,10 @@ import { smartAdjust } from "../ai/smartMode";
 import { updatePersonalizationEngine } from "../ai/personalizationEngine";
 import { updateBehavior } from "../ai/behaviorEngine";
 import AdaptiveCoachCard from "../components/AdaptiveCoachCard.jsx";
+import { getAdaptiveDifficulty } from "../ai/adaptiveDifficulty";
+import { syncAdaptiveProfile } from "../ai/adaptiveSync";
+
+const DIFFICULTY_SCALE = { easy: 0.8, medium: 1, hard: 1.2 };
 
 export default function Workouts() {
   const { openMenu } = useContext(MenuContext);
@@ -37,6 +41,11 @@ export default function Workouts() {
   // GENERATOR MODE
   const [workoutType, setWorkoutType] = useState("");
   const [duration, setDuration] = useState("30 min");
+  const [difficulty, setDifficulty] = useState(() => getAdaptiveDifficulty());
+
+  useEffect(() => {
+    syncAdaptiveProfile().then(() => setDifficulty(getAdaptiveDifficulty()));
+  }, []);
 
   const [weightUnit, setWeightUnit] = useState("lbs");
   const [weightValue, setWeightValue] = useState("");
@@ -175,11 +184,13 @@ export default function Workouts() {
       equipment: generated.equipment || []
     });
 
+    const scale = DIFFICULTY_SCALE[difficulty] || 1;
+    const scaled = (minutes) => String(Math.max(1, Math.round(minutes * scale)));
     setBlockDurations({
-      warmup: String(blockDefaultMinutes.warmup),
-      main: String(blockDefaultMinutes.main),
-      finisher: String(blockDefaultMinutes.finisher),
-      cooldown: String(blockDefaultMinutes.cooldown)
+      warmup: scaled(blockDefaultMinutes.warmup),
+      main: scaled(blockDefaultMinutes.main),
+      finisher: scaled(blockDefaultMinutes.finisher),
+      cooldown: scaled(blockDefaultMinutes.cooldown)
     });
   }
 
@@ -429,6 +440,17 @@ export default function Workouts() {
               <option value="20 min">20 min</option>
               <option value="30 min">30 min</option>
               <option value="45 min">45 min</option>
+            </select>
+
+            <div style={sectionHeader}>Difficulty (adaptive)</div>
+            <select
+              value={difficulty}
+              onChange={e => setDifficulty(e.target.value)}
+              style={field}
+            >
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
             </select>
 
             {/* WEIGHT SECTION */}
