@@ -13,7 +13,7 @@ describe("authentication flow", () => {
   it("registers against the auth API and then logs in to a persistent user session", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(ok({ id: 4, name: "Test User" })).mockResolvedValueOnce(ok({ access_token: "signed-token", token_type: "bearer" }));
     const setMenuOpen = vi.fn();
-    render(<MenuContext.Provider value={{ setMenuOpen }}><MemoryRouter initialEntries={["/register"]}><Routes><Route path="/register" element={<Register />} /><Route path="/login" element={<Login />} /><Route path="/" element={<div>Landing destination</div>} /></Routes></MemoryRouter></MenuContext.Provider>);
+    render(<MenuContext.Provider value={{ setMenuOpen }}><MemoryRouter initialEntries={["/register"]}><Routes><Route path="/register" element={<Register />} /><Route path="/login" element={<Login />} /><Route path="/profile" element={<div>Profile destination</div>} /></Routes></MemoryRouter></MenuContext.Provider>);
     fireEvent.change(screen.getByPlaceholderText("Full Name"), { target: { value: "Test User" } });
     fireEvent.change(screen.getByPlaceholderText("Email"), { target: { value: "test@example.com" } });
     fireEvent.change(screen.getByPlaceholderText(/Password/), { target: { value: "StrongPass123!" } });
@@ -23,7 +23,7 @@ describe("authentication flow", () => {
     fireEvent.change(screen.getByPlaceholderText("Email"), { target: { value: "test@example.com" } });
     fireEvent.change(screen.getByPlaceholderText("Password"), { target: { value: "StrongPass123!" } });
     fireEvent.click(screen.getByRole("button", { name: "Login" }));
-    expect(await screen.findByText("Landing destination")).toBeInTheDocument();
+    expect(await screen.findByText("Profile destination")).toBeInTheDocument();
     expect(setMenuOpen).toHaveBeenCalledWith(true);
     expect(localStorage.getItem("token")).toBe("signed-token");
     expect(localStorage.getItem("loggedIn")).toBe("true");

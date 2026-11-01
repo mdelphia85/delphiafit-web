@@ -24,7 +24,7 @@ export default function Login() {
       localStorage.setItem("userEmail", email);
       localStorage.setItem("loggedIn", "true");
       setStatus("success");
-      navigate("/", { replace: true });
+      navigate("/profile", { replace: true });
       menu?.setMenuOpen(true);
     } catch (err) { setStatus("error"); setErrorMessage(err.status === 401 ? "Invalid email or password." : err.message || "Server error. Please try again."); }
   }
