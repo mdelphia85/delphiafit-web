@@ -121,6 +121,7 @@ import CertificationsTracker from "./pages/CertificationsTracker.jsx";
 import UnitBuilder from "./pages/UnitBuilder.jsx";
 
 import { MenuProvider, MenuContext } from "./context/MenuContext.jsx";
+import Home from "./pages/Home.jsx";
 
 function App() {
   return (
@@ -286,6 +287,7 @@ function AppWithMenu() {
     <Routes>
       {/* DEMO */}
       <Route path="/" element={<Landing />} />
+      <Route path="/home" element={<Home />} />
       <Route path="/demo" element={<DemoDashboard />} />
       <Route path="/demo/dashboard" element={<DemoDashboard />} />
       <Route path="/demo/workouts" element={<DemoWorkouts />} />

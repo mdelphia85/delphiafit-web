@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { MenuContext } from "../context/MenuContext.jsx";
 import Login from "./Login.jsx";
 import Register from "./Register.jsx";
 import ResetPassword from "./ResetPassword.jsx";
@@ -12,8 +11,7 @@ beforeEach(() => { localStorage.clear(); vi.restoreAllMocks(); });
 describe("authentication flow", () => {
   it("registers against the auth API and then logs in to a persistent user session", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(ok({ id: 4, name: "Test User" })).mockResolvedValueOnce(ok({ access_token: "signed-token", token_type: "bearer" }));
-    const setMenuOpen = vi.fn();
-    render(<MenuContext.Provider value={{ setMenuOpen }}><MemoryRouter initialEntries={["/register"]}><Routes><Route path="/register" element={<Register />} /><Route path="/login" element={<Login />} /><Route path="/profile" element={<div>Profile destination</div>} /></Routes></MemoryRouter></MenuContext.Provider>);
+    render(<MemoryRouter initialEntries={["/register"]}><Routes><Route path="/register" element={<Register />} /><Route path="/login" element={<Login />} /><Route path="/home" element={<div>Home destination</div>} /></Routes></MemoryRouter>);
     fireEvent.change(screen.getByPlaceholderText("Full Name"), { target: { value: "Test User" } });
     fireEvent.change(screen.getByPlaceholderText("Email"), { target: { value: "test@example.com" } });
     fireEvent.change(screen.getByPlaceholderText(/Password/), { target: { value: "StrongPass123!" } });
@@ -23,8 +21,7 @@ describe("authentication flow", () => {
     fireEvent.change(screen.getByPlaceholderText("Email"), { target: { value: "test@example.com" } });
     fireEvent.change(screen.getByPlaceholderText("Password"), { target: { value: "StrongPass123!" } });
     fireEvent.click(screen.getByRole("button", { name: "Login" }));
-    expect(await screen.findByText("Profile destination")).toBeInTheDocument();
-    expect(setMenuOpen).toHaveBeenCalledWith(true);
+    expect(await screen.findByText("Home destination")).toBeInTheDocument();
     expect(localStorage.getItem("token")).toBe("signed-token");
     expect(localStorage.getItem("loggedIn")).toBe("true");
   });
