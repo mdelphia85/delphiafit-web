@@ -142,7 +142,7 @@ export default function Journal() {
 
       <div
         style={{
-          position: "absolute",
+          position: "fixed",
           bottom: "20px",
           right: "20px",
           color: MAGENTA,

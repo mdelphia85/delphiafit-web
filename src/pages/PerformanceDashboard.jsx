@@ -20,7 +20,7 @@ export default function PerformanceDashboard() {
     { label: "Personal records", value: data.personal_records },
     { label: "Current activity streak", value: `${data.streaks.overall.current} days` },
   ] : [];
-  return <main style={{ minHeight: "100vh", background: "black", color: "white", padding: 20, boxSizing: "border-box" }}>
+  return <main style={{ minHeight: "100vh", background: "black", color: "white", padding: "20px 20px 80px", boxSizing: "border-box" }}>
     <h1 style={{ color: "#fbbf24" }}>Performance</h1>
     <p>Performance summary computed from your recorded training, sports and strength metrics.</p>
     {loading && <p role="status">Loading performance...</p>}
@@ -32,6 +32,6 @@ export default function PerformanceDashboard() {
       <h2>Latest strength metrics</h2>
       {latestStrength.length ? latestStrength.map((metric) => <p key={metric.id}>{metric.metric_name}: {metric.value} - {new Date(metric.created_at).toLocaleDateString()}</p>) : <p>No strength metrics recorded yet.</p>}
     </>}
-    <button type="button" onClick={() => setMenuOpen(true)} style={{ color: "#fbbf24", background: "none", border: 0, textDecoration: "underline" }}>Return to Menu</button>
+    <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "#fbbf24", background: "black", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</button>
   </main>;
 }

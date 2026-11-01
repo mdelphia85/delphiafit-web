@@ -69,7 +69,7 @@ export default function Challenges() {
     catch (err) { setError(err.message || "Unable to delete challenge."); }
   }
 
-  return <main style={{ minHeight: "100vh", background: "black", color: "white", padding: 20, boxSizing: "border-box" }}>
+  return <main style={{ minHeight: "100vh", background: "black", color: "white", padding: "20px 20px 80px", boxSizing: "border-box" }}>
     <h1 style={{ color: "dodgerblue", textAlign: "center" }}>Challenges</h1><p>Private goals whose progress is calculated from your recorded activity.</p>
     <form onSubmit={createChallenge} style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
       <input aria-label="Challenge title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Challenge title" required />
@@ -86,6 +86,6 @@ export default function Challenges() {
         {editId === item.id ? <><input aria-label="Edit challenge title" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} /><input aria-label="Edit challenge target" type="number" min="1" value={editTarget} onChange={(e) => setEditTarget(e.target.value)} /><button type="button" disabled={saving} onClick={() => updateChallenge(item)}>Save changes</button><button type="button" onClick={() => setEditId(null)}>Cancel</button></> : <><strong style={{ color: "dodgerblue" }}>{item.title}</strong><p>{categoryLabel}: {count}/{item.target_value} recorded</p><progress value={progress} max="100" aria-label={`${item.title} progress`} /><span>{progress}%</span><div><button type="button" onClick={() => { setEditId(item.id); setEditTitle(item.title); setEditTarget(String(item.target_value)); }}>Edit</button> <button type="button" onClick={() => deleteChallenge(item)}>Delete</button></div></>}
       </article>;
     })}
-    <button type="button" onClick={() => setMenuOpen(true)} style={{ color: "dodgerblue", background: "none", border: 0, textDecoration: "underline" }}>Return to Menu</button>
+    <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "dodgerblue", background: "black", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</button>
   </main>;
 }

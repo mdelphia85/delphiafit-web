@@ -210,7 +210,7 @@ export default function FreeTraining() {
       <p
         onClick={() => setMenuOpen(true)}
         style={{
-          position: "absolute",
+          position: "fixed",
           bottom: "20px",
           right: "20px",
           color: FREE_TRAINING_COLOR,

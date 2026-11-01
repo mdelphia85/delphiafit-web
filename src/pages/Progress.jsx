@@ -15,7 +15,7 @@ export default function Progress() {
     return () => { active = false; };
   }, []);
   const empty = data && sourceKeys.every((key) => data.counts[key].total === 0);
-  return <main style={{ minHeight: "100vh", background: "black", color: "yellow", padding: 20, boxSizing: "border-box" }}>
+  return <main style={{ minHeight: "100vh", background: "black", color: "yellow", padding: "20px 20px 80px", boxSizing: "border-box" }}>
     <h1>Progress</h1>
     <p>Totals computed from everything you have logged: workouts, free training, sports, daily logs, water, nutrition, journal and body weight.</p>
     {loading && <p role="status">Loading progress...</p>}
@@ -38,6 +38,6 @@ export default function Progress() {
         {weights.length ? [...weights].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10).map((entry) => <p key={entry.id}>{new Date(entry.date).toLocaleDateString()} - {entry.weight}{entry.body_fat != null ? ` - ${entry.body_fat}% body fat` : ""}</p>) : <p>No body weight entries recorded yet.</p>}
       </article>
     </>}
-    <button type="button" onClick={() => setMenuOpen(true)} style={{ color: "yellow", background: "none", border: 0, textDecoration: "underline", marginTop: 20 }}>Return to Menu</button>
+    <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "yellow", background: "black", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</button>
   </main>;
 }

@@ -319,7 +319,7 @@ export default function Goals() {
       <p
         onClick={() => setMenuOpen(true)}
         style={{
-          position: "absolute",
+          position: "fixed",
           bottom: "20px",
           right: "20px",
           color: GOALS_COLOR,

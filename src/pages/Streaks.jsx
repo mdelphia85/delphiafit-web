@@ -6,7 +6,7 @@ export default function Streaks() {
   const { setMenuOpen } = useContext(MenuContext);
   const { data, loading, error } = useInsights("/insights/streaks", "Unable to load streak data.");
   const sources = data ? Object.entries(data.sources) : [];
-  return <main style={{ minHeight: "100vh", background: "black", color: "#4464FF", padding: 20, boxSizing: "border-box" }}>
+  return <main style={{ minHeight: "100vh", background: "black", color: "#4464FF", padding: "20px 20px 80px", boxSizing: "border-box" }}>
     <h1>Streaks</h1>
     <p>Consecutive days based on everything you have logged. No activity is shown as zero.</p>
     {loading && <p role="status">Loading your activity...</p>}
@@ -22,6 +22,6 @@ export default function Streaks() {
         <small>{item.last_active ? `Last logged ${item.last_active}` : "Nothing logged yet"}</small>
       </article>)}
     </>}
-    <button type="button" onClick={() => setMenuOpen(true)} style={{ color: "#4464FF", background: "none", border: 0, textDecoration: "underline" }}>Return to Menu</button>
+    <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "#4464FF", background: "black", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</button>
   </main>;
 }

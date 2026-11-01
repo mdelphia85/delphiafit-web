@@ -5,7 +5,7 @@ import useInsights from "../hooks/useInsights.js";
 export default function Achievements() {
   const { setMenuOpen } = useContext(MenuContext);
   const { data, loading, error } = useInsights("/insights/achievements", "Unable to load achievements.");
-  return <main style={{ minHeight: "100vh", background: "black", color: "white", padding: 20, boxSizing: "border-box" }}>
+  return <main style={{ minHeight: "100vh", background: "black", color: "white", padding: "20px 20px 80px", boxSizing: "border-box" }}>
     <h1 style={{ color: "dodgerblue", textAlign: "center" }}>Achievements</h1>
     {loading && <p role="status">Loading your achievements...</p>}
     {error && <p role="alert">{error}</p>}
@@ -18,6 +18,6 @@ export default function Achievements() {
         <progress value={progress} max="100" aria-label={`${item.title} progress`} /> <span>{progress}%</span>
       </article>;
     })}
-    <button type="button" onClick={() => setMenuOpen(true)} style={{ color: "dodgerblue", background: "none", border: 0, textDecoration: "underline" }}>Return to Menu</button>
+    <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "dodgerblue", background: "black", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</button>
   </main>;
 }

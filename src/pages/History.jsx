@@ -27,11 +27,11 @@ export default function History() {
     return () => { active = false; };
   }, []);
 
-  return <main style={{ minHeight: "100vh", background: "black", color: "yellow", padding: 20, boxSizing: "border-box" }}>
+  return <main style={{ minHeight: "100vh", background: "black", color: "yellow", padding: "20px 20px 80px", boxSizing: "border-box" }}>
     <h1>History</h1><p>Your saved daily logs, workouts, hydration entries, and journal notes.</p>
     {loading && <p role="status">Loading history…</p>}{error && <p role="alert">{error}</p>}
     {!loading && !error && entries.length === 0 && <p>No logs or workouts recorded yet.</p>}
     <div style={{ display: "grid", gap: 12 }}>{entries.map((item) => <article key={item.id} style={{ border: "1px solid #444", borderRadius: 8, padding: 14 }}><strong>{item.title}</strong><div>{new Date(item.date).toLocaleString()}</div><p>{item.summary}</p></article>)}</div>
-    <button type="button" onClick={() => setMenuOpen(true)} style={{ color: "yellow", background: "black", border: 0, textDecoration: "underline", marginTop: 24 }}>Return to Menu</button>
+    <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "yellow", background: "black", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</button>
   </main>;
 }

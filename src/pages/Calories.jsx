@@ -188,7 +188,7 @@ export default function Calories() {
         <div
           onClick={openMenu}
           style={{
-            position: "absolute",
+            position: "fixed",
             bottom: "20px",
             right: "20px",
             color: caloriesColor,

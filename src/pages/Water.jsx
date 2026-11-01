@@ -76,7 +76,7 @@ export default function Water() {
       <div style={{ marginBottom: 20, textAlign: "center" }}><p>Quick Add:</p><div style={{ display: "flex", gap: 15, justifyContent: "center" }}>{[8, 12, 16].map((amount) => <button key={amount} type="button" onClick={() => addDraft(amount)} style={{ color: waterColor, background: "none", border: 0, textDecoration: "underline", cursor: "pointer" }}>+{amount} oz</button>)}</div></div>
       <button type="button" disabled={saving || loading} onClick={saveWater} style={{ color: waterColor, background: "none", border: 0, textDecoration: "underline", fontSize: 22, cursor: "pointer", marginTop: "auto" }}>{saving ? "Saving…" : "Save"}</button>
       {intakeOz >= targetOz && <p style={{ textAlign: "center" }}>💧 Goal Reached 💧</p>}
-      <button type="button" onClick={openMenu} style={{ position: "absolute", bottom: 20, right: 20, color: waterColor, background: "none", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</button>
+      <button type="button" onClick={openMenu} style={{ position: "fixed", bottom: 20, right: 20, color: waterColor, background: "none", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</button>
     </div>
   );
 }

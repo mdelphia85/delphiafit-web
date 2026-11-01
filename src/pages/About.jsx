@@ -106,7 +106,7 @@ export default function About() {
       <p
         onClick={() => setMenuOpen(true)}
         style={{
-          position: "absolute",
+          position: "fixed",
           bottom: "20px",
           right: "20px",
           color: ABOUT_COLOR,
