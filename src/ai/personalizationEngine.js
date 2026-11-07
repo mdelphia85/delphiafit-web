@@ -1,4 +1,5 @@
 import { PersonalizationModel, persistPersonalizationModel } from "./personalizationModel";
+import { validCategory } from "./categories";
 
 export function updatePersonalizationEngine(workout) {
   const completionSignal = workout.completed ? 1 : 0;
@@ -40,8 +41,12 @@ export function updatePersonalizationEngine(workout) {
     (PersonalizationModel.preferredTimes[bucket] || 0) + 1;
 
   // 6. Category preferences
-  PersonalizationModel.preferredCategories[workout.sport] =
-    (PersonalizationModel.preferredCategories[workout.sport] || 0) + 1;
+  const category = workout.sport || workout.workout_type;
+  if (validCategory(category)) {
+    const name = category.trim();
+    PersonalizationModel.preferredCategories[name] =
+      (PersonalizationModel.preferredCategories[name] || 0) + 1;
+  }
 
   // 7. Save last recommended/completed
   PersonalizationModel.lastCompleted = workout;

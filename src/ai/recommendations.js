@@ -1,9 +1,10 @@
 import { PersonalizationModel } from "./personalizationModel";
 import { getAdaptiveDifficulty } from "./adaptiveDifficulty";
+import { validCategories } from "./categories";
 
 export function getRecommendation() {
   const difficulty = getAdaptiveDifficulty();
-  const prefs = PersonalizationModel.preferredCategories;
+  const prefs = validCategories(PersonalizationModel.preferredCategories);
 
   const topCategory = Object.entries(prefs)
     .sort((a, b) => b[1] - a[1])[0]?.[0] || "Strength";
