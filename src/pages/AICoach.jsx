@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
 import { apiRequest } from "../utils/api.js";
 import AdaptiveCoachCard from "../components/AdaptiveCoachCard.jsx";
+import { MenuContext } from "../context/MenuContext.jsx";
 
 export default function AICoach() {
-  const navigate = useNavigate();
+  const { setMenuOpen } = useContext(MenuContext);
   const [message, setMessage] = useState("");
   const [reply, setReply] = useState("");
   const [lastAdaptive, setLastAdaptive] = useState(null);
@@ -54,6 +54,6 @@ export default function AICoach() {
       </form>
       <section style={{ marginTop: 16 }}><h2 style={{ fontSize: 16 }}>Saved coaching history</h2>{history.slice(0, 5).map((record) => <button key={record.id} onClick={() => setReply(record.result.coach_response || "Saved recommendation")} style={{ display: "block", width: "100%", textAlign: "left", padding: 10, marginBottom: 8, background: "#111", color: "#ddd", border: "1px solid #333", borderRadius: 8 }}>Saved {new Date(record.created_at).toLocaleString()} - {record.input.message}</button>)}</section>
     </div>
-    <div style={{ position: "fixed", bottom: 0, left: 0, width: "100%", height: 40, background: "#000", display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 16px", boxSizing: "border-box", zIndex: 20 }}><button onClick={() => navigate(-1)} style={{ color: AI_COLOR, background: "transparent", border: 0, textDecoration: "underline" }}>Return</button></div>
+    <div style={{ position: "fixed", bottom: 0, left: 0, width: "100%", height: 40, background: "#000", display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 16px", boxSizing: "border-box", zIndex: 20 }}><button type="button" onClick={() => setMenuOpen(true)} style={{ color: AI_COLOR, background: "transparent", border: 0, textDecoration: "underline" }}>Return to Menu</button></div>
   </main>;
 }
