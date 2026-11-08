@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { useEffect } from "react";
-import { adminFetch, ADMIN_TOKEN_KEY } from "./adminApi.js";
+import { useEffect, useState } from "react";
+import { adminFetch, AdminApiError, ADMIN_TOKEN_KEY } from "./adminApi.js";
 import { BG, BORDER, TEXT_MAIN, ACCENT } from "./adminTheme.js";
 
 const SIDEBAR_BG = "rgb(15,15,15)";
@@ -8,15 +8,22 @@ const SIDEBAR_BG = "rgb(15,15,15)";
 export default function AdminLayout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [authCheckError, setAuthCheckError] = useState("");
+  const [authCheckAttempt, setAuthCheckAttempt] = useState(0);
 
-  // Validate the admin session (token + current is_admin flag) on mount.
   useEffect(() => {
+    let active = true;
     adminFetch("/admin/me").catch((err) => {
-      console.error("Admin auth check failed:", err);
-      localStorage.removeItem(ADMIN_TOKEN_KEY);
-      navigate("/admin/login");
-    });
-  }, [navigate]);
+        if (err instanceof AdminApiError && (err.status === 401 || err.status === 403)) {
+          localStorage.removeItem(ADMIN_TOKEN_KEY);
+          navigate("/admin/login", { replace: true });
+          return;
+        }
+        console.error("Admin auth check failed:", err);
+        if (active) setAuthCheckError("Unable to verify admin access. Check your connection and try again.");
+      });
+    return () => { active = false; };
+  }, [navigate, authCheckAttempt]);
 
   function isActive(path) {
     return location.pathname === path || location.pathname.startsWith(`${path}/`)
@@ -98,7 +105,23 @@ export default function AdminLayout({ children }) {
         </div>
       </div>
 
-      <div style={content}>{children}</div>
+      <div style={content}>
+        {authCheckError && (
+          <div role="alert">
+            <p>{authCheckError}</p>
+            <button
+              type="button"
+              onClick={() => {
+                setAuthCheckError("");
+                setAuthCheckAttempt((attempt) => attempt + 1);
+              }}
+            >
+              Retry admin check
+            </button>
+          </div>
+        )}
+        {children}
+      </div>
     </div>
   );
 }

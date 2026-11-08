@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 const COLOR = "#06b6d4";
 export default function DelphiaProAnalytics() {

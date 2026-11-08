@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import StatusMessage from "../components/StatusMessage.jsx";
 import { COACH_COLOR, cardStyle, inputStyle, primaryButton } from "../components/coachStyles.js";
 import { ApiError, apiRequest, hasSession } from "../utils/api.js";

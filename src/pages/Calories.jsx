@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
 import caloriesImage from "../assets/cals.png";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import useNutritionTargets from "../hooks/useNutritionTargets.js";
 import TargetPanel from "../components/TargetPanel.jsx";
 import { EstimateNote, MissingDataNotice } from "../components/NutritionNotices.jsx";

@@ -1,7 +1,7 @@
 import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
 import TacticalActivityLog from "../components/TacticalActivityLog.jsx";
 import { useContext } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 
 const initialPhases = [
   { id: 1, name: "Ultra Conditioning Phase 1", duration: "10 weeks", focus: "Strength & Power", completed: false },

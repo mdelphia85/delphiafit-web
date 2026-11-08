@@ -1,6 +1,6 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import carbon from "../assets/carbon.png";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import {
   createEMSDrill, createFirefighterDrill, createMilitaryDrill, createPoliceDrill,
   deleteEMSDrill, deleteFirefighterDrill, deleteMilitaryDrill, deletePoliceDrill,

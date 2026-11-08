@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import waterImage from "../assets/water.png";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 
 const ML_PER_OZ = 29.5735;

@@ -1,4 +1,3 @@
-import React from "react";
 import demoTactical from "../../demo/demoTactical";
 
 const DemoDivisionModal = ({ division, drill, onClose, onReplace }) => {

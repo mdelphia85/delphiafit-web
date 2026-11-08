@@ -1,5 +1,5 @@
 ﻿import { useContext, useEffect, useState } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 const COLOR = "#ef4444";
 const field = { display: "block", width: "100%", boxSizing: "border-box", background: "#111", color: "#fff", border: "1px solid #444", borderRadius: 6, padding: 10, marginTop: 6 };

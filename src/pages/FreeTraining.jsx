@@ -1,6 +1,6 @@
 import { useContext, useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 
 export default function FreeTraining() {

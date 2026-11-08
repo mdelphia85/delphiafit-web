@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useState } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { useContext, useEffect, useState } from "react";
+import { MenuContext } from "../context/MenuContext.js";
 import { getNutritionSettings, saveNutritionSettings } from "../utils/nutritionApi.js";
 
 const AVOID = ["dairy", "egg", "fish", "nuts", "gluten", "soy"];

@@ -1,6 +1,6 @@
 import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
 import { useContext, useState } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 
 const environments = ["Urban", "Rural", "Wilderness", "Maritime", "Mountain", "Desert", "Arctic", "Jungle"];
 const threatLevels = ["Low", "Medium", "High", "Critical"];

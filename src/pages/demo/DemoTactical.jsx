@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import DemoBanner from "../../components/DemoBanner";
 import DemoNav from "../../components/DemoNav";

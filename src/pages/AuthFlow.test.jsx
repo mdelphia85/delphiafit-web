@@ -28,7 +28,8 @@ describe("authentication flow", () => {
 
   it("prefills and submits the reset link token using the backend contract", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(ok({ message: "Password reset successful" }));
-    render(<MemoryRouter initialEntries={["/reset-password?email=reset%40example.com&token=token12345"]}><Routes><Route path="/reset-password" element={<ResetPassword />} /></Routes></MemoryRouter>);
+    window.history.replaceState({}, "", "/reset-password#email=reset%40example.com&token=token12345");
+    render(<MemoryRouter initialEntries={["/reset-password"]}><Routes><Route path="/reset-password" element={<ResetPassword />} /></Routes></MemoryRouter>);
     expect(screen.getByPlaceholderText("Your Email")).toHaveValue("reset@example.com");
     expect(screen.getByPlaceholderText("Reset Token")).toHaveValue("token12345");
     fireEvent.change(screen.getByPlaceholderText("New Password (min 10 chars)"), { target: { value: "NewStrongPass123!" } });
@@ -36,6 +37,7 @@ describe("authentication flow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Reset Password" }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/auth/reset-password"), expect.objectContaining({ method: "POST", body: expect.stringContaining("new_password") })));
     expect(await screen.findByText("Password Updated!")).toBeInTheDocument();
+    expect(window.location.hash).toBe("");
   });
 
   it("shows an auth error and does not create a session when login fails", async () => {

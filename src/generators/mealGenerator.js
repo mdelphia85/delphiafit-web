@@ -43,7 +43,7 @@ export function generateGoToMeals() {
 }
 
 // Apply Go-To meals to today
-export function useGoToMealsToday(goTo) {
+export function applyGoToMealsToday(goTo) {
   return {
     breakfast: goTo.goToBreakfast,
     snack1: goTo.goToBreakfast,

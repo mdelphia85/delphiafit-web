@@ -1,4 +1,3 @@
-import React from "react";
 
 const DemoGuide = ({ step, onNext, onClose }) => {
   const steps = [

@@ -1,15 +1,21 @@
-import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLayoutEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function CoachPasswordReset() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const [email, setEmail] = useState(searchParams.get("email") || "");
-  const [token, setToken] = useState(searchParams.get("token") || "");
+  const [resetDetails] = useState(() => new URLSearchParams(window.location.hash.slice(1)));
+  const [email, setEmail] = useState(resetDetails.get("email") || "");
+  const [token, setToken] = useState(resetDetails.get("token") || "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("");
+
+  useLayoutEffect(() => {
+    if (window.location.hash) {
+      window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
+    }
+  }, []);
 
   async function requestReset() {
     if (!email.includes("@")) {
@@ -57,7 +63,7 @@ export default function CoachPasswordReset() {
       setStatus("success");
       setMessage("Password updated. Redirecting to Coach Login...");
       setTimeout(() => navigate("/coach-login"), 900);
-    } catch {
+    } catch (error) {
       setStatus("error");
       setMessage(error.message || "Unable to reset the password.");
     }

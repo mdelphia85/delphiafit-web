@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import useNutritionTargets from "../hooks/useNutritionTargets.js";
 import { generateMealPlan, getLatestMealPlan } from "../utils/nutritionApi.js";
 import { EstimateNote, MissingDataNotice } from "../components/NutritionNotices.jsx";
@@ -7,7 +7,7 @@ import { EstimateNote, MissingDataNotice } from "../components/NutritionNotices.
 import {
   generateDailyMeals,
   generateGoToMeals,
-  useGoToMealsToday,
+  applyGoToMealsToday,
   saveGoToMeals,
   loadGoToMeals
 } from "../generators/mealGenerator.js";
@@ -226,7 +226,7 @@ export default function Meals() {
           <div
             style={generatorItem}
             onClick={() => {
-              const applied = useGoToMealsToday({
+              const applied = applyGoToMealsToday({
                 goToBreakfast: meals.goToBreakfast,
                 goToLunch: meals.goToLunch,
                 goToDinner: meals.goToDinner

@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import TacticalOperationLog from "../components/TacticalOperationLog.jsx";
 
 export default function MaritimeOperations() {

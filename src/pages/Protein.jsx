@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
 import proteinImage from "../assets/protein.png";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import useNutritionTargets from "../hooks/useNutritionTargets.js";
 import TargetPanel from "../components/TargetPanel.jsx";
 import { MissingDataNotice } from "../components/NutritionNotices.jsx";

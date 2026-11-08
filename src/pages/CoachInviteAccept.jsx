@@ -1,21 +1,26 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { apiRequest } from "../utils/api.js";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { apiRequest, hasSession } from "../utils/api.js";
 
 export default function CoachInviteAccept() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [invitationToken] = useState(() => new URLSearchParams(window.location.hash.slice(1)).get("token"));
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [invite, setInvite] = useState(null);
-  const invitationToken = searchParams.get("token");
+
+  useLayoutEffect(() => {
+    if (window.location.hash) {
+      window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
+    }
+  }, []);
 
   useEffect(() => {
     if (!invitationToken) return;
-    apiRequest(`/staff/invitations/lookup?token=${encodeURIComponent(invitationToken)}`)
+    apiRequest("/staff/invitations/lookup", { method: "POST", body: { token: invitationToken } })
       .then(setInvite)
       .catch(() => {
         setStatus("error");
@@ -30,47 +35,65 @@ export default function CoachInviteAccept() {
       return;
     }
 
-    if (name.trim().length < 2 || password.length < 10) {
+    const isClient = invite && invite.role === "client";
+    const existingCoach = invite && invite.existing_coach;
+    if (!existingCoach && (name.trim().length < 2 || password.length < 10)) {
       setStatus("error");
       setErrorMessage("Enter your name and a password with at least 10 characters.");
       return;
     }
 
-    if (password !== confirmPassword) {
+    if (!existingCoach && password !== confirmPassword) {
       setStatus("error");
       setErrorMessage("Passwords do not match.");
       return;
     }
 
     setStatus("loading");
-    const isClient = invite && invite.role === "client";
 
     try {
       await apiRequest(isClient ? "/staff/invitations/accept" : "/coach/invitations/accept", {
         method: "POST",
-        body: { invitation_token: invitationToken, name, password }
+        as: isClient ? "user" : "coach",
+        body: existingCoach
+          ? { invitation_token: invitationToken }
+          : { invitation_token: invitationToken, name, password }
       });
       setStatus("success");
-      setTimeout(() => navigate(isClient ? "/login" : "/coach-login"), 900);
+      setTimeout(() => navigate(isClient ? "/login" : existingCoach ? "/coach-dashboard" : "/coach-login"), 900);
     } catch (error) {
       setStatus("error");
-      setErrorMessage(error.message || "Unable to accept the invitation right now.");
+      setErrorMessage(
+        existingCoach && !hasSession("coach")
+          ? "Sign into your coach account in another tab, then accept this invitation."
+          : error.message || "Unable to accept the invitation right now."
+      );
     }
   }
 
   const isClient = invite && invite.role === "client";
+  const existingCoach = invite && invite.existing_coach;
 
   return (
     <CoachForm
       title={isClient ? "Accept Coaching Invitation" : "Accept Coach Invitation"}
-      subtitle={isClient ? "Create your account to connect with your coach" : "Create access for your assigned team"}
+      subtitle={isClient ? "Create your account to connect with your coach" : existingCoach ? "Sign in to add this team to your coach account" : "Create access for your assigned team"}
     >
       {invite && <div style={{ color: "#ccc", fontSize: "12px", textAlign: "center", marginBottom: "12px" }}>Invitation for {invite.email}</div>}
-      <input placeholder="Full name" value={name} onChange={(event) => setName(event.target.value)} style={inputStyle} />
-      <input type="password" placeholder="Password (min 10 chars)" value={password} onChange={(event) => setPassword(event.target.value)} style={inputStyle} />
-      <input type="password" placeholder="Confirm password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} style={inputStyle} />
+      {existingCoach ? (
+        <div style={{ color: "#ccc", fontSize: "13px", textAlign: "center", marginBottom: "12px" }}>
+          This invitation will not change your password or coach profile.
+          <div><a href="/coach-login" target="_blank" rel="noopener noreferrer" style={linkStyle}>Open Coach Login in a new tab</a></div>
+        </div>
+      ) : (
+        <>
+          <input placeholder="Full name" value={name} onChange={(event) => setName(event.target.value)} style={inputStyle} />
+          <input type="password" placeholder="Password (min 10 chars)" value={password} onChange={(event) => setPassword(event.target.value)} style={inputStyle} />
+          <input type="password" placeholder="Confirm password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} style={inputStyle} />
+        </>
+      )}
       <button onClick={acceptInvitation} disabled={status === "loading"} style={buttonStyle}>
-        {status === "loading" ? "Creating access..." : status === "success" ? "Invitation Accepted" : "Accept Invitation"}
+        {status === "loading" ? "Accepting..." : status === "success" ? "Invitation Accepted" : "Accept Invitation"}
       </button>
       {status === "error" && <div style={errorStyle}>{errorMessage}</div>}
     </CoachForm>

@@ -117,7 +117,8 @@ import MissionReplay from "./pages/MissionReplay.jsx";
 import CertificationsTracker from "./pages/CertificationsTracker.jsx";
 import UnitBuilder from "./pages/UnitBuilder.jsx";
 
-import { MenuProvider, MenuContext } from "./context/MenuContext.jsx";
+import { MenuProvider } from "./context/MenuContext.jsx";
+import { MenuContext } from "./context/MenuContext.js";
 import Home from "./pages/Home.jsx";
 
 function App() {

@@ -6,7 +6,7 @@ import Achievements from "./Achievements.jsx";
 import AthleteAnalytics from "./AthleteAnalytics.jsx";
 import Settings from "./Settings.jsx";
 import Calories from "./Calories.jsx";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 
 vi.mock("../utils/api.js", () => ({ apiRequest: vi.fn(), clearUserSession: vi.fn() }));

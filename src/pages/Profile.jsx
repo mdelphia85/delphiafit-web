@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import { API } from "../config/api.js";
 
 export default function Profile() {
@@ -24,6 +24,7 @@ export default function Profile() {
   const [height, setHeight] = useState("");
   const [sex, setSex] = useState("");
   const [activityLevel, setActivityLevel] = useState("");
+  const [saveMessage, setSaveMessage] = useState("");
 
   const [avatar, setAvatar] = useState(null);
 
@@ -124,6 +125,12 @@ export default function Profile() {
 
   // ⭐ SAVE PROFILE (NO REDIRECT TO LOGIN)
   async function saveProfile() {
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+    if (dob && (!/^\d{4}-\d{2}-\d{2}$/.test(dob) || dob > today)) {
+      setSaveMessage("Enter a valid date of birth that is not in the future.");
+      return;
+    }
     const payload = {
       name,
       dob,
@@ -138,6 +145,7 @@ export default function Profile() {
     };
 
     try {
+      setSaveMessage("Saving profile…");
       const res = await fetch(
         `${API}/profile/update`,
         {
@@ -152,13 +160,11 @@ export default function Profile() {
 
       const data = await res.json();
 
-      if (data.success) {
-        console.log("Profile saved");
-      } else {
-        console.log("Profile save failed:", data.message);
-      }
+      if (!res.ok || !data.success) throw new Error(data.detail || data.message || "Unable to save profile.");
+      setDob(data.dob || "");
+      setSaveMessage("Profile saved.");
     } catch (err) {
-      console.log("Server error saving profile:", err);
+      setSaveMessage(err.message || "Unable to save profile.");
     }
   }
 
@@ -266,6 +272,7 @@ export default function Profile() {
           >
             Save Profile
           </p>
+          {saveMessage && <p role={saveMessage === "Profile saved." ? "status" : "alert"}>{saveMessage}</p>}
         </div>
 
         {/* RETURN TO MENU */}

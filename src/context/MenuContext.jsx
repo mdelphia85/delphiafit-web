@@ -1,6 +1,5 @@
-import { createContext, useState } from "react";
-
-export const MenuContext = createContext();
+import { useState } from "react";
+import { MenuContext } from "./MenuContext.js";
 
 export function MenuProvider({ children }) {
   const [menuOpen, setMenuOpen] = useState(false);

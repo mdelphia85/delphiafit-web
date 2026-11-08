@@ -41,12 +41,40 @@ export default function useMyTeams() {
   }, [teamId]);
 
   useEffect(() => {
-    reloadTeams();
-  }, [reloadTeams]);
+    let active = true;
+    apiRequest("/social/groups")
+      .then((list) => {
+        if (!active) return;
+        setTeams(list);
+        setTeamId((current) => String(list.some((team) => String(team.id) === String(current))
+          ? current
+          : list[0]?.id || ""));
+        if (!list.length) setStatus("ready");
+      })
+      .catch((e) => {
+        if (!active) return;
+        setError(apiErrorText(e, "Could not load your teams."));
+        setStatus("error");
+      });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
-    reloadRoster();
-  }, [reloadRoster]);
+    if (!teamId) return undefined;
+    let active = true;
+    apiRequest(`/social/groups/${teamId}/roster`)
+      .then((loadedRoster) => {
+        if (!active) return;
+        setRoster(loadedRoster);
+        setStatus("ready");
+      })
+      .catch((e) => {
+        if (!active) return;
+        setError(apiErrorText(e, "Could not load the team."));
+        setStatus("error");
+      });
+    return () => { active = false; };
+  }, [teamId]);
 
   return { teams, teamId, setTeamId, roster, status, error, reloadTeams, reloadRoster };
 }

@@ -1,4 +1,3 @@
-import React from "react";
 
 const DemoMealModal = ({ meal, onClose }) => {
   if (!meal) return null;

@@ -18,7 +18,6 @@ export default function ClientManagement() {
   const [errorMessage, setErrorMessage] = useState("");
   const [notice, setNotice] = useState("");
   const [email, setEmail] = useState("");
-  const [inviteLink, setInviteLink] = useState("");
   const [panel, setPanel] = useState(null); // { type: "progress" | "assign" | "team" | "remove", client }
   const [progress, setProgress] = useState(null);
   const [panelError, setPanelError] = useState("");
@@ -52,7 +51,6 @@ export default function ClientManagement() {
 
   async function invite() {
     setNotice("");
-    setInviteLink("");
     if (!email.includes("@")) {
       setNotice("Enter a valid client email.");
       return;
@@ -61,8 +59,9 @@ export default function ClientManagement() {
     try {
       const data = await request("/staff/clients/invite", { method: "POST", body: { email: email.trim() } });
       setEmail("");
-      setNotice(data.delivery_configured ? "Invitation emailed." : "Invitation created. Email delivery is not configured, so share this link with your client:");
-      if (!data.delivery_configured) setInviteLink(`${window.location.origin}/invite?token=${data.invite_token}`);
+      setNotice(data.delivery_configured
+        ? "Invitation emailed."
+        : "Invitation created, but email delivery is not configured. Configure email delivery and resend before the recipient can accept it.");
       await load();
     } catch (error) {
       setNotice(errorText(error, "Invitation failed."));
@@ -77,6 +76,15 @@ export default function ClientManagement() {
       setInvitations((list) => list.filter((i) => i.id !== id));
     } catch (error) {
       setNotice(errorText(error, "Could not revoke invitation."));
+    }
+  }
+
+  async function resend(id) {
+    try {
+      await request("/invite/resend", { method: "POST", body: { invite_id: id } });
+      setNotice("Invitation resent.");
+    } catch (error) {
+      setNotice(errorText(error, "Could not resend invitation."));
     }
   }
 
@@ -146,7 +154,6 @@ export default function ClientManagement() {
           Send Invitation
         </button>
         {notice && <div style={{ color: "#ccc", fontSize: "12px", marginTop: "8px" }}>{notice}</div>}
-        {inviteLink && <input readOnly aria-label="Invitation link" value={inviteLink} onFocus={(e) => e.target.select()} style={{ ...inputStyle, marginTop: "6px" }} />}
       </div>
 
       {status === "loading" && <StatusMessage>Loading clients...</StatusMessage>}
@@ -224,7 +231,10 @@ export default function ClientManagement() {
                     {invite.email}
                     {invite.expired && <span style={{ color: "#f87171" }}> (expired)</span>}
                   </div>
-                  <button style={small} onClick={() => revoke(invite.id)}>Revoke</button>
+                  <div style={{ display: "flex", gap: "6px" }}>
+                    <button style={small} onClick={() => resend(invite.id)}>Resend</button>
+                    <button style={small} onClick={() => revoke(invite.id)}>Revoke</button>
+                  </div>
                 </div>
               ))}
             </div>

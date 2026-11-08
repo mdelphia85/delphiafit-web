@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 const COLOR = "#8b5cf6";
 export default function AIPerformanceLab() {

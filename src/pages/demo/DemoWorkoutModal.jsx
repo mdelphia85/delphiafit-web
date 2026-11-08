@@ -1,4 +1,3 @@
-import React from "react";
 
 const DemoWorkoutModal = ({ workout, onClose }) => {
   if (!workout) return null;

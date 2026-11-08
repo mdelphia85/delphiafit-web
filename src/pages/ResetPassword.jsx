@@ -1,18 +1,23 @@
-import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLayoutEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import homescreen from "../assets/homescreen.png";
 import { apiRequest } from "../utils/api.js";
 
 export default function ResetPassword() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
-  const [email, setEmail] = useState(searchParams.get("email") || "");
-  const [token, setToken] = useState(searchParams.get("token") || "");
+  const [resetDetails] = useState(() => new URLSearchParams(window.location.hash.slice(1)));
+  const [email, setEmail] = useState(resetDetails.get("email") || "");
+  const [token, setToken] = useState(resetDetails.get("token") || "");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
+
+  useLayoutEffect(() => {
+    if (window.location.hash) {
+      window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search);
+    }
+  }, []);
 
   async function handleReset() {
     if (!email.includes("@")) { setStatus("error"); setErrorMessage("Please enter a valid email."); return; }

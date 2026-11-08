@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 
 const COLOR = "#14b8a6";

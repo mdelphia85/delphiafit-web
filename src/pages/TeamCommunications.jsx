@@ -13,21 +13,27 @@ export default function TeamCommunications() {
   const [notice, setNotice] = useState("");
   const [sending, setSending] = useState(false);
 
+  useEffect(() => {
+    if (!teamId) return undefined;
+    let active = true;
+    apiRequest(`/social/posts/group/${teamId}`)
+      .then((loadedPosts) => {
+        if (active) setPosts(loadedPosts);
+      })
+      .catch((e) => {
+        if (active) setNotice(apiErrorText(e, "Could not load team messages."));
+      });
+    return () => { active = false; };
+  }, [teamId]);
+
   const loadPosts = useCallback(async () => {
-    if (!teamId) {
-      setPosts([]);
-      return;
-    }
+    if (!teamId) return;
     try {
       setPosts(await apiRequest(`/social/posts/group/${teamId}`));
     } catch (e) {
       setNotice(apiErrorText(e, "Could not load team messages."));
     }
   }, [teamId]);
-
-  useEffect(() => {
-    loadPosts();
-  }, [loadPosts]);
 
   async function send() {
     if (!body.trim()) {

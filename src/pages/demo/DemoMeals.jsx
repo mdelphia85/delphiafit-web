@@ -1,12 +1,8 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
 import DemoBanner from "../../components/DemoBanner";
 import DemoNav from "../../components/DemoNav";
 import demoMeals from "../../demo/demoMeals.js";
 
 export default function DemoMeals() {
-  const navigate = useNavigate();
-
   return (
     <div style={{ padding: 20, minHeight: "100vh", background: "#f4f6f8" }}>
       <DemoBanner />

@@ -33,12 +33,23 @@ export default function AdminLogin() {
       });
 
       if (!res.ok) {
-        setError(res.status === 403 ? "This account does not have admin access." : "Invalid admin credentials.");
+        if (res.status === 401) {
+          setError("Invalid admin credentials.");
+        } else if (res.status === 403) {
+          setError("This account does not have admin access.");
+        } else {
+          setError("Unable to log in. Please try again.");
+        }
         setLoading(false);
         return;
       }
 
       const data = await res.json();
+      if (typeof data?.access_token !== "string" || !data.access_token.trim()) {
+        setError("Unable to log in. Please try again.");
+        setLoading(false);
+        return;
+      }
       localStorage.setItem(ADMIN_TOKEN_KEY, data.access_token);
       navigate("/admin/dashboard");
     } catch (err) {

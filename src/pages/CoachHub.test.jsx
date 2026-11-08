@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import CoachDashboard from "./CoachDashboard.jsx";
 import CoachLogin from "./CoachLogin.jsx";
 import ClientManagement from "./ClientManagement.jsx";
@@ -231,15 +231,33 @@ describe("ClientManagement", () => {
     await waitFor(() => expect(calls.find((c) => c.method === "POST" && c.path === "/staff/plans/3/assignments")?.body).toEqual({ client_id: 7 }));
   });
 
-  it("invites a client and shows the link when email is not configured", async () => {
+  it("does not expose an invitation token when email delivery is unavailable", async () => {
     signIn();
-    const calls = mockApi({ ...base(), "POST /staff/clients/invite": { invite_id: 1, delivery_configured: false, invite_token: "tok123" } });
+    const calls = mockApi({ ...base(), "POST /staff/clients/invite": { invite_id: 1, delivery_configured: false } });
     renderAt("/client-management", <ClientManagement />);
     await userEvent.type(await screen.findByLabelText("Client email"), "new@x.com");
     await userEvent.click(screen.getByRole("button", { name: "Send Invitation" }));
-    expect((await screen.findByLabelText("Invitation link")).value).toContain("/invite?token=tok123");
+    expect(await screen.findByText(/Configure email delivery and resend/)).toBeInTheDocument();
+    expect(screen.queryByLabelText("Invitation link")).not.toBeInTheDocument();
     expect(calls.find((c) => c.path === "/staff/clients/invite").body).toEqual({ email: "new@x.com" });
     expect(calls.find((c) => c.path === "/staff/clients/invite").headers.Authorization).toBe("Bearer coach-jwt");
+  });
+});
+
+describe("Client invitation resend", () => {
+  it("resends a pending invitation through the token-free email flow", async () => {
+    signIn();
+    const calls = mockApi({
+      "GET /staff/clients": clientsFixture,
+      "GET /staff/plans": { plans: [] },
+      "GET /staff/teams": { teams: [] },
+      "GET /staff/invitations": { invitations: [{ id: 12, email: "pending@example.com", role: "client", accepted: false }] },
+      "POST /invite/resend": { message: "Invite resent successfully.", delivery_configured: true },
+    });
+    renderAt("/client-management", <ClientManagement />);
+    await userEvent.click(await screen.findByRole("button", { name: "Resend" }));
+    await waitFor(() => expect(calls.some((call) => call.method === "POST" && call.path === "/invite/resend" && call.body.invite_id === 12)).toBe(true));
+    expect(await screen.findByText("Invitation resent.")).toBeInTheDocument();
   });
 });
 

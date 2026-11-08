@@ -1,4 +1,3 @@
-import React from "react";
 
 const DemoProgressModal = ({ data, onClose }) => {
   if (!data) return null;

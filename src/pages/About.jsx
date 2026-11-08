@@ -1,5 +1,5 @@
-import React, { useContext } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { useContext } from "react";
+import { MenuContext } from "../context/MenuContext.js";
 import DelphiaLogo from "../assets/DelphiaDesigns.jpg";
 
 export default function About() {

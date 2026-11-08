@@ -1,4 +1,5 @@
 import { pushAdaptiveProfile } from "./adaptiveSync";
+import { validCategories } from "./categories";
 
 const STORAGE_KEY = "delphiafit-personalization-model";
 
@@ -37,6 +38,7 @@ export const PersonalizationModel = {
   lastCompleted: null,
   ...savedModel,
 };
+PersonalizationModel.preferredCategories = validCategories(PersonalizationModel.preferredCategories);
 
 export function persistPersonalizationModel() {
   if (typeof localStorage === "undefined") return;

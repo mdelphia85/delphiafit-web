@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
 
 const initialDrills = [];

@@ -1,6 +1,6 @@
 import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
 import { useContext } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import TacticalWorkoutLog from "../components/TacticalWorkoutLog.jsx";
 
 const initialWorkouts = [

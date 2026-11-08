@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 
 import DemoBanner from "../../components/DemoBanner";
 import DemoGuide from "../../components/DemoGuide";
@@ -6,24 +7,17 @@ import DemoGuide from "../../components/DemoGuide";
 import homescreen from "../../assets/homescreen.png";
 
 const DemoDashboard = () => {
+  const navigate = useNavigate();
   const [demoPage, setDemoPage] = useState(null);
 
   const [guideStep, setGuideStep] = useState(1);
-  const [showGuide, setShowGuide] = useState(false);
+  const [guideDismissed, setGuideDismissed] = useState(false);
+  const showGuide = demoPage === "dashboard" && !guideDismissed;
 
   const workoutRef = useRef(null);
   const mealRef = useRef(null);
   const tacticalRef = useRef(null);
   const progressRef = useRef(null);
-
-  // ------------------------------------------------------------
-  // GUIDE ACTIVATION
-  // ------------------------------------------------------------
-  useEffect(() => {
-    if (demoPage === "dashboard") {
-      setShowGuide(true);
-    }
-  }, [demoPage]);
 
   useEffect(() => {
     if (!showGuide) return;
@@ -81,14 +75,14 @@ const DemoDashboard = () => {
 
             <button
               className="demo-btn demo-btn-create"
-              onClick={() => (window.location.href = "/register")}
+              onClick={() => navigate("/register")}
             >
               Create Account
             </button>
 
             <button
               className="demo-btn demo-btn-login"
-              onClick={() => (window.location.href = "/login")}
+              onClick={() => navigate("/login")}
             >
               Log In
             </button>
@@ -102,19 +96,19 @@ const DemoDashboard = () => {
   // DEMO PAGES (FULLY ISOLATED FROM REAL APP)
   // ------------------------------------------------------------
   if (demoPage === "workouts") {
-    return (window.location.href = "/demo/workouts");
+    return <Navigate to="/demo/workouts" replace />;
   }
 
   if (demoPage === "meals") {
-    return (window.location.href = "/demo/meals");
+    return <Navigate to="/demo/meals" replace />;
   }
 
   if (demoPage === "tactical") {
-    return (window.location.href = "/demo/tactical");
+    return <Navigate to="/demo/tactical" replace />;
   }
 
   if (demoPage === "progress") {
-    return (window.location.href = "/demo/progress");
+    return <Navigate to="/demo/progress" replace />;
   }
 
   // ------------------------------------------------------------
@@ -128,7 +122,7 @@ const DemoDashboard = () => {
         <DemoGuide
           step={guideStep}
           onNext={() => setGuideStep((prev) => prev + 1)}
-          onClose={() => setShowGuide(false)}
+          onClose={() => setGuideDismissed(true)}
         />
       )}
 
@@ -203,7 +197,7 @@ const DemoDashboard = () => {
         <h2>Ready to start your training</h2>
         <button
           className="demo-create-btn"
-          onClick={() => (window.location.href = "/register")}
+          onClick={() => navigate("/register")}
         >
           Create Your Account
         </button>

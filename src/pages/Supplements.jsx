@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect } from "react";
-import { MenuContext } from "../context/MenuContext";
+import { MenuContext } from "../context/MenuContext.js";
 import { supplementsByCategory, unitOptions } from "../context/supplementsData";
 import { userDataApi } from "../utils/userDataApi.js";
 

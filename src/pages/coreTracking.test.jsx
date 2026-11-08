@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import Water from "./Water.jsx";
 import DailyLog from "./DailyLog.jsx";
 import Challenges from "./Challenges.jsx";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 
 vi.mock("../utils/api.js", () => ({ apiRequest: vi.fn() }));

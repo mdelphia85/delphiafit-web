@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 
 import {

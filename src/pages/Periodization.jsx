@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { apiRequest } from "../utils/api.js";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 
 const initialBlocks = [];
 

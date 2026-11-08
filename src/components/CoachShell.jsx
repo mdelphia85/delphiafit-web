@@ -1,6 +1,6 @@
 import { useContext, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 import { hasSession } from "../utils/api.js";
 import { COACH_COLOR } from "./coachStyles.js";
 

@@ -1,7 +1,7 @@
 import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
 import TacticalActivityLog from "../components/TacticalActivityLog.jsx";
 import { useContext } from "react";
-import { MenuContext } from "../context/MenuContext.jsx";
+import { MenuContext } from "../context/MenuContext.js";
 
 const initialPhases = [
   { id: 1, name: "Physical Readiness", duration: "6 weeks", focus: "Strength & endurance", objective: "Build running, push-up, core, and loaded-carry capacity.", completed: false },
