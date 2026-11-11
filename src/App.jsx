@@ -35,6 +35,8 @@ import CoachInviteAccept from "./pages/CoachInviteAccept.jsx";
 import ClientMessages from "./pages/ClientMessages.jsx";
 import CoachPasswordReset from "./pages/CoachPasswordReset.jsx";
 import ClientManagement from "./pages/ClientManagement.jsx";
+import TrainerClients from "./pages/TrainerClients.jsx";
+import MyTrainer from "./pages/MyTrainer.jsx";
 import PlanBuilder from "./pages/PlanBuilder.jsx";
 import CoachMessaging from "./pages/CoachMessaging.jsx";
 import DrillLibraries from "./pages/DrillLibraries.jsx";
@@ -198,6 +200,8 @@ function MenuOverlay() {
       {getCoachMenuItems(hasSession("coach")).map(({ label, path }) => (
         <MenuItem key={path} label={label} onClick={() => go(path)} />
       ))}
+      <MenuItem label="My Clients" onClick={() => go("/client-management")} />
+      <MenuItem label="My Trainer" onClick={() => go("/my-trainer")} />
 
       <MenuItem label="Marketplace" onClick={() => go("/marketplace")} />
       <MenuItem label="DelphiaFit Pro" onClick={() => go("/pro-analytics")} />
@@ -329,7 +333,9 @@ function AppWithMenu() {
       <Route path="/invite" element={<CoachInviteAccept />} />
       <Route path="/my-coach" element={<ClientMessages />} />
       <Route path="/coach/password-reset" element={<CoachPasswordReset />} />
-      <Route path="/client-management" element={<ClientManagement />} />
+      <Route path="/client-management" element={<TrainerClients />} />
+      <Route path="/my-trainer" element={<MyTrainer />} />
+      <Route path="/coach/client-management" element={<ClientManagement />} />
       <Route path="/plan-builder" element={<PlanBuilder />} />
       <Route path="/coach-messaging" element={<CoachMessaging />} />
       <Route path="/drill-library" element={<DrillLibraries />} />
