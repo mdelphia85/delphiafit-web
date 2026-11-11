@@ -6,8 +6,7 @@ export function getCoachMenuItems(coachSignedIn) {
       label: coachSignedIn ? "Coach Hub" : "Coach Hub Login",
       path: coachSignedIn ? "/coach-dashboard" : "/coach-login"
     },
-    { label: "My Coach", path: "/my-coach" },
-    { label: "My Clients", path: "/client-management" }
+    { label: "My Coach", path: "/my-coach" }
   ];
 
   if (coachSignedIn) {
