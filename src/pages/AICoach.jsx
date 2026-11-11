@@ -88,7 +88,7 @@ export default function AICoach() {
   return <main style={{ width: "100%", minHeight: "100vh", background: "#000", padding: "16px 16px 90px", boxSizing: "border-box", color: "#fff" }}>
     <div style={{ width: 560, maxWidth: "100%", margin: "0 auto" }}>
       <h1 style={{ color: AI_COLOR, textAlign: "center" }}>AI Coach</h1>
-      <p style={{ color: "#aaa", fontSize: 13, lineHeight: 1.5, marginBottom: 12 }}>Ask AI Coach any question — fitness, recovery, nutrition, or everyday topics. Conversational responses require the hosted model; otherwise limited workout guidance is available. AI can make mistakes and cannot assess medical readiness.</p>
+      <p style={{ color: "#aaa", fontSize: 13, lineHeight: 1.5, marginBottom: 12 }}>Ask AI Coach any question — fitness, recovery, nutrition, or everyday topics. Conversational responses require the hosted model; otherwise limited workout guidance is available. When enabled, your question and relevant fitness context are processed by an external AI service. AI can make mistakes and cannot assess medical readiness.</p>
       <AdaptiveCoachCard />
       <section aria-live="polite" style={{ background: "#111", borderRadius: 12, padding: 16, minHeight: 180, marginBottom: 14 }}>
         {busy && <p role="status">Preparing guidance…</p>}
