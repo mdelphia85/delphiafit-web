@@ -30,7 +30,7 @@ function MainMenuLink() {
       onClick={() => setMenuOpen(true)}
       style={{ position: "fixed", right: "20px", bottom: "20px", zIndex: 20, fontSize: "18px",
         color: TRAINER_COLOR, background: "transparent", border: 0, padding: 0,
-        textDecoration: "underline", cursor: "pointer" }}
+        textDecoration: "none", cursor: "pointer" }}
     >
       Return to Menu
     </button>
