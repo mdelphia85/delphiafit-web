@@ -99,7 +99,7 @@ export default function AdminDashboard() {
             </button>
             {lastUpdated && <small style={{ color: TEXT_MUTED }}>Last updated {lastUpdated} · auto-refreshes every minute</small>}
           </div>
-          {error && <div role="alert" style={errorBox}>{error}</div>
+          {error && <div role="alert" style={errorBox}>{error}</div>}
         </div>
 
         <div style={grid}>
