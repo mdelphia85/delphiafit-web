@@ -56,6 +56,18 @@ export default function AdminUserDetail() {
     setUser(res.user);
   });
 
+  const toggleTrainer = () => {
+    const action = user.is_trainer ? "Disable" : "Enable";
+    if (!window.confirm(`${action} personal-trainer access for ${user.email}? Client workout data still requires each client's acceptance.`)) return;
+    return act(async () => {
+      const result = await adminFetch(`/admin/users/${id}/trainer`, {
+        method: "PUT",
+        body: { enabled: !user.is_trainer }
+      });
+      setUser((current) => ({ ...current, is_trainer: result.is_trainer }));
+    });
+  };
+
   const toggleSuspend = () => act(async () => {
     const res = await adminFetch(`/admin/users/${id}/suspend`, { method: "PATCH", body: { suspended: !user.is_suspended } });
     setUser(res.user);
@@ -122,6 +134,10 @@ export default function AdminUserDetail() {
             <div style={{ ...toggleBtn(user.is_suspended), padding: "8px 14px", fontSize: "14px" }} onClick={toggleSuspend}>
               {user.is_suspended ? "Unsuspend" : "Suspend"}
             </div>
+            <button type="button" style={{ ...toggleBtn(Boolean(user.is_trainer)), padding: "8px 14px", fontSize: "14px", cursor: "pointer" }}
+              onClick={toggleTrainer} aria-label={user.is_trainer ? "Disable Personal Trainer" : "Enable Personal Trainer"}>
+              {user.is_trainer ? "Disable Trainer" : "Enable Trainer"}
+            </button>
             <div style={btn} onClick={resetStreak}>Reset Streak</div>
             <div style={{ ...dangerBtn, padding: "8px 14px", fontSize: "14px" }} onClick={deleteUser}>Delete User</div>
             <div style={btn} onClick={() => navigate("/admin/users")}>Back</div>
@@ -135,6 +151,7 @@ export default function AdminUserDetail() {
           <div style={listItem}>Last Login: {formatDateTime(user.last_login)}</div>
           <div style={listItem}>Streak: {user.streak ?? 0}</div>
           <div style={listItem}>Admin: {user.is_admin ? "Yes" : "No"}</div>
+          <div style={listItem}>Personal Trainer: {user.is_trainer ? "Enabled" : "Disabled"}</div>
           <div style={listItem}>Suspended: {user.is_suspended ? "Yes" : "No"}</div>
         </div>
 
