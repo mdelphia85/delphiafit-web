@@ -24,7 +24,7 @@ function mockApi(routes) {
   globalThis.fetch = vi.fn(async (url, opts = {}) => {
     const path = String(url).replace(/^https?:\/\/[^/]+/, "").replace(/^undefined/, "");
     const key = `${opts.method || "GET"} ${path}`;
-    if (key.startsWith("GET /admin/me")) return json({ id: 1, is_admin: true });
+    if (key === "GET /admin/me") return json({ id: 1, is_admin: true });
     const handler = routes[key];
     if (!handler) throw new Error(`Unmocked ${key}`);
     return typeof handler === "function" ? handler(opts) : json(handler);
