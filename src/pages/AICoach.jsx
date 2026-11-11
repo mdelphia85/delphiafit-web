@@ -90,7 +90,7 @@ export default function AICoach() {
       <AdaptiveCoachCard />
       <section aria-live="polite" style={{ background: "#111", borderRadius: 12, padding: 16, minHeight: 180, marginBottom: 14 }}>
         {busy && <p role="status">Preparing guidance…</p>}
-        {reply && <div><strong>Coach guidance</strong><p style={{ whiteSpace: "pre-wrap" }}>{reply}</p>{adaptiveUsed && <small style={{ color: "#aaa" }}>Adapted using your history: {adaptiveUsed.workouts_logged ?? 0} workouts logged{adaptiveUsed.difficulty ? `, ${adaptiveUsed.difficulty} difficulty` : ""}{validCategory(adaptiveUsed.preferred_category) ? `, favours ${adaptiveUsed.preferred_category}` : ""}.</small>}</div>}
+        {reply && <div><strong>Coach guidance</strong><p style={{ whiteSpace: "pre-wrap" }}>{reply}</p>{adaptiveUsed && <small style={{ color: "#aaa" }}>Adapted using your history: {adaptiveUsed.workouts_logged ?? 0} workout{(adaptiveUsed.workouts_logged ?? 0) === 1 ? "" : "s"} logged{adaptiveUsed.difficulty ? `, ${adaptiveUsed.difficulty} difficulty` : ""}{validCategory(adaptiveUsed.preferred_category) ? `, favours ${adaptiveUsed.preferred_category}` : ""}.</small>}</div>}
         {!reply && !busy && <p>Ask a training question to receive guidance from DelphiaFit's rule-based coaching engine.</p>}
         {error && <p role="alert" style={{ color: "#f87171" }}>{error}{requiresSignIn && <> <Link to="/login" style={{ color: "#c4b5fd" }}>Sign in</Link></>}</p>}
       </section>
@@ -101,6 +101,6 @@ export default function AICoach() {
       </form>
       <section style={{ marginTop: 16 }}><h2 style={{ fontSize: 16 }}>Saved coaching history</h2>{history.slice(0, 5).map((record) => <button key={record.id} onClick={() => { setReply(record.result.coach_response || "Saved recommendation"); setLastAdaptive(record.result.adaptive_inputs || null); }} style={{ display: "block", width: "100%", textAlign: "left", padding: 10, marginBottom: 8, background: "#111", color: "#ddd", border: "1px solid #333", borderRadius: 8 }}>Saved {new Date(record.created_at).toLocaleString()} - {record.input.message}</button>)}</section>
     </div>
-    <div style={{ position: "fixed", bottom: 0, left: 0, width: "100%", height: 40, background: "#000", display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 16px", boxSizing: "border-box", zIndex: 20 }}><button type="button" onClick={() => setMenuOpen(true)} style={{ color: AI_COLOR, background: "transparent", border: 0, textDecoration: "underline" }}>Return to Menu</button></div>
+    <div style={{ position: "fixed", bottom: 0, left: 0, width: "100%", height: 40, background: "#000", display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 16px", boxSizing: "border-box", zIndex: 20 }}><button type="button" onClick={() => setMenuOpen(true)} style={{ color: AI_COLOR, background: "transparent", border: 0, textDecoration: "none", cursor: "pointer" }}>Return to Menu</button></div>
   </main>;
 }
