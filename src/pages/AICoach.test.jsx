@@ -23,6 +23,7 @@ describe("AI Coach navigation", () => {
     expect(screen.queryByText("Protein")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Return to Menu" }));
 
+    expect(screen.getByRole("button", { name: "Return to Menu" })).toHaveStyle({ textDecoration: "none" });
     expect(screen.getByText("Protein")).toBeInTheDocument();
     expect(screen.getByTestId("location")).toHaveTextContent("/ai-coach");
     expect(screen.getByRole("heading", { name: "AI Coach" })).toBeInTheDocument();
@@ -43,6 +44,8 @@ describe("AI Coach navigation", () => {
     fireEvent.click(screen.getByRole("button", { name: "Send" }));
     expect(await screen.findByText("New advice")).toBeInTheDocument();
     expect(screen.queryByText(/favours undefined/)).not.toBeInTheDocument();
+    expect(screen.getByText(/1 workout logged/)).toBeInTheDocument();
+    expect(screen.queryByText(/1 workouts logged/)).not.toBeInTheDocument();
     fireEvent.click(savedButton);
     expect(screen.getByText("Earlier advice")).toBeInTheDocument();
     expect(screen.getByText(/2 workouts logged, favours Strength/)).toBeInTheDocument();
