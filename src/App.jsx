@@ -1,6 +1,7 @@
 import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import { useContext } from "react";
-import { clearUserSession } from "./utils/api.js";
+import { clearUserSession, hasSession } from "./utils/api.js";
+import { getCoachMenuItems } from "./utils/coachMenuItems.js";
 
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
@@ -194,12 +195,9 @@ function MenuOverlay() {
       <MenuItem label="Performance" onClick={() => go("/performance")} />
       <MenuItem label="Analytics" onClick={() => go("/analytics")} />
 
-      <MenuItem label={localStorage.getItem("coachToken") ? "Coach Hub" : "Coach Hub Login"} onClick={() => go(localStorage.getItem("coachToken") ? "/coach-dashboard" : "/coach-login")} />
-      <MenuItem label="My Coach" onClick={() => go("/my-coach")} />
-      <MenuItem label="My Clients" onClick={() => go("/client-management")} />
-      <MenuItem label="Plan Builder" onClick={() => go("/plan-builder")} />
-      <MenuItem label="Drill Library" onClick={() => go("/drill-library")} />
-      <MenuItem label="Coach Messages" onClick={() => go("/coach-messaging")} />
+      {getCoachMenuItems(hasSession("coach")).map(({ label, path }) => (
+        <MenuItem key={path} label={label} onClick={() => go(path)} />
+      ))}
 
       <MenuItem label="Marketplace" onClick={() => go("/marketplace")} />
       <MenuItem label="DelphiaFit Pro" onClick={() => go("/pro-analytics")} />
