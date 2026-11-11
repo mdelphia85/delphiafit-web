@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { adminFetch, AdminApiError, parseUtc } from "./adminApi.js";
 import AdminDashboard from "./Dashboard.jsx";
 import AdminUsers from "./Users.jsx";
+import AdminUserDetail from "./AdminUserDetail.jsx";
 import AdminLogin from "./Login.jsx";
 import AdminAnnouncements from "./Announcements.jsx";
 import AdminLayout from "./Admin.jsx";
@@ -206,6 +207,41 @@ describe("Admin pages", () => {
     expect(await screen.findByText("Unsuspend")).toBeInTheDocument();
     const call = globalThis.fetch.mock.calls.find(([, o]) => o?.method === "PATCH");
     expect(JSON.parse(call[1].body)).toEqual({ suspended: true });
+  });
+
+  it("lets an authorized admin enable personal-trainer access through user detail", async () => {
+    const member = {
+      id: 2, name: "Taylor", email: "taylor@example.com",
+      is_admin: false, is_trainer: false, is_suspended: false,
+      created_at: "2026-01-01T00:00:00", last_login: null
+    };
+    const confirmMock = vi.spyOn(window, "confirm").mockReturnValue(true);
+    mockApi({
+      "GET /admin/users/2": member,
+      "GET /admin/users/2/workouts": [],
+      "GET /admin/users/2/daily": [],
+      "GET /admin/users/2/messages": [],
+      "GET /admin/users/2/logs": [],
+      "PUT /admin/users/2/trainer": (options) => json({
+        user_id: 2, is_trainer: JSON.parse(options.body).enabled
+      })
+    });
+    render(
+      <MemoryRouter initialEntries={["/admin/users/2"]}>
+        <Routes><Route path="/admin/users/:id" element={<AdminUserDetail />} /></Routes>
+      </MemoryRouter>
+    );
+    expect(await screen.findByText("Personal Trainer: Disabled")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Enable Personal Trainer" }));
+    expect(await screen.findByText("Personal Trainer: Enabled")).toBeInTheDocument();
+    expect(confirmMock).toHaveBeenCalled();
+    const action = globalThis.fetch.mock.calls.find(([url, options]) =>
+      String(url).endsWith("/admin/users/2/trainer") && options.method === "PUT"
+    );
+    expect(action).toBeTruthy();
+    expect(action[1].headers.Authorization).toBe("Bearer abc");
+    expect(JSON.parse(action[1].body)).toEqual({ enabled: true });
+    confirmMock.mockRestore();
   });
 
   it("announcements page creates a draft through the API", async () => {
