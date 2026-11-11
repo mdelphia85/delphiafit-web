@@ -1,9 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { adminFetch, AdminApiError, parseUtc } from "./adminApi.js";
 import AdminDashboard from "./Dashboard.jsx";
 import AdminUsers from "./Users.jsx";
+import AdminAnalytics from "./Analytics.jsx";
+import AdminMessages from "./Messages.jsx";
+import AdminLogs from "./AdminLogs.jsx";
 import AdminUserDetail from "./AdminUserDetail.jsx";
 import AdminLogin from "./Login.jsx";
 import AdminAnnouncements from "./Announcements.jsx";
@@ -242,6 +245,106 @@ describe("Admin pages", () => {
     expect(action[1].headers.Authorization).toBe("Bearer abc");
     expect(JSON.parse(action[1].body)).toEqual({ enabled: true });
     confirmMock.mockRestore();
+  });
+
+  it("dashboard refreshes real API counts instead of holding initial snapshots", async () => {
+    let requests = 0;
+    mockApi({
+      "GET /admin/dashboard": () => json({
+        total_users: ++requests,
+        new_users_last_7_days: 0,
+        logins_last_7_days: 0,
+        unread_messages: 0,
+        active_announcements: 0,
+        suspended_users: 0,
+        total_logs: 0
+      }),
+      "GET /admin/system/health": {
+        api_status: "ok", database_status: "ok", uptime: "1m",
+        failed_admin_actions_24h: 0
+      },
+      "GET /admin/actions/recent": { actions: [] }
+    });
+    render(wrap(<AdminDashboard />));
+    expect(await screen.findByText("Total Users")).toBeInTheDocument();
+    const stat = () => within(screen.getByText("Total Users").parentElement);
+    await waitFor(() => expect(stat().getByText("1")).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: "Refresh Data" }));
+    await waitFor(() => expect(stat().getByText("2")).toBeInTheDocument());
+    expect(requests).toBe(2);
+  });
+
+  it("analytics refresh pulls changed database metrics instead of hardcoded values", async () => {
+    let requests = 0;
+    mockApi({
+      "GET /admin/analytics": () => json({
+        overview: {
+          totalUsers: ++requests, newUsers7d: 0, activeUsers7d: 0,
+          logins7d: 0, workoutsLogged7d: 0, dailyLogs7d: 0
+        },
+        top_workouts: [], recent_activity: [], daily_series: []
+      })
+    });
+    render(wrap(<AdminAnalytics />));
+    expect(await screen.findByText("Admin Analytics")).toBeInTheDocument();
+    const metric = () => within(screen.getByText("Total Users").parentElement);
+    await waitFor(() => expect(metric().getByText("1")).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: "Refresh Data" }));
+    await waitFor(() => expect(metric().getByText("2")).toBeInTheDocument());
+    expect(requests).toBe(2);
+  });
+
+  it("admin messages separately mark a message as read and resolved", async () => {
+    const message = {
+      id: 12, name: "Taylor", email: "taylor@example.com",
+      subject: "Help", message: "I need help",
+      created_at: "2026-11-11T12:00:00",
+      is_read: false, resolved: false
+    };
+    mockApi({
+      "GET /admin/messages": [message],
+      "PATCH /admin/messages/12/resolve": () => json({
+        status: "updated",
+        message: { ...message, resolved: true, is_read: false }
+      }),
+      "PATCH /admin/messages/12/read": () => json({
+        status: "updated",
+        message: { ...message, resolved: true, is_read: true }
+      })
+    });
+    render(wrap(<AdminMessages />));
+    expect(await screen.findByText("I need help")).toBeInTheDocument();
+    expect(screen.getByText("Unread")).toBeInTheDocument();
+    expect(screen.getByText("Open")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Mark as Resolved" }));
+    await waitFor(() => {
+      expect(screen.getByText("Resolved")).toBeInTheDocument();
+      expect(screen.getByText("Unread")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Mark as Read" }));
+    await waitFor(() => {
+      expect(screen.getByText("Read")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Mark as Read" })).not.toBeInTheDocument();
+      expect(screen.getByText("Resolved")).toBeInTheDocument();
+    });
+    expect(globalThis.fetch.mock.calls.some(([url]) => String(url).endsWith("/admin/messages/12/resolve"))).toBe(true);
+    expect(globalThis.fetch.mock.calls.some(([url]) => String(url).endsWith("/admin/messages/12/read"))).toBe(true);
+  });
+
+  it("admin log filters read the server's matching live log feed", async () => {
+    mockApi({
+      "GET /admin/logs": { logs: [
+        { id: "auth-1", type: "auth", message: "User login", timestamp: "2026-11-11T12:00:00" }
+      ] },
+      "GET /admin/logs?type=error": { logs: [
+        { id: "audit-8", type: "error", message: "Failed admin login", timestamp: "2026-11-11T12:10:00" }
+      ] }
+    });
+    render(wrap(<AdminLogs />));
+    expect(await screen.findByText("User login")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Errors"));
+    expect(await screen.findByText("Failed admin login")).toBeInTheDocument();
+    expect(screen.queryByText("User login")).not.toBeInTheDocument();
   });
 
   it("announcements page creates a draft through the API", async () => {
