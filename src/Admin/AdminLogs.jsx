@@ -17,6 +17,7 @@ export default function AdminLogs() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -31,7 +32,7 @@ export default function AdminLogs() {
     return () => {
       cancelled = true;
     };
-  }, [filter]);
+  }, [filter, refreshKey]);
 
   const logItem = {
     padding: "12px",
@@ -47,6 +48,9 @@ export default function AdminLogs() {
         <div>
           <div style={title}>Admin Logs</div>
           <div style={subtitle}>System activity, admin actions, logins, and user logs from the database.</div>
+          <button type="button" style={toggleBtn(false)} onClick={() => { setLoading(true); setRefreshKey(key => key + 1); }}>
+            Refresh Logs
+          </button>
         </div>
 
         <div style={card}>
