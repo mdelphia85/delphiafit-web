@@ -37,7 +37,7 @@ describe("My Trainer client-consent screen", () => {
     fireEvent.click(screen.getByRole("button", { name: "Accept" }));
     await waitFor(() => expect(apiRequest).toHaveBeenCalledWith("/trainer/invitations/27/accept", { method: "POST" }));
     const link = screen.getByRole("button", { name: "Return to Menu" });
-    expect(link).toHaveStyle({ position: "fixed", bottom: "20px", right: "20px", color: CLIENT_TRAINER_COLOR });
+    expect(link).toHaveStyle({ position: "fixed", bottom: "20px", right: "20px", color: CLIENT_TRAINER_COLOR, textDecoration: "none" });
     fireEvent.click(link);
     expect(menu).toHaveBeenCalledWith(true);
   });
