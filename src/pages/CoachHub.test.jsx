@@ -69,7 +69,7 @@ afterEach(() => vi.unstubAllGlobals());
 describe("coach session", () => {
   it("shows My Clients coach-access guidance without a coach session or API calls", () => {
     const calls = mockApi({});
-    renderAt("/client-management", <ClientManagement />);
+    renderAt("/coach/client-management", <ClientManagement />);
     expect(screen.getByRole("heading", { name: "My Clients" })).toBeInTheDocument();
     expect(screen.getByText(/requires an authorized Coach Hub account/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Sign in to Coach Hub" })).toBeInTheDocument();
@@ -80,7 +80,7 @@ describe("coach session", () => {
   it("a member session alone does not display client data", () => {
     localStorage.setItem("token", "user-jwt");
     const calls = mockApi({});
-    renderAt("/client-management", <ClientManagement />);
+    renderAt("/coach/client-management", <ClientManagement />);
     expect(screen.getByText(/Coach Hub uses a separate sign-in/i)).toBeInTheDocument();
     expect(calls).toHaveLength(0);
   });
@@ -101,7 +101,7 @@ describe("coach session", () => {
   it("Return to Menu opens the menu and does not navigate to login", async () => {
     signIn();
     mockApi({ "GET /staff/clients": clientsFixture, "GET /staff/plans": { plans: [] }, "GET /staff/teams": { teams: [] }, "GET /staff/invitations": { invitations: [] } });
-    const setMenuOpen = renderAt("/client-management", <ClientManagement />);
+    const setMenuOpen = renderAt("/coach/client-management", <ClientManagement />);
     await screen.findByText("Ada Lovelace");
     await userEvent.click(screen.getByText("Return to Menu"));
     expect(setMenuOpen).toHaveBeenCalledWith(true);
@@ -127,7 +127,7 @@ describe("CoachDashboard", () => {
   });
 
   it.each([
-    ["Add Client", "/client-management"],
+    ["Add Client", "/coach/client-management"],
     ["Create Training Plan", "/plan-builder"],
     ["Message Clients", "/coach-messaging"]
   ])("%s button goes to %s", async (label, to) => {
@@ -186,14 +186,14 @@ describe("ClientManagement", () => {
   it("shows an empty state", async () => {
     signIn();
     mockApi({ ...base(), "GET /staff/clients": { clients: [] } });
-    renderAt("/client-management", <ClientManagement />);
+    renderAt("/coach/client-management", <ClientManagement />);
     expect(await screen.findByText(/No clients yet/)).toBeInTheDocument();
   });
 
   it("shows an error with retry instead of redirecting on a 403", async () => {
     signIn();
     mockApi({ ...base(), "GET /staff/clients": { status: 403, body: { detail: "Coach access required" } } });
-    renderAt("/client-management", <ClientManagement />);
+    renderAt("/coach/client-management", <ClientManagement />);
     expect(await screen.findByRole("alert")).toHaveTextContent("Coach access required");
     expect(screen.queryByTestId("where")).toBeNull();
     expect(localStorage.getItem("coachToken")).toBe("coach-jwt");
@@ -214,7 +214,7 @@ describe("ClientManagement", () => {
         summary: { latest_weight_kg: 80.5, weight_change_kg: -2, workouts_7d: 1, workouts_30d: 4, minutes_30d: 180, last_activity: "2025-02-02T00:00:00" }
       }
     });
-    renderAt("/client-management", <ClientManagement />);
+    renderAt("/coach/client-management", <ClientManagement />);
     await userEvent.click(await screen.findByRole("button", { name: "View Progress" }));
     expect(await screen.findByText(/Deadlifts/)).toBeInTheDocument();
     expect(screen.getAllByText("80.5 kg").length).toBeGreaterThan(0);
@@ -225,7 +225,7 @@ describe("ClientManagement", () => {
   it("Remove Client needs explicit confirmation, then calls DELETE", async () => {
     signIn();
     const calls = mockApi({ ...base(), "DELETE /staff/clients/7": { status: "removed", id: 7 } });
-    renderAt("/client-management", <ClientManagement />);
+    renderAt("/coach/client-management", <ClientManagement />);
     await userEvent.click(await screen.findByRole("button", { name: "Remove Client" }));
     expect(calls.some((c) => c.method === "DELETE")).toBe(false);
     await userEvent.click(screen.getByRole("button", { name: "Confirm Remove" }));
@@ -235,7 +235,7 @@ describe("ClientManagement", () => {
   it("Assign Program posts the chosen plan for that client", async () => {
     signIn();
     const calls = mockApi({ ...base(), "POST /staff/plans/3/assignments": { plan_id: 3, assigned_client_ids: [7] } });
-    renderAt("/client-management", <ClientManagement />);
+    renderAt("/coach/client-management", <ClientManagement />);
     await userEvent.click(await screen.findByRole("button", { name: "Assign Program" }));
     await userEvent.selectOptions(screen.getByLabelText("Plan"), "3");
     await userEvent.click(screen.getByRole("button", { name: "Assign" }));
@@ -245,7 +245,7 @@ describe("ClientManagement", () => {
   it("does not expose an invitation token when email delivery is unavailable", async () => {
     signIn();
     const calls = mockApi({ ...base(), "POST /staff/clients/invite": { invite_id: 1, delivery_configured: false } });
-    renderAt("/client-management", <ClientManagement />);
+    renderAt("/coach/client-management", <ClientManagement />);
     await userEvent.type(await screen.findByLabelText("Client email"), "new@x.com");
     await userEvent.click(screen.getByRole("button", { name: "Send Invitation" }));
     expect(await screen.findByText(/Configure email delivery and resend/)).toBeInTheDocument();
@@ -265,7 +265,7 @@ describe("Client invitation resend", () => {
       "GET /staff/invitations": { invitations: [{ id: 12, email: "pending@example.com", role: "client", accepted: false }] },
       "POST /invite/resend": { message: "Invite resent successfully.", delivery_configured: true },
     });
-    renderAt("/client-management", <ClientManagement />);
+    renderAt("/coach/client-management", <ClientManagement />);
     await userEvent.click(await screen.findByRole("button", { name: "Resend" }));
     await waitFor(() => expect(calls.some((call) => call.method === "POST" && call.path === "/invite/resend" && call.body.invite_id === 12)).toBe(true));
     expect(await screen.findByText("Invitation resent.")).toBeInTheDocument();
