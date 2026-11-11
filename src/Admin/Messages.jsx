@@ -15,6 +15,16 @@ export default function AdminMessages() {
       .finally(() => setLoading(false));
   }, []);
 
+  async function markRead(id) {
+    setError("");
+    try {
+      const res = await adminFetch(`/admin/messages/${id}/read`, { method: "PATCH" });
+      setMessages(prev => prev.map(m => (m.id === id ? res.message : m)));
+    } catch (err) {
+      setError(err.message || "Unable to mark message as read.");
+    }
+  }
+
   async function toggleResolved(id) {
     setError("");
     try {
@@ -65,14 +75,23 @@ export default function AdminMessages() {
                 <div style={{ fontSize: "12px", color: TEXT_MUTED }}>{formatDate(msg.created_at)}</div>
               </div>
 
+              <div style={{ display: "flex", gap: "10px", fontSize: "12px", color: TEXT_MUTED }} aria-label="Message status">
+                <span>{msg.is_read ? "Read" : "Unread"}</span>
+                <span>{msg.resolved ? "Resolved" : "Open"}</span>
+              </div>
               {msg.subject && <div style={{ fontSize: "14px", fontWeight: "600" }}>{msg.subject}</div>}
               <div style={{ fontSize: "14px", margin: "10px 0" }}>{msg.message}</div>
 
               <div style={{ display: "flex", gap: "14px", marginTop: "10px" }}>
-                <div style={toggleBtn(msg.resolved)} onClick={() => toggleResolved(msg.id)}>
+                {!msg.is_read && (
+                  <button type="button" style={toggleBtn(false)} onClick={() => markRead(msg.id)}>
+                    Mark as Read
+                  </button>
+                )}
+                <button type="button" style={toggleBtn(msg.resolved)} onClick={() => toggleResolved(msg.id)}>
                   {msg.resolved ? "Mark as Unresolved" : "Mark as Resolved"}
-                </div>
-                <div style={dangerBtn} onClick={() => deleteMessage(msg.id)}>Delete</div>
+                </button>
+                <button type="button" style={dangerBtn} onClick={() => deleteMessage(msg.id)}>Delete</button>
               </div>
             </div>
           ))}
