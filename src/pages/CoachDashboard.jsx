@@ -61,7 +61,7 @@ export default function CoachDashboard() {
   const clients = (teamData && teamData.clients) || [];
 
   const actions = [
-    { label: "Add Client", icon: "➕", to: "/client-management", primary: true },
+    { label: "Add Client", icon: "➕", to: "/coach/client-management", primary: true },
     { label: "Create Training Plan", icon: "📋", to: "/plan-builder" },
     { label: "Message Clients", icon: "💬", to: "/coach-messaging" },
     { label: "Team Operations", icon: "🏟️", to: "/team-operations" },
