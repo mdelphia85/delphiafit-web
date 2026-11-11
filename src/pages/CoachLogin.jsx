@@ -115,7 +115,7 @@ export default function CoachLogin() {
         {status === "error" && <div style={{ color: "#f87171", fontSize: "13px", marginTop: "12px", textAlign: "center" }}>{errorMessage}</div>}
 
         <div style={{ color: "#777", fontSize: "12px", textAlign: "center", marginTop: "18px" }}>
-          Coach access is created by invitation.
+          Coach Hub access requires an invitation and a coach-specific login. Signing in as a member alone does not grant coach access.
         </div>
       </div>
 
