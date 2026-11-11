@@ -33,7 +33,7 @@ describe("personal trainer My Clients", () => {
     expect(apiRequest).toHaveBeenCalledWith("/trainer/me");
     expect(apiRequest).not.toHaveBeenCalledWith("/staff/clients");
     const link = screen.getByRole("button", { name: "Return to Menu" });
-    expect(link).toHaveStyle({ position: "fixed", right: "20px", bottom: "20px", color: TRAINER_COLOR, textDecoration: "underline" });
+    expect(link).toHaveStyle({ position: "fixed", right: "20px", bottom: "20px", color: TRAINER_COLOR, textDecoration: "none" });
     fireEvent.click(link);
     expect(menu).toHaveBeenCalledWith(true);
   });
