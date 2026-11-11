@@ -12,6 +12,7 @@ export default function AdminUsers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -30,7 +31,7 @@ export default function AdminUsers() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [query]);
+  }, [query, refreshKey]);
 
   function replaceUser(updated) {
     setUsers(prev => prev.map(u => (u.id === updated.id ? updated : u)));
@@ -81,6 +82,9 @@ export default function AdminUsers() {
         <div>
           <div style={title}>Admin Users</div>
           <div style={subtitle}>Manage all user accounts, roles, and access.</div>
+          <button type="button" style={toggleBtn(false)} onClick={() => { setLoading(true); setRefreshKey(key => key + 1); }}>
+            Refresh Users
+          </button>
         </div>
 
         <input
