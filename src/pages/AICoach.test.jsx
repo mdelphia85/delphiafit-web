@@ -35,7 +35,7 @@ describe("AI Coach navigation", () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (url, options = {}) => ({
       ok: true, status: 200,
       json: async () => options.method === "POST"
-        ? { coach_response: "New advice", adaptive_inputs: { workouts_logged: 1, preferred_category: "undefined" } }
+        ? { coach_response: "New advice", mode: "limited", adaptive_inputs: { workouts_logged: 1, preferred_category: "undefined" } }
         : saved
     }));
     render(<MemoryRouter initialEntries={["/ai-coach"]}><App /></MemoryRouter>);
@@ -43,6 +43,7 @@ describe("AI Coach navigation", () => {
     fireEvent.change(screen.getByLabelText("Ask AI Coach"), { target: { value: "Training question" } });
     fireEvent.click(screen.getByRole("button", { name: "Send" }));
     expect(await screen.findByText("New advice")).toBeInTheDocument();
+    expect(screen.getByText(/Limited mode: general conversational AI is not configured yet/)).toBeInTheDocument();
     expect(screen.queryByText(/favours undefined/)).not.toBeInTheDocument();
     expect(screen.getByText(/1 workout logged/)).toBeInTheDocument();
     expect(screen.queryByText(/1 workouts logged/)).not.toBeInTheDocument();
