@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { hasSession } from "../utils/api.js";
+import { MenuContext } from "../context/MenuContext.js";
 import CoachShell from "../components/CoachShell.jsx";
 import StatusMessage from "../components/StatusMessage.jsx";
 import { COACH_COLOR, cardStyle, dangerButton, inputStyle, primaryButton, secondaryButton } from "../components/coachStyles.js";
@@ -7,7 +10,34 @@ import { errorText, useCoachRequest } from "../utils/coachSession.js";
 
 const small = { ...secondaryButton, padding: "8px 10px", fontSize: "12px" };
 
+// Member and coach sessions are distinct; a member must explicitly sign in
+// to Coach Hub before client-management API calls are available.
 export default function ClientManagement() {
+  return hasSession("coach") ? <AuthenticatedClientManagement /> : <CoachAccessRequired />;
+}
+
+function CoachAccessRequired() {
+  const navigate = useNavigate();
+  const { setMenuOpen } = useContext(MenuContext);
+
+  return (
+    <main style={{ minHeight: "100vh", background: "#000", color: "#fff", display: "flex", justifyContent: "center", padding: "32px 16px", boxSizing: "border-box" }}>
+      <section style={{ width: "420px", maxWidth: "100%", padding: "24px", alignSelf: "flex-start", background: "#111", border: "1px solid #ec4899", borderRadius: "10px" }}>
+        <h1 style={{ color: "#ec4899", marginTop: 0 }}>My Clients</h1>
+        <p>Managing clients requires an authorized Coach Hub account. Your regular DelphiaFit sign-in is still active; Coach Hub uses a separate sign-in.</p>
+        <p>If you have an invited coach account, sign in to see your assigned clients.</p>
+        <button type="button" style={{ ...primaryButton, width: "100%", marginTop: "12px" }} onClick={() => navigate("/coach-login", { state: { from: "/client-management" } })}>
+          Sign in to Coach Hub
+        </button>
+        <button type="button" style={{ ...secondaryButton, width: "100%", marginTop: "12px" }} onClick={() => setMenuOpen(true)}>
+          Return to Menu
+        </button>
+      </section>
+    </main>
+  );
+}
+
+function AuthenticatedClientManagement() {
   const navigate = useNavigate();
   const request = useCoachRequest();
   const [clients, setClients] = useState([]);
