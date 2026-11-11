@@ -6,12 +6,26 @@ import { ACCENT, BORDER, TEXT_MUTED, card, container, errorBox, subtitle } from 
 export default function AdminAnalytics() {
   const [analytics, setAnalytics] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   useEffect(() => {
-    adminFetch("/admin/analytics")
-      .then(setAnalytics)
-      .catch((err) => setErrorMessage(err.message || "Unable to load analytics data."));
-  }, []);
+    let active = true;
+    async function load() {
+      try {
+        const result = await adminFetch("/admin/analytics");
+        if (!active) return;
+        setAnalytics(result);
+        setErrorMessage("");
+        setLastUpdated(new Date().toLocaleTimeString());
+      } catch (err) {
+        if (active) setErrorMessage(err.message || "Unable to load analytics data.");
+      }
+    }
+    load();
+    const timer = setInterval(load, 60000);
+    return () => { active = false; clearInterval(timer); };
+  }, [refreshKey]);
 
   const cardLabel = { fontSize: "13px", color: TEXT_MUTED, marginBottom: "4px" };
   const cardValue = { fontSize: "22px", fontWeight: "600" };
@@ -39,8 +53,11 @@ export default function AdminAnalytics() {
     marginRight: "6px"
   };
 
-  if (errorMessage) {
-    return <AdminLayout><div style={container}><div style={errorBox}>{errorMessage}</div></div></AdminLayout>;
+  if (errorMessage && !analytics) {
+    return <AdminLayout><div style={container}>
+      <div role="alert" style={errorBox}>{errorMessage}</div>
+      <button type="button" onClick={() => setRefreshKey(key => key + 1)}>Retry</button>
+    </div></AdminLayout>;
   }
 
   if (!analytics) {
@@ -68,6 +85,11 @@ export default function AdminAnalytics() {
         <div>
           <div style={{ fontSize: "24px", fontWeight: "600" }}>Admin Analytics</div>
           <div style={subtitle}>Metrics computed from live user, login, workout, and log records.</div>
+          <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 8, flexWrap: "wrap" }}>
+            <button type="button" onClick={() => setRefreshKey(key => key + 1)}>Refresh Data</button>
+            {lastUpdated && <small style={{ color: TEXT_MUTED }}>Last updated {lastUpdated} · auto-refreshes every minute</small>}
+          </div>
+          {errorMessage && <div role="alert" style={errorBox}>{errorMessage}</div>
         </div>
 
         <div style={kpiRow}>
