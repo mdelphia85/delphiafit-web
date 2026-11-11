@@ -96,7 +96,7 @@ export default function AdminAnalytics() {
           {kpis.map(([label, value]) => (
             <div key={label} style={{ ...card, padding: "12px 14px" }}>
               <div style={cardLabel}>{label}</div>
-              <div style={cardValue}>{value ?? 0}</div>
+              <div style={cardValue}>{value ?? "Unavailable"}</div>
             </div>
           ))}
         </div>
