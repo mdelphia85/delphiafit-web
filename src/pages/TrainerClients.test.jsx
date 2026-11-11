@@ -30,6 +30,7 @@ describe("personal trainer My Clients", () => {
     const menu = mount();
     expect(await screen.findByText(/personal trainer access hasn't been enabled/i)).toBeInTheDocument();
     expect(screen.queryByText("Sign in to Coach Hub")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "My Clients" })).toHaveStyle({ fontSize: "40px", lineHeight: "1.2", marginBottom: "12px" });
     expect(apiRequest).toHaveBeenCalledWith("/trainer/me");
     expect(apiRequest).not.toHaveBeenCalledWith("/staff/clients");
     const link = screen.getByRole("button", { name: "Return to Menu" });
