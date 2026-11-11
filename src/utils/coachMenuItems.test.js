@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getCoachMenuItems } from "./coachMenuItems.js";
 
 describe("coach menu role navigation", () => {
-  it("shows member coaching and a clear coach login entry without coach-only tools", () => {
+  it("keeps My Clients visible to members while hiding coach-only management tools", () => {
     expect(getCoachMenuItems(false)).toEqual([
       { label: "Coach Hub Login", path: "/coach-login" },
       { label: "My Coach", path: "/my-coach" },
@@ -10,10 +10,11 @@ describe("coach menu role navigation", () => {
     ]);
   });
 
-  it("shows client-management tools only for a coach session", () => {
+  it("shows the full client-management menu for coach sessions", () => {
     expect(getCoachMenuItems(true)).toEqual([
       { label: "Coach Hub", path: "/coach-dashboard" },
       { label: "My Coach", path: "/my-coach" },
+      { label: "My Clients", path: "/client-management" },
       { label: "Plan Builder", path: "/plan-builder" },
       { label: "Drill Library", path: "/drill-library" },
       { label: "Coach Messages", path: "/coach-messaging" }
