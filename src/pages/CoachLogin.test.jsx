@@ -19,6 +19,7 @@ function renderLogin() {
 describe("CoachLogin", () => {
   it("has no Return Home link and opens the main menu from Return to Menu", () => {
     const setMenuOpen = renderLogin();
+    expect(screen.getByText(/Signing in as a member alone does not grant coach access/)).toBeInTheDocument();
     expect(screen.queryByText("Return Home")).toBeNull();
     const link = screen.getByText("Return to Menu");
     expect(link).toHaveStyle({ position: "fixed", bottom: "20px", right: "20px" });
