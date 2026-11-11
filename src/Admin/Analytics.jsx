@@ -89,7 +89,7 @@ export default function AdminAnalytics() {
             <button type="button" onClick={() => setRefreshKey(key => key + 1)}>Refresh Data</button>
             {lastUpdated && <small style={{ color: TEXT_MUTED }}>Last updated {lastUpdated} · auto-refreshes every minute</small>}
           </div>
-          {errorMessage && <div role="alert" style={errorBox}>{errorMessage}</div>
+          {errorMessage && <div role="alert" style={errorBox}>{errorMessage}</div>}
         </div>
 
         <div style={kpiRow}>
