@@ -8,8 +8,11 @@ export default function AdminDashboard() {
   const [system, setSystem] = useState(null);
   const [actions, setActions] = useState([]);
   const [error, setError] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   useEffect(() => {
+    let active = true;
     async function load() {
       try {
         const [dash, sys, act] = await Promise.all([
@@ -17,20 +20,26 @@ export default function AdminDashboard() {
           adminFetch("/admin/system/health"),
           adminFetch("/admin/actions/recent"),
         ]);
+        if (!active) return;
         setDashboard(dash);
         setSystem(sys);
         setActions(act?.actions || []);
+        setError("");
+        setLastUpdated(new Date().toLocaleTimeString());
       } catch (err) {
-        console.error("Dashboard load error:", err);
-        setError(err.message || "Unable to load the dashboard.");
+        if (active) setError(err.message || "Unable to refresh the dashboard.");
       }
     }
 
     load();
-  }, []);
+    const timer = setInterval(load, 60000);
+    return () => { active = false; clearInterval(timer); };
+  }, [refreshKey]);
 
-  if (error) {
-    return <AdminLayout><div style={container}><div style={errorBox}>{error}</div></div></AdminLayout>;
+  if (error && (!dashboard || !system)) {
+    return <AdminLayout><div style={container}><div style={errorBox}>{error}</div>
+      <button type="button" onClick={() => setRefreshKey(key => key + 1)}>Retry</button>
+    </div></AdminLayout>;
   }
 
   if (!dashboard || !system) {
@@ -84,6 +93,13 @@ export default function AdminDashboard() {
         <div>
           <div style={title}>Admin Dashboard</div>
           <div style={subtitle}>Live system activity, health, and admin actions.</div>
+          <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 8, flexWrap: "wrap" }}>
+            <button type="button" onClick={() => setRefreshKey(key => key + 1)}>
+              Refresh Data
+            </button>
+            {lastUpdated && <small style={{ color: TEXT_MUTED }}>Last updated {lastUpdated} · auto-refreshes every minute</small>}
+          </div>
+          {error && <div role="alert" style={errorBox}>{error}</div>
         </div>
 
         <div style={grid}>
