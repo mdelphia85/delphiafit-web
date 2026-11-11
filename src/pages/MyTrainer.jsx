@@ -102,7 +102,7 @@ export default function MyTrainer() {
       </div>
       <button type="button" onClick={() => setMenuOpen(true)}
         style={{ position: "fixed", right: "20px", bottom: "20px", color: CLIENT_TRAINER_COLOR,
-          fontSize: "18px", textDecoration: "underline", cursor: "pointer",
+          fontSize: "18px", textDecoration: "none", cursor: "pointer",
           background: "transparent", border: 0, padding: 0, zIndex: 20 }}>
         Return to Menu
       </button>
