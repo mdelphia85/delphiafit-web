@@ -9,6 +9,7 @@ export default function AdminAnnouncements() {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const [editingId, setEditingId] = useState(null);
   const [titleInput, setTitleInput] = useState("");
@@ -20,7 +21,7 @@ export default function AdminAnnouncements() {
       .then((json) => setAnnouncements(json || []))
       .catch((err) => setError(err.message || "Failed to load announcements."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [refreshKey]);
 
   function resetForm() {
     setEditingId(null);
@@ -99,6 +100,9 @@ export default function AdminAnnouncements() {
         <div>
           <div style={{ fontSize: "24px", fontWeight: "600", marginBottom: "6px" }}>Admin Announcements</div>
           <div style={subtitle}>Create, edit, publish, and remove announcements shown to all users.</div>
+          <button type="button" style={{ ...primaryButton, marginTop: "10px" }} onClick={() => { setLoading(true); setRefreshKey(key => key + 1); }}>
+            Refresh Announcements
+          </button>
         </div>
 
         {error && <div style={errorBox}>{error}</div>}
