@@ -67,10 +67,21 @@ beforeEach(() => vi.stubGlobal("confirm", vi.fn(() => true)));
 afterEach(() => vi.unstubAllGlobals());
 
 describe("coach session", () => {
-  it("redirects to coach login without a coach session, and never calls the API", () => {
+  it("shows My Clients coach-access guidance without a coach session or API calls", () => {
     const calls = mockApi({});
     renderAt("/client-management", <ClientManagement />);
-    expect(screen.getByTestId("where")).toHaveTextContent("/coach-login");
+    expect(screen.getByRole("heading", { name: "My Clients" })).toBeInTheDocument();
+    expect(screen.getByText(/requires an authorized Coach Hub account/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sign in to Coach Hub" })).toBeInTheDocument();
+    expect(screen.queryByTestId("where")).toBeNull();
+    expect(calls).toHaveLength(0);
+  });
+
+  it("a member session alone does not display client data", () => {
+    localStorage.setItem("token", "user-jwt");
+    const calls = mockApi({});
+    renderAt("/client-management", <ClientManagement />);
+    expect(screen.getByText(/Coach Hub uses a separate sign-in/i)).toBeInTheDocument();
     expect(calls).toHaveLength(0);
   });
 
