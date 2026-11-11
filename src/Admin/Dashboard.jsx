@@ -106,7 +106,7 @@ export default function AdminDashboard() {
           {stats.map(([label, value]) => (
             <div key={label} style={card}>
               <div style={cardLabel}>{label}</div>
-              <div style={cardValue}>{value ?? 0}</div>
+              <div style={cardValue}>{value ?? "Unavailable"}</div>
             </div>
           ))}
         </div>
@@ -128,7 +128,7 @@ export default function AdminDashboard() {
           </div>
           <div style={listItem}>
             <span>Failed admin actions (24h)</span>
-            <span style={{ color: ACCENT }}>{system.failed_admin_actions_24h ?? 0}</span>
+            <span style={{ color: ACCENT }}>{system.failed_admin_actions_24h ?? "Unavailable"}</span>
           </div>
         </div>
 
