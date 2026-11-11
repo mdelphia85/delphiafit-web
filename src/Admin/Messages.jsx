@@ -7,13 +7,14 @@ export default function AdminMessages() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     adminFetch("/admin/messages")
       .then((json) => setMessages(json || []))
       .catch((err) => setError(err.message || "Failed to load messages."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [refreshKey]);
 
   async function markRead(id) {
     setError("");
@@ -60,6 +61,9 @@ export default function AdminMessages() {
         <div>
           <div style={title}>Admin Messages</div>
           <div style={subtitle}>View and manage user messages and support requests.</div>
+          <button type="button" style={toggleBtn(false)} onClick={() => { setLoading(true); setRefreshKey(key => key + 1); }}>
+            Refresh Messages
+          </button>
         </div>
 
         {error && <div style={errorBox}>{error}</div>}
