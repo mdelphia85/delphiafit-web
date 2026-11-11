@@ -135,8 +135,8 @@ export default function TrainerClients() {
     <main style={{ width: "100%", minHeight: "100vh", boxSizing: "border-box",
       background: "#000", color: "#fff", padding: "22px 16px 90px" }}>
       <div style={{ maxWidth: "580px", margin: "0 auto" }}>
-        <h1 style={{ color: TRAINER_COLOR, textAlign: "center", margin: "8px 0 4px" }}>My Clients</h1>
-        <p style={{ color: "#aaa", textAlign: "center", marginBottom: "24px" }}>
+        <h1 style={{ color: TRAINER_COLOR, textAlign: "center", fontSize: "40px", lineHeight: 1.2, fontWeight: 700, margin: "8px 0 12px" }}>My Clients</h1>
+        <p style={{ color: "#aaa", textAlign: "center", fontSize: "13px", lineHeight: 1.5, margin: "0 0 24px" }}>
           Personal training clients — separate from Coach Hub teams.
         </p>
 
