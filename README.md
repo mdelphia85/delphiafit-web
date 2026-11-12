@@ -212,6 +212,227 @@ The implementation language, framework and deployment details for iOS will be fi
 
 ---
 
+## Complete website page and route inventory (source snapshot: November 12, 2026)
+
+This is a **source-derived inventory of every 107 explicit route declarations** in `src/App.jsx`, not a claim that all 107 are separate finished pages. Some routes are aliases, demonstrations or redirects; several specialty screens represent work in progress. Page labels below describe their *intended purpose*. Each route must still be evaluated for production behavior, real data, authorization, test coverage and mobile parity. Do not use a route count as a count of independently deployed capabilities.
+
+### Public, onboarding and demonstration (19 routes)
+
+| Website route | Component | Intended purpose |
+| --- | --- | --- |
+| `/` | `Landing` | Public entry page |
+| `/home` | `Home` | Member home |
+| `/demo` | `DemoDashboard` | Demo overview |
+| `/demo/dashboard` | `DemoDashboard` | Demo overview |
+| `/demo/workouts` | `DemoWorkouts` | Demo workouts |
+| `/demo/meals` | `DemoMeals` | Demo meals |
+| `/demo/tactical` | `DemoTactical` | Demo tactical training |
+| `/demo/progress` | `DemoProgress` | Demo progress |
+| `/demo/firefighter` | `DemoFirefighter` | Demo Firefighter |
+| `/demo/ems` | `DemoEMS` | Demo EMS |
+| `/demo/military` | `DemoMilitary` | Demo Military |
+| `/demo/police` | `DemoPolice` | Demo Police |
+| `/register` | `Register` | Account creation |
+| `/login` | `Login` | Member sign-in |
+| `/forgot-password` | `ForgotPassword` | Password recovery request |
+| `/reset-password` | `ResetPassword` | Password reset |
+| `/about` | `About` | Project information |
+| `/privacy` | `PrivacyPolicy` | Privacy policy |
+| `/terms` | `TermsOfService` | Terms of service |
+
+### Member health, nutrition and performance (19 routes)
+
+| Website route | Component | Intended purpose |
+| --- | --- | --- |
+| `/protein` | `Protein` | Protein tracking |
+| `/water` | `Water` | Hydration tracking |
+| `/meals` | `Meals` | Meal logging |
+| `/calories` | `Calories` | Calorie tracking |
+| `/profile` | `Profile` | Member profile |
+| `/history` | `History` | Activity history |
+| `/workouts` | `Workouts` | Workout records |
+| `/supplements` | `Supplements` | Supplement tracking |
+| `/goals` | `Goals` | Goal management |
+| `/free-training` | `FreeTraining` | Unstructured workout logging |
+| `/progress` | `Progress` | Progress measurement |
+| `/journal` | `Journal` | Training journal |
+| `/periodization` | `Periodization` | Training cycles |
+| `/recovery` | `Recovery` | Recovery records |
+| `/performance` | `PerformanceDashboard` | Performance overview |
+| `/analytics` | `AthleteAnalytics` | Athlete analysis |
+| `/nutrition-pro` | `NutritionPro` | Nutrition targets and generated plans |
+| `/ai-coach` | `AICoach` | Conversational AI coaching |
+| `/settings` | `Settings` | Account preferences |
+
+### Trainer, coach and team operations (16 routes)
+
+| Website route | Component | Intended purpose |
+| --- | --- | --- |
+| `/coach-dashboard` | `CoachDashboard` | Coach home and tools |
+| `/coach-login` | `CoachLogin` | Coach authentication |
+| `/coach/invite` | `CoachInviteAccept` | Trainer/client invite acceptance |
+| `/invite` | `CoachInviteAccept` | Trainer/client invite acceptance |
+| `/my-coach` | `ClientMessages` | Client-facing coach messages |
+| `/coach/password-reset` | `CoachPasswordReset` | Coach password reset |
+| `/client-management` | `TrainerClients` | Member-facing client/trainer relationship view |
+| `/my-trainer` | `MyTrainer` | Connected trainer |
+| `/coach/client-management` | `ClientManagement` | Coach client-management interface |
+| `/plan-builder` | `PlanBuilder` | Training plan authoring |
+| `/coach-messaging` | `CoachMessaging` | Coach messages |
+| `/drill-library` | `DrillLibraries` | Training drill library |
+| `/team-operations` | `TeamOperations` | Team roster and operations |
+| `/team-communications` | `TeamCommunications` | Team messaging |
+| `/team-performance` | `TeamPerformance` | Team performance |
+| `/tactical/team-ops` | `TeamOperations` | Team roster and operations |
+
+### Community, sports, competitions and expanded offerings (20 routes)
+
+| Website route | Component | Intended purpose |
+| --- | --- | --- |
+| `/sports` | `Sports` | Sport-specific activity |
+| `/community` | `Community` | Member discussion |
+| `/leaderboard` | `Leaderboard` | Rankings |
+| `/challenges` | `Challenges` | Training challenges |
+| `/achievements` | `Achievements` | Earned milestones |
+| `/streaks` | `Streaks` | Consistency tracking |
+| `/groups` | `Groups` | Group/community membership |
+| `/marketplace` | `CreatorMarketplace` | Creator marketplace listings |
+| `/pro-analytics` | `DelphiaProAnalytics` | Advanced analytics interface |
+| `/delphia-kids` | `DelphiaKids` | Youth-oriented interface |
+| `/sports-academy` | `SportsAcademy` | Sport-specific training academy |
+| `/recruiting-profiles` | `RecruitingProfiles` | Athlete recruiting profiles |
+| `/competition-events` | `CompetitionEvents` | Event participation |
+| `/organization` | `OrganizationLayer` | Organization workflows |
+| `/global-competitions` | `GlobalCompetition` | Global competition layer |
+| `/federations` | `FederationLayer` | Federation membership |
+| `/performance-lab` | `AIPerformanceLab` | Performance analysis concept/UI |
+| `/medical-rehab` | `MedicalRehab` | Recovery and rehab records |
+| `/autonomous-coaching` | `AutonomousCoaching` | Autonomous coaching concept/UI |
+| `/government-military` | `GovernmentMilitary` | Government and military domain |
+
+### Tactical and occupational training (24 routes)
+
+| Website route | Component | Intended purpose |
+| --- | --- | --- |
+| `/tactical/firefighters` | `Firefighters` | Firefighter training |
+| `/tactical/ems` | `EMS` | EMS training |
+| `/tactical/military` | `Military` | Military training |
+| `/tactical/police` | `Police` | Police training |
+| `/tactical/k9-operations` | `K9Operations` | K9 operations |
+| `/tactical/search-rescue` | `SearchRescue` | Search and rescue |
+| `/tactical/disaster-response` | `DisasterResponse` | Disaster-response training |
+| `/tactical/maritime-operations` | `MaritimeOperations` | Maritime training |
+| `/tactical/aviation-crew` | `AviationCrewReadiness` | Aviation readiness |
+| `/tactical/hazmat-cbrn` | `HazmatCBRN` | Hazmat/CBRN training |
+| `/tactical/wildland-fire` | `WildlandFire` | Wildland fire |
+| `/tactical/fitness-civilian` | `TacticalFitnessCivilian` | Civilian tactical fitness |
+| `/tactical/fire-academy` | `FireAcademyPrep` | Fire academy preparation |
+| `/tactical/police-academy` | `PoliceAcademyPrep` | Police academy preparation |
+| `/tactical/emt-paramedic` | `EMTParamedicPrep` | EMT/paramedic preparation |
+| `/tactical/military-bootcamp` | `MilitaryBootcampPrep` | Military boot-camp preparation |
+| `/tactical/sof-selection` | `SOFSelectionPrep` | Special operations selection preparation |
+| `/tactical/swat-selection` | `SWATSelectionPrep` | SWAT selection preparation |
+| `/tactical/scenario-simulator` | `ScenarioSimulator` | Scenario simulation interface |
+| `/tactical/loadouts` | `LoadoutsManager` | Equipment/loadout planning |
+| `/tactical/instructor` | `InstructorPortal` | Instructor workflow |
+| `/tactical/mission-replay` | `MissionReplay` | Mission replay |
+| `/tactical/certifications` | `CertificationsTracker` | Certification records |
+| `/tactical/unit-builder` | `UnitBuilder` | Unit-building tools |
+
+### Owner administration (9 routes)
+
+| Website route | Component | Intended purpose |
+| --- | --- | --- |
+| `/admin` | `Navigate` | Redirect to admin sign-in |
+| `/admin/login` | `AdminLogin` | Owner/admin sign-in |
+| `/admin/dashboard` | `AdminDashboard` | Administration dashboard |
+| `/admin/analytics` | `AdminAnalytics` | Platform analytics |
+| `/admin/announcements` | `AdminAnnouncements` | Announcements management |
+| `/admin/logs` | `AdminLogs` | Audit or activity logs |
+| `/admin/messages` | `AdminMessages` | Administrative messages |
+| `/admin/users` | `AdminUsers` | User administration |
+| `/admin/users/:id` | `AdminUserDetail` | Individual user administration |
+
+
+## How far DelphiaFit can go — product vision and engineering roadmap
+
+DelphiaFit is not intended to stop at an individual exercise tracker. The guiding product test for every expansion is the same one that sparked the original idea: **does this reduce the number of disconnected tools someone needs to pursue their fitness goals?** The platform can grow from everyday member tracking into an ecosystem serving individuals, coaches, teams, athletes, facilities and specialized training organizations.
+
+The categories below distinguish **existing website code**, **cross-platform work**, and **longer-term ambitions**. They are a vision, not a promise that every capability already works or will ship on a particular date.
+
+### Stage 1 — Make the website trustworthy and cohesive
+
+- Continue verifying each visible website page against its real backend and database, replacing mock metrics and placeholder data where present.
+- Tighten authentication, coaching roles, owner-only administration, record ownership, accessible navigation, and user data export/deletion.
+- Keep workouts, nutrition, water, recovery, goals, history and progress understandable as *one person's continuous timeline*.
+- Improve regression testing, security review, migrations, monitoring and documentation for reliable releases.
+- Resolve external-dependency limitations openly (payments, email delivery, camera motion processing, hardware integrations) before advertising them as delivered.
+
+**Outcome sought:** a dependable end-to-end web product, rather than an impressive set of disconnected screens.
+
+### Stage 2 — Android release and multi-device continuity
+
+- Finish the existing Android application rather than start again.
+- Reconcile Android screens, API requests, sessions, saved records, AI Coach and Nutrition Pro against the working website and deployed backend.
+- Validate secure Android credential storage, navigation, networking, recovery from errors and device compatibility.
+- Test with actual user/coach accounts and the same authoritative data as the browser; publish only after Google Play release checks pass.
+- Maintain the detailed migration checklist privately with the project rather than committing it to this website repository.
+
+**Outcome sought:** a user can begin tracking at the gym on Android and continue later on the website without losing context or duplicating entries.
+
+### Stage 3 — Apple / iOS client
+
+- Design an iOS experience appropriate for Apple devices using a framework chosen during that project.
+- Reuse existing FastAPI contracts, database records, account permissions and service-side business logic.
+- Build and validate iOS-specific credential protection, lifecycle handling, accessibility, privacy and App Store packaging.
+- Audit feature equivalence rather than assuming that a web page automatically becomes an iOS screen.
+
+**Outcome sought:** one DelphiaFit account and consistent information across web, Android and iOS. iOS is **planned**, not currently implemented.
+
+### Stage 4 — Deeper support for individual training and coaching
+
+**Product directions to evaluate and build incrementally:**
+
+- Richer goal histories with workout, nutrition and recovery trends in one view.
+- Better plan creation/assignment, coach-client communication and training adherence tools.
+- Progress reports that explain changes and uncertainties without pretending estimates are medical diagnoses.
+- Configurable training templates for strength, endurance, sports and user-defined routines.
+- Responsible use of AI to answer questions and assist with explanations, while keeping users and qualified professionals in control of consequential training decisions.
+
+### Stage 5 — Teams, sports, gyms and communities
+
+The website already has page structures for coaching, teams, recruiting, competitions and community participation. Long-term directions include:
+
+- Shared team rosters, permissions, communication and measurable training outcomes.
+- Trainer and facility workflows that reduce tool-switching for client management and programming.
+- Community challenges, milestones and opt-in competitions that respect member privacy.
+- Sport-specific programs and athlete development pathways, including MMA and other competitive disciplines.
+- Clearly scoped youth/guardian controls for any child-facing feature.
+
+### Stage 6 — Professional and specialized training
+
+Existing routes indicate exploration of firefighter, EMS, police, military and other operational-fitness domains. These could become deeper role-specific programs with relevant drills, measurable readiness and team coordination, **only after subject-matter validation, reliability work and permissions are appropriate**. Do not represent training support as professional certification, official agency endorsement or medical clearance.
+
+### Stage 7 — Optional ecosystem integrations
+
+Evaluate integrations that reduce friction, such as approved wearable/health-data connections, exercise-device data, reminders, scheduling or third-party services. Each should require clear user consent, secure API design, understandable data ownership and an actual benefit over manual tracking. Marketplace transactions or advanced AI motion features should only be introduced as operational features after the associated technical and compliance work is complete.
+
+### Engineering principles that keep expansion manageable
+
+1. **One account and authoritative backend**, not unrelated web and mobile databases.
+2. **Modular domains** so workouts, nutrition, coaching, community and specialties can evolve independently without duplicating core authentication.
+3. **Stable versioned API contracts** and tests before each client depends on a new endpoint.
+4. **Privacy, consent and access boundaries** appropriate to fitness, health-adjacent and youth-related information.
+5. **Reliable core functionality first**, then expanded modules as they are tested and validated.
+6. **Honest release status:** a page, model or prototype is not automatically a live product feature.
+7. **Accessibility and cost-conscious design** consistent with the original frustration that motivated DelphiaFit.
+
+### The north star
+
+The original notebook and multiple subscriptions are the problem to solve, not merely the origin story. Whether someone is working toward their first fitness goal, training alongside professional fighters, coaching clients, or managing a team, DelphiaFit should make their journey **more connected, less fragmented and easier to manage**.
+
+**Every Goal on One Platform.**
+
 ## Local web development
 
 ```bash
