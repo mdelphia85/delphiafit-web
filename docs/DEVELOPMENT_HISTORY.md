@@ -1,7 +1,8 @@
-# DelphiaFit — Creation and Development History
+# DelphiaFit Website — Creation and Development History (May 2025–November 2026)
 
 **Maintainer:** Matt Delphia  
 **Document date:** 2026-11-12  
+**Scope:** Approximately eighteen months, May 2025–November 2026, documenting the origins and evolution of the DelphiaFit website and its supporting backend. May 2025 is the beginning of the requested retrospective window, not a verified first-code date. 
 **Evidence status:** Retrospective with repository-backed milestones; not a certification of production deployment.
 
 ## 1. Origin and design problem
@@ -44,11 +45,11 @@ The repositories include unit/component tests and backend tests; the frontend ha
 
 Recent repository commits on **2026-11-11** document admin live-data refresh and avoiding fabricated zero metrics. Treat those as implementation evidence, not an end-to-end production audit. Test categories include authentication, authorization, records ownership, API contract, migrations, navigation, form validation and accessibility. Production sign-off requires deployed browser/mobile smoke tests and backend/database confirmation.
 
-## 6. Deployment and Android work
+## 6. Website deployment and production operations
 
-The web repository contains `vercel.json` and Vercel Analytics dependencies; the backend includes `Dockerfile` and `railway.toml`. Those files identify deployment tooling, but hosting, environment configuration and live status should always be checked independently.
+The website repository contains `vercel.json` and Vercel Analytics dependencies, while the backend has `Dockerfile` and `railway.toml`. These identify web and service deployment tooling, but the exact deployed branch, environment settings, production database and all live behavior must be verified independently. The owner reports that the website and its conversational AI features were live by early November 2026.
 
-An Android application was developed with Android Studio and tested with a Pixel emulator. The owner reported a login crash was fixed and plans to transfer applicable website changes to Android before Google Play release. **No dedicated Android source repository was accessible among the connected GitHub repositories on 2026-11-12.** As a result, this document cannot verify its current screens, dependencies, endpoints, version or functionality. See [ANDROID_PARITY_CHECKLIST.md](./ANDROID_PARITY_CHECKLIST.md) for the feature-by-feature audit and release gates.
+This document is exclusively a history of the **website and the server services that enable it**. Android implementation, mobile release planning and cross-platform parity are tracked separately and are intentionally not stored as a checklist in this repository.
 
 ## 7. Evidence and chronology
 
@@ -64,6 +65,6 @@ An Android application was developed with Android Studio and tested with a Pixel
 
 ## 8. Development log and ongoing maintenance
 
-For subsequent changes, record: date, requirement/problem, affected web/backend/Android module, commit and branch, API/schema migration, automated test result, manual deployed verification, owner approval, release version and rollback plan. Maintain a separate **Android parity matrix** with screenshots or tests to prove each capability exists on mobile.
+For subsequent changes, record: date, requirement/problem, affected website/backend module, commit and branch, API/schema migration, automated test result, manual deployed verification, owner approval, website release version and rollback plan.
 
-**Not yet independently verified:** original idea/date beyond Git history, deployed website/API branch and commit, actual production database and secrets configuration, current Android source, Play Store approval, payment integration, push delivery, hardware integrations, camera tracking and all specialty workflows. Do not turn these into completed milestones without evidence.
+**Not yet independently verified:** concept and development milestones before the first GitHub evidence in June 2025, original idea/date beyond Git history, deployed website/API branch and commit, actual production database and secrets configuration, payment integration, push delivery, hardware integrations, camera tracking and all specialty workflows. Do not turn these into completed milestones without evidence.
