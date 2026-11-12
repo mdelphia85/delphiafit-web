@@ -80,11 +80,11 @@ SQLAlchemy models / relational database
 
 **Role boundaries.** The website supports member, coach and administrative sessions. Navigation can expose appropriate destinations, but server authorization—not a hidden button—must prevent unauthorized access to personal records or private administration.
 
-**Testing boundary.** Frontend component tests with mocked HTTP calls validate screen logic but do not prove production API compatibility. Database tests, authentication tests, deployed browser checks, and real user journeys must be combined before assigning a production-complete status.
+**Testing boundary.** Frontend component tests with mocked HTTP calls validate screen logic but do not prove production API compatibility. Every production screen is required to be operational, with no placeholder responses or fake metrics. Database tests, authentication tests, deployed browser checks, and real user journeys are used to catch regressions and confirm that requirement.
 
 ### Feature expansion and page families
 
-The November 12, 2026 `src/App.jsx` route inventory contains **107 explicit route declarations**. This represents paths, including demos, aliases and redirects—not 107 separately certified production features.
+The November 12, 2026 `src/App.jsx` route inventory contains **107 defined routes**, including feature pages, demos, aliases and redirects. DelphiaFit's production requirement is **no static functional screens**: user-facing actions must use live backend services and persisted data, and analytic values must never be invented. The founder reports that the website is live; automated and deployed tests remain the independent way to confirm functionality after changes.
 
 | Family | Routes | Engineering purpose |
 | --- | ---: | --- |
