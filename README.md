@@ -161,7 +161,7 @@ A web page is not sufficient proof of role safety. API authorization, user-data 
 
 ## What the platform covers
 
-The website code contains many functional domains. Modules with a route, screen or ORM model are **not automatically claimed to be complete, integrated, monetized or production-verified**.
+The website organizes the following functional domains. **Every production screen is expected to be fully functional and backed by real services or persisted records, not static sample content.** External services must only be advertised as available when they are actually integrated; demonstration routes remain explicitly separate.
 
 | Domain | Web modules / workflows |
 | --- | --- |
@@ -214,7 +214,7 @@ The implementation language, framework and deployment details for iOS will be fi
 
 ## Complete website page and route inventory (source snapshot: November 12, 2026)
 
-This is a **source-derived inventory of every 107 explicit route declarations** in `src/App.jsx`, not a claim that all 107 are separate finished pages. Some routes are aliases, demonstrations or redirects; several specialty screens represent work in progress. Page labels below describe their *intended purpose*. Each route must still be evaluated for production behavior, real data, authorization, test coverage and mobile parity. Do not use a route count as a count of independently deployed capabilities.
+DelphiaFit defines **107 website routes** in `src/App.jsx`, covering member fitness, nutrition, coaching, AI, sports, community, specialized training, and administration, including demonstration paths and route aliases. **The production standard is that every user-accessible functional screen must work with real backend services and persisted data—never a static placeholder, mock result, or fabricated metric.** Demo pages are clearly separated from live account data. The founder reports that the website features are live; the route inventory documents architecture, while deployed end-to-end checks provide independent confirmation.
 
 ### Public, onboarding and demonstration (19 routes)
 
@@ -362,7 +362,7 @@ The categories below distinguish **existing website code**, **cross-platform wor
 
 ### Stage 1 — Make the website trustworthy and cohesive
 
-- Continue verifying each visible website page against its real backend and database, replacing mock metrics and placeholder data where present.
+- Enforce the production requirement that every visible functional screen has working interactions and real backend/database integration; investigate and fix any static data, placeholder behavior or fabricated metrics found during regression testing.
 - Tighten authentication, coaching roles, owner-only administration, record ownership, accessible navigation, and user data export/deletion.
 - Keep workouts, nutrition, water, recovery, goals, history and progress understandable as *one person's continuous timeline*.
 - Improve regression testing, security review, migrations, monitoring and documentation for reliable releases.
@@ -424,7 +424,7 @@ Evaluate integrations that reduce friction, such as approved wearable/health-dat
 3. **Stable versioned API contracts** and tests before each client depends on a new endpoint.
 4. **Privacy, consent and access boundaries** appropriate to fitness, health-adjacent and youth-related information.
 5. **Reliable core functionality first**, then expanded modules as they are tested and validated.
-6. **Honest release status:** a page, model or prototype is not automatically a live product feature.
+6. **Real functionality over mock screens:** production screens must use real services and records; verify this with regression and end-to-end tests after changes.
 7. **Accessibility and cost-conscious design** consistent with the original frustration that motivated DelphiaFit.
 
 ### The north star
