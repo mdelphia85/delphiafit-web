@@ -4,7 +4,9 @@
 
 **One fitness journey. One account. One connected platform.**
 
-[DelphiaFit.com](https://delphiafit.com) · [Development history](docs/DEVELOPMENT_HISTORY.md) · [Backend repository](https://github.com/mdelphia85/delphiafit-backend) · [Original prototype](https://github.com/mdelphia85/gym-App)
+**Project history covered:** May 2025–November 2026 (first verifiable source-control milestone: June 8, 2025). This README is the single project history, architecture, and quality-control reference.
+
+[DelphiaFit.com](https://delphiafit.com) · [Backend repository](https://github.com/mdelphia85/delphiafit-backend) · [Original prototype](https://github.com/mdelphia85/gym-App)
 
 ---
 
@@ -433,6 +435,52 @@ The original notebook and multiple subscriptions are the problem to solve, not m
 
 **Every Goal on One Platform.**
 
+## Quality control — required checks for every production screen
+
+**Non-negotiable release standard:** all production screens must be operational. No static or fake data, placeholder buttons, fabricated analytics, or disconnected forms. Explicit `/demo/*` routes remain demonstrations and must not be mistaken for live user records. The founder reports the website is live; these checks are the repeatable way to establish and preserve that condition after changes.
+
+### QC checklist
+
+| Check | Acceptance criteria |
+| --- | --- |
+| Navigation | Every route loads its intended component; menu, Back/Return to Menu, deep links and logout work without unintended session loss |
+| Authentication | Registration, login, recovery and expiration behave correctly for member and coach; sessions fail closed |
+| Authorization | Owner/admin, trainer and member APIs enforce role and record ownership on the backend, including direct URL/API access |
+| Live functionality | Every button, form, save, delete, filter and action completes the intended workflow; no fake success messages or static screens |
+| Persistence | Changes are saved in the actual database and survive refresh, logout/login and a second authorized device |
+| Data integrity | Analytics, progress, logs and goals use real records; absent data displays an honest empty/error state rather than fabricated zeros |
+| Nutrition | Preferences, calculated targets, restrictions, meal generation and saved meal-plan retrieval function end to end |
+| AI Coach | Authenticated conversation, Send, responses, history, timeouts and retry/idempotency behavior work with the deployed model or disclose limited mode |
+| Coaching | Trainer access, client invitations, plans, messaging, client privacy and coach-specific navigation function with real accounts |
+| Community and specialties | Posts, comments, groups, competitions and occupational-training screens use live endpoints and enforce relevant permissions |
+| Failures | Loading, offline, 401/403, 404, validation, rate limiting, 5xx and timeout states are understandable and do not corrupt data |
+| Security and privacy | HTTPS; no secrets in frontend bundles; correct CORS, input validation, data export/deletion and appropriate disclosures |
+| Accessibility and responsiveness | Keyboard navigation, usable contrast/labels, touch targets, mobile layouts and common screen sizes |
+| Tests and deployment | Automated tests, lint, build, backend integration tests, production-like DB migrations and browser smoke tests pass at the relevant release revision |
+
+**Release gate:** Do not call a production feature complete or ship a regression if any applicable critical check fails. Record the failing screen, request, expected vs. actual result, resolution, commit, and retest evidence. A passed mocked unit test is not equivalent to a passed live end-to-end workflow.
+
+### Quality-control execution
+
+1. **Before merging:** run `npm run test`, `npm run lint`, and `npm run build`; run corresponding backend tests and review migration impact.
+2. **Against a staging or approved test environment:** verify API contracts with the actual backend and a nonproduction database; test member, trainer and owner authorization boundaries.
+3. **In a real browser:** complete account, workout, nutrition, AI Coach, coaching and admin workflows; sample every other production route, including specialized pages. Validate success, failure and empty states.
+4. **After deployment:** repeat critical smoke tests against the deployed build; confirm real database values, login, navigation, analytics refresh and monitoring.
+5. **For multi-platform releases:** confirm Android and future iOS clients use the same authorized data and current API contracts, with mobile-specific security and device testing tracked separately.
+
+### Historical evidence and ongoing QC log
+
+| Date / source | Evidence | Interpretation |
+| --- | --- | --- |
+| [2025-06-08 original prototype commit](https://github.com/mdelphia85/gym-App/commit/e4519e251) | Python/Kivy-era source | First verified GitHub milestone; not proof of all later product capabilities |
+| [2025-10-19 prototype README](https://github.com/mdelphia85/gym-App/commit/01962dbf0) | Original multi-purpose gym-management vision | Historical documented feature goals |
+| [2026 web route source](src/App.jsx) | React-based website architecture | Route definitions are discoverable and auditable |
+| [Backend AI router on repaired-backend](https://github.com/mdelphia85/delphiafit-backend/blob/repaired-backend/app/routers/ai.py) | Authenticated AI requests, persistence and relevant response handling | Source implementation; deployed environment must match |
+| [PROGRESS_REPORT.md](PROGRESS_REPORT.md) | Earlier 162 backend / 78 frontend passing-test snapshot, with deployment and manual-test caveats | Historical result, not today's live test report |
+| [2026-11-11 web commit](https://github.com/mdelphia85/delphiafit-web/commit/83c7934c3e3344c2f7cfd878315777aa00bb12bc) | Live admin metrics adjustment | Evidence of ongoing production-quality work |
+
+For future updates, capture date, feature or defect, GitHub commit, environment tested, test command/results, browser/API evidence, security or migration implications, and release approval. This record stays in the README; a separate development-history file is not required.
+
 ## Local web development
 
 ```bash
@@ -490,14 +538,12 @@ delphiafit-web/
 │   ├── utils/                # HTTP, sessions and user data
 │   ├── config/               # API configuration
 │   └── demo/                 # demonstration data/screens
-├── docs/
-│   └── DEVELOPMENT_HISTORY.md
 ├── PROGRESS_REPORT.md       # historical snapshot, not current release certification
 ├── package.json
 └── vite.config.js
 ```
 
-For the more detailed chronology, source evidence and limitations, see the [creation and development history](docs/DEVELOPMENT_HISTORY.md).
+The project timeline, technical architecture, page inventory, release standards, and development vision are documented in this README.
 
 **Related source repositories:**
 - [DelphiaFit Web](https://github.com/mdelphia85/delphiafit-web)
