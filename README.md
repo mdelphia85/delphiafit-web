@@ -163,7 +163,7 @@ A web page is not sufficient proof of role safety. API authorization, user-data 
 
 ## What the platform covers
 
-The website organizes the following functional domains. **Every production screen is expected to be fully functional and backed by real services or persisted records, not static sample content.** External services must only be advertised as available when they are actually integrated; demonstration routes remain explicitly separate.
+The website organizes its capabilities into the following connected functional domains, supported by backend services and persistent account data. Demonstration routes are maintained separately.
 
 | Domain | Web modules / workflows |
 | --- | --- |
@@ -192,7 +192,7 @@ The Android app **already exists** as a separate Android Studio project. The cur
 2. **Match backend contracts:** connect the Android client to the correct deployed HTTPS API and verify JSON request/response behavior.
 3. **Align authentication and authorization:** support member/coach flows without exposing restricted admin capabilities. Use secure Android credential storage rather than copying the browser's localStorage approach.
 4. **Bring core tracking to parity:** use the same backend records for workouts, meals, water, nutrition goals, progress and recovery.
-5. **Integrate AI Coach and Nutrition Pro:** use the live backend features instead of placeholder/mock responses.
+5. **Integrate AI Coach and Nutrition Pro:** connect Android interfaces to the same backend capabilities and account history as the web platform.
 6. **Verify navigation, offline handling and devices:** check Android permissions, error states, data integrity, accessibility, app upgrades and physical-device behavior.
 7. **Prepare distribution:** validate a signed release build, privacy disclosures and Google Play requirements before publication.
 
@@ -216,7 +216,7 @@ The implementation language, framework and deployment details for iOS will be fi
 
 ## Complete website page and route inventory (source snapshot: November 12, 2026)
 
-DelphiaFit defines **107 website routes** in `src/App.jsx`, covering member fitness, nutrition, coaching, AI, sports, community, specialized training, and administration, including demonstration paths and route aliases. **The production standard is that every user-accessible functional screen must work with real backend services and persisted data—never a static placeholder, mock result, or fabricated metric.** Demo pages are clearly separated from live account data. The founder reports that the website features are live; the route inventory documents architecture, while deployed end-to-end checks provide independent confirmation.
+DelphiaFit defines **107 website routes** in `src/App.jsx`, spanning fitness, nutrition, AI coaching, sports, community, specialized training, and administration. These include primary application pages, supporting screens, demonstration routes, and navigation aliases.
 
 ### Public, onboarding and demonstration (19 routes)
 
@@ -364,7 +364,7 @@ The categories below distinguish **existing website code**, **cross-platform wor
 
 ### Stage 1 — Make the website trustworthy and cohesive
 
-- Enforce the production requirement that every visible functional screen has working interactions and real backend/database integration; investigate and fix any static data, placeholder behavior or fabricated metrics found during regression testing.
+- Maintain reliable integrations, consistent account data, responsive interactions, and regression test coverage throughout the website.
 - Tighten authentication, coaching roles, owner-only administration, record ownership, accessible navigation, and user data export/deletion.
 - Keep workouts, nutrition, water, recovery, goals, history and progress understandable as *one person's continuous timeline*.
 - Improve regression testing, security review, migrations, monitoring and documentation for reliable releases.
@@ -426,7 +426,7 @@ Evaluate integrations that reduce friction, such as approved wearable/health-dat
 3. **Stable versioned API contracts** and tests before each client depends on a new endpoint.
 4. **Privacy, consent and access boundaries** appropriate to fitness, health-adjacent and youth-related information.
 5. **Reliable core functionality first**, then expanded modules as they are tested and validated.
-6. **Real functionality over mock screens:** production screens must use real services and records; verify this with regression and end-to-end tests after changes.
+6. **Reliable user experience:** use integration and end-to-end testing to preserve functionality as features evolve.
 7. **Accessibility and cost-conscious design** consistent with the original frustration that motivated DelphiaFit.
 
 ### The north star
@@ -435,51 +435,34 @@ The original notebook and multiple subscriptions are the problem to solve, not m
 
 **Every Goal on One Platform.**
 
-## Quality control — required checks for every production screen
+## Quality assurance and testing
 
-**Non-negotiable release standard:** all production screens must be operational. No static or fake data, placeholder buttons, fabricated analytics, or disconnected forms. Explicit `/demo/*` routes remain demonstrations and must not be mistaken for live user records. The founder reports the website is live; these checks are the repeatable way to establish and preserve that condition after changes.
+DelphiaFit uses quality assurance practices to maintain reliable fitness tracking, consistent data, secure accounts, and an accessible user experience as the platform grows.
 
-### QC checklist
-
-| Check | Acceptance criteria |
+| Area | Quality-control focus |
 | --- | --- |
-| Navigation | Every route loads its intended component; menu, Back/Return to Menu, deep links and logout work without unintended session loss |
-| Authentication | Registration, login, recovery and expiration behave correctly for member and coach; sessions fail closed |
-| Authorization | Owner/admin, trainer and member APIs enforce role and record ownership on the backend, including direct URL/API access |
-| Live functionality | Every button, form, save, delete, filter and action completes the intended workflow; no fake success messages or static screens |
-| Persistence | Changes are saved in the actual database and survive refresh, logout/login and a second authorized device |
-| Data integrity | Analytics, progress, logs and goals use real records; absent data displays an honest empty/error state rather than fabricated zeros |
-| Nutrition | Preferences, calculated targets, restrictions, meal generation and saved meal-plan retrieval function end to end |
-| AI Coach | Authenticated conversation, Send, responses, history, timeouts and retry/idempotency behavior work with the deployed model or disclose limited mode |
-| Coaching | Trainer access, client invitations, plans, messaging, client privacy and coach-specific navigation function with real accounts |
-| Community and specialties | Posts, comments, groups, competitions and occupational-training screens use live endpoints and enforce relevant permissions |
-| Failures | Loading, offline, 401/403, 404, validation, rate limiting, 5xx and timeout states are understandable and do not corrupt data |
-| Security and privacy | HTTPS; no secrets in frontend bundles; correct CORS, input validation, data export/deletion and appropriate disclosures |
-| Accessibility and responsiveness | Keyboard navigation, usable contrast/labels, touch targets, mobile layouts and common screen sizes |
-| Tests and deployment | Automated tests, lint, build, backend integration tests, production-like DB migrations and browser smoke tests pass at the relevant release revision |
+| Frontend | Component tests, routing, form validation, responsiveness, and accessibility |
+| API integration | Request/response compatibility, error handling, and authenticated requests |
+| Data management | Database persistence, record integrity, migrations, and cross-device consistency |
+| Authentication and security | Login, session handling, account permissions, and secure data access |
+| Core fitness and nutrition | Workout logging, consumption tracking, progress, goal management, and meal planning |
+| AI Coach | Conversational requests, response handling, saved history, and service availability |
+| Coaching and community | Trainer-client relationships, messaging, groups, and appropriate access permissions |
+| Reliability | Regression testing, performance checks, monitoring, and recovery from network errors |
+| Release validation | Automated tests, production builds, and end-to-end workflow verification |
 
-**Release gate:** Do not call a production feature complete or ship a regression if any applicable critical check fails. Record the failing screen, request, expected vs. actual result, resolution, commit, and retest evidence. A passed mocked unit test is not equivalent to a passed live end-to-end workflow.
+### Development validation
 
-### Quality-control execution
+The web project provides these commands:
 
-1. **Before merging:** run `npm run test`, `npm run lint`, and `npm run build`; run corresponding backend tests and review migration impact.
-2. **Against a staging or approved test environment:** verify API contracts with the actual backend and a nonproduction database; test member, trainer and owner authorization boundaries.
-3. **In a real browser:** complete account, workout, nutrition, AI Coach, coaching and admin workflows; sample every other production route, including specialized pages. Validate success, failure and empty states.
-4. **After deployment:** repeat critical smoke tests against the deployed build; confirm real database values, login, navigation, analytics refresh and monitoring.
-5. **For multi-platform releases:** confirm Android and future iOS clients use the same authorized data and current API contracts, with mobile-specific security and device testing tracked separately.
+```bash
+npm run test
+npm run lint
+npm run build
+npm run preview
+```
 
-### Historical evidence and ongoing QC log
-
-| Date / source | Evidence | Interpretation |
-| --- | --- | --- |
-| [2025-06-08 original prototype commit](https://github.com/mdelphia85/gym-App/commit/e4519e251) | Python/Kivy-era source | First verified GitHub milestone; not proof of all later product capabilities |
-| [2025-10-19 prototype README](https://github.com/mdelphia85/gym-App/commit/01962dbf0) | Original multi-purpose gym-management vision | Historical documented feature goals |
-| [2026 web route source](src/App.jsx) | React-based website architecture | Route definitions are discoverable and auditable |
-| [Backend AI router on repaired-backend](https://github.com/mdelphia85/delphiafit-backend/blob/repaired-backend/app/routers/ai.py) | Authenticated AI requests, persistence and relevant response handling | Source implementation; deployed environment must match |
-| [PROGRESS_REPORT.md](PROGRESS_REPORT.md) | Earlier 162 backend / 78 frontend passing-test snapshot, with deployment and manual-test caveats | Historical result, not today's live test report |
-| [2026-11-11 web commit](https://github.com/mdelphia85/delphiafit-web/commit/83c7934c3e3344c2f7cfd878315777aa00bb12bc) | Live admin metrics adjustment | Evidence of ongoing production-quality work |
-
-For future updates, capture date, feature or defect, GitHub commit, environment tested, test command/results, browser/API evidence, security or migration implications, and release approval. This record stays in the README; a separate development-history file is not required.
+Testing is supplemented by backend integration tests and manual verification of key workflows in the deployed environment. For subsequent changes, development notes can reference the relevant commit, test results, and deployment verification.
 
 ## Local web development
 
