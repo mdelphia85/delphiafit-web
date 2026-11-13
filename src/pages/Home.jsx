@@ -32,6 +32,24 @@ export default function Home() {
           pointerEvents: "none"
         }}
       >
+        <defs>
+          <clipPath id="delphiafit-year-only">
+            <rect x="164" y="546" width="88" height="66" />
+            <rect x="766" y="546" width="92" height="66" />
+          </clipPath>
+          <filter id="delphiafit-pearl-blue" colorInterpolationFilters="sRGB">
+            <feColorMatrix type="hueRotate" values="218" />
+            <feColorMatrix type="saturate" values="0.85" />
+          </filter>
+        </defs>
+        {/* Color only the original 20 and 25 numerals; preserve the rest of the logo. */}
+        <image
+          href={homescreen}
+          width="1024"
+          height="1024"
+          clipPath="url(#delphiafit-year-only)"
+          filter="url(#delphiafit-pearl-blue)"
+        />
         <text
           x="210"
           y="542"
