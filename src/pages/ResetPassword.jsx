@@ -1,6 +1,6 @@
 import { useLayoutEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import homescreen from "../assets/homescreen.png";
+import homescreen from "../assets/delphiafit-home-approved.webp";
 import { apiRequest } from "../utils/api.js";
 
 export default function ResetPassword() {
