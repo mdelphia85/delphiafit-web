@@ -4,7 +4,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import DemoBanner from "../../components/DemoBanner";
 import DemoGuide from "../../components/DemoGuide";
 
-import homescreen from "../../assets/homescreen.png";
+import homescreen from "../../assets/delphiafit-home-approved.webp";
 
 const DemoDashboard = () => {
   const navigate = useNavigate();
