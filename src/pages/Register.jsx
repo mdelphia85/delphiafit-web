@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiRequest } from "../utils/api.js";
-import homescreen from "../assets/homescreen.png";
+import homescreen from "../assets/delphiafit-home-approved.webp";
 
 export default function Register() {
   const navigate = useNavigate();
