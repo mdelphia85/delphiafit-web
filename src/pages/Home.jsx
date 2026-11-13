@@ -18,6 +18,32 @@ export default function Home() {
         position: "relative"
       }}
     >
+      {/* Keep the original home-screen artwork unchanged; label its split 20 / 25 founding year. */}
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        viewBox="0 0 1024 1024"
+        preserveAspectRatio="xMidYMid slice"
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none"
+        }}
+      >
+        <text
+          x="210"
+          y="542"
+          textAnchor="middle"
+          fill="#000"
+          fontFamily="Arial, sans-serif"
+          fontWeight="700"
+          fontSize="22"
+        >
+          Est.
+        </text>
+      </svg>
       <img
         src={menuImage}
         alt="Menu"
