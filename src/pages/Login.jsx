@@ -46,7 +46,8 @@ export default function Login() {
       style={{
         minHeight: "100vh",
         backgroundImage: `url(${homescreen})`,
-        backgroundSize: "cover",
+        backgroundSize: "contain",
+        backgroundColor: "#000",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
         color: "white",
