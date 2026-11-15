@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 
@@ -51,6 +52,6 @@ export default function DailyLog() {
     <h1>Daily Log</h1>{loading && <p role="status">Loading daily log…</p>}{error && <p role="alert">{error}</p>}{message && <p role="status">{message}</p>}
     {fields.map((key) => <Field key={key} label={`${key[0].toUpperCase()}${key.slice(1)}${key === "protein" ? " (g)" : key === "water" ? " (oz)" : ""}`} value={form[key]} onChange={(e) => setForm((prev) => ({ ...prev, [key]: e.target.value }))} />)}
     <button type="button" disabled={saving || loading} onClick={saveLog} style={{ color: COLOR, background: "none", border: 0, fontSize: 26, fontWeight: "bold", textDecoration: "underline", cursor: "pointer" }}>{saving ? "Saving…" : "Save Log"}</button>
-    <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color: COLOR, fontSize: 22, textDecoration: "underline", background: "none", border: 0, cursor: "pointer" }}>Return to Menu</button>
+    <TextAction plain onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color: COLOR, fontSize: 22, textDecoration: "underline", background: "none", border: 0, cursor: "pointer" }}>Return to Menu</TextAction>
   </div>;
 }
