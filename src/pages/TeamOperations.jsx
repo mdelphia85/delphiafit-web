@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import CoachShell from "../components/CoachShell.jsx";
 import StatusMessage from "../components/StatusMessage.jsx";
 import TeamPicker from "../components/TeamPicker.jsx";
-import { COACH_COLOR, cardStyle, inputStyle, primaryButton, secondaryButton } from "../components/coachStyles.js";
+import { cardStyle, inputStyle } from "../components/coachStyles.js";
+import { TACTICAL_COLORS } from "../config/tacticalColors.js";
+import TextAction from "../components/TextAction.jsx";
 import { apiRequest } from "../utils/api.js";
 import useMyTeams, { apiErrorText } from "../utils/useMyTeams.js";
 
@@ -55,6 +57,7 @@ export default function TeamOperations() {
 
   return (
     <CoachShell title="🏟️ Team Roster" requireSession={false} home>
+      <h2 style={{ color: TACTICAL_COLORS.team, textAlign: "center" }}>Team Operations</h2>
       <TeamPicker teams={teams} value={teamId} onChange={setTeamId} />
 
       {status === "error" && <StatusMessage error>{error}</StatusMessage>}
@@ -63,7 +66,7 @@ export default function TeamOperations() {
 
       {roster && status === "ready" && (
         <>
-          <div style={{ color: COACH_COLOR, fontWeight: "700" }}>{roster.group.name}</div>
+          <div style={{ color: TACTICAL_COLORS.team, fontWeight: "700" }}>{roster.group.name}</div>
           <div style={{ color: "#999", fontSize: "12px", marginBottom: "12px" }}>{roster.members.length} member(s)</div>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
             {roster.members.map((m) => (
@@ -74,10 +77,10 @@ export default function TeamOperations() {
             ))}
           </div>
           <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
-            <button style={{ ...secondaryButton, flex: 1 }} onClick={() => navigate("/team-communications")}>Team Comms</button>
-            <button style={{ ...secondaryButton, flex: 1 }} onClick={() => navigate("/team-performance")}>Performance</button>
+            <TextAction style={{ color: TACTICAL_COLORS.team }} onClick={() => navigate("/team-communications")}>Team Comms</TextAction>
+            <TextAction style={{ color: TACTICAL_COLORS.team }} onClick={() => navigate("/team-performance")}>Performance</TextAction>
           </div>
-          <button style={{ ...secondaryButton, width: "100%", marginBottom: "16px" }} onClick={leaveTeam}>Leave Team</button>
+          <TextAction style={{ display: "block", color: TACTICAL_COLORS.team, marginBottom: 16 }} onClick={leaveTeam}>Leave Team</TextAction>
         </>
       )}
 
@@ -85,24 +88,24 @@ export default function TeamOperations() {
 
       {discover.length > 0 && (
         <div style={{ ...cardStyle, marginBottom: "16px" }}>
-          <div style={{ color: COACH_COLOR, fontWeight: "700", marginBottom: "8px" }}>Join a team</div>
+          <div style={{ color: TACTICAL_COLORS.team, fontWeight: "700", marginBottom: "8px" }}>Join a team</div>
           {discover.map((g) => (
             <div key={g.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
               <span>{g.name}</span>
-              <button style={{ ...primaryButton(), padding: "6px 12px" }} onClick={() => joinTeam(g.id)}>Join</button>
+              <TextAction style={{ color: TACTICAL_COLORS.team }} onClick={() => joinTeam(g.id)}>Join</TextAction>
             </div>
           ))}
         </div>
       )}
 
       {newName === null ? (
-        <button style={{ ...secondaryButton, width: "100%" }} onClick={() => setNewName("")}>+ Create Team</button>
+        <TextAction style={{ display: "block", color: TACTICAL_COLORS.team, textAlign: "center" }} onClick={() => setNewName("")}>+ Create Team</TextAction>
       ) : (
         <div style={cardStyle}>
           <input aria-label="Team name" placeholder="Team name" style={{ ...inputStyle, marginBottom: "8px" }} value={newName} onChange={(e) => setNewName(e.target.value)} />
           <div style={{ display: "flex", gap: "8px" }}>
-            <button style={{ ...primaryButton(), flex: 1 }} onClick={createTeam}>Create</button>
-            <button style={{ ...secondaryButton, flex: 1 }} onClick={() => setNewName(null)}>Cancel</button>
+            <TextAction style={{ color: TACTICAL_COLORS.team }} onClick={createTeam}>Create</TextAction>
+            <TextAction style={{ color: TACTICAL_COLORS.team }} onClick={() => setNewName(null)}>Cancel</TextAction>
           </div>
         </div>
       )}
