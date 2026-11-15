@@ -1,5 +1,6 @@
 import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
 import TacticalActivityLog from "../components/TacticalActivityLog.jsx";
+import { TACTICAL_COLORS } from "../config/tacticalColors.js";
 import { useContext } from "react";
 import { MenuContext } from "../context/MenuContext.js";
 
@@ -14,10 +15,10 @@ const initialPhases = [
   { id: 8, name: "Final Recruit Readiness Assessment", duration: "2 weeks", focus: "Evaluation", objective: "Confirm physical, mental, and team readiness before reporting to training.", completed: false }
 ];
 
-export default function MilitaryBootcampPrep() {
+export default function MilitaryBootcampPrep({ embedded = false, accent = TACTICAL_COLORS.military }) {
   const { setMenuOpen } = useContext(MenuContext);
   const [phases, setPhases, progress] = useTacticalProgress("military-bootcamp-prep", "military-bootcamp-prep", initialPhases);
-  const TACTICAL_COLOR = "#2d5f3a";
+  const TACTICAL_COLOR = accent;
 
 
   function togglePhase(id) {
@@ -29,17 +30,17 @@ export default function MilitaryBootcampPrep() {
   }
 
   return (
-    <div style={{ width: "100vw", minHeight: "100vh", backgroundColor: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", overflowY: "auto", color: "#fff" }}>
+    <div style={{ width: embedded ? "100%" : "100vw", minHeight: embedded ? "auto" : "100vh", backgroundColor: embedded ? "transparent" : "#000", padding: embedded ? "12px 0 24px" : "16px 16px 90px", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", gap: 16, overflowY: embedded ? "visible" : "auto", color: "#fff" }}>
       {(progress.loading || progress.error) && <div role="status" aria-live="polite" style={{ position: "fixed", top: "8px", left: "8px", zIndex: 50, background: "#111", color: "#fff", border: "1px solid #555", borderRadius: "6px", padding: "8px", fontSize: "12px" }}>{progress.loading ? "Syncing saved progress..." : `Progress unavailable: ${progress.error}`}</div>}
       <div style={{ width: "360px", maxWidth: "100%" }}>
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+        {!embedded && <div style={{ textAlign: "center", marginBottom: "20px" }}>
           <div style={{ color: TACTICAL_COLOR, fontSize: "28px", fontWeight: "700" }}>🎖️ Military Basic Training Prep</div>
           <div style={{ color: "#999", fontSize: "12px", marginTop: "4px" }}>Recruit readiness program</div>
-        </div>
+        </div>}
 
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {phases.map((phase) => (
-            <div key={phase.id} onClick={() => togglePhase(phase.id)} style={{ background: phase.completed ? "#1a2a1f" : "#111", border: `1px solid ${phase.completed ? TACTICAL_COLOR : "#333"}`, borderRadius: "10px", padding: "12px", cursor: "pointer", opacity: phase.completed ? 0.7 : 1 }}>
+            <div key={phase.id} role="button" tabIndex={0} aria-pressed={phase.completed} onClick={() => togglePhase(phase.id)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); togglePhase(phase.id); } }} style={{ background: phase.completed ? "#171717" : "#111", border: `1px solid ${phase.completed ? TACTICAL_COLOR : "#333"}`, borderRadius: "10px", padding: "12px", cursor: "pointer", opacity: phase.completed ? 0.7 : 1 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
                 <div style={{ color: "white", fontSize: "16px", fontWeight: "600", textDecoration: phase.completed ? "line-through" : "none" }}>{phase.name}</div>
                 <div style={{ color: TACTICAL_COLOR, fontWeight: "700" }}>{phase.completed ? "✓" : "○"}</div>
@@ -61,11 +62,11 @@ export default function MilitaryBootcampPrep() {
         </div>
       </div>
 
-      <div style={{ position: "relative", zIndex: 2, width: "min(500px, 100%)", marginTop: "24px" }}><TacticalActivityLog module="military-bootcamp-prep" title="MilitaryBootcampPrep" /></div>
+      <div style={{ position: "relative", zIndex: 2, width: "min(500px, 100%)", marginTop: "24px" }}><TacticalActivityLog module="military-bootcamp-prep" title="Military Bootcamp" accent={TACTICAL_COLOR} /></div>
 
-      <div onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: "20px", right: "20px", color: TACTICAL_COLOR, fontSize: "22px", textDecoration: "underline", cursor: "pointer", zIndex: 20 }}>
+      {!embedded && <div onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: "20px", right: "20px", color: TACTICAL_COLOR, fontSize: "22px", textDecoration: "underline", cursor: "pointer", zIndex: 20 }}>
         Return to Menu
-      </div>
+      </div>}
     </div>
   );
 }
