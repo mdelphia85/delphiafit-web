@@ -475,6 +475,8 @@ export default function Workouts() {
               <option value="60 min">60 min</option>
               <option value="75 min">75 min</option>
               <option value="90 min">90 min</option>
+              <option value="105 min">105 min (1 hr 45 min)</option>
+              <option value="120 min">120 min (2 hours)</option>
             </select>
 
             <div style={sectionHeader}>Difficulty (adaptive)</div>
