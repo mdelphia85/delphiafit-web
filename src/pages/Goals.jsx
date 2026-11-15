@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { getNutritionSettings, saveNutritionSettings } from "../utils/nutritionApi.js";
 
@@ -316,7 +317,7 @@ export default function Goals() {
       </p>
 
       {/* RETURN TO MENU */}
-      <p
+      <TextAction plain
         onClick={() => setMenuOpen(true)}
         style={{
           position: "fixed",
@@ -327,9 +328,7 @@ export default function Goals() {
           textDecoration: "underline",
           cursor: "pointer"
         }}
-      >
-        Return to Menu
-      </p>
+      >Return to Menu</TextAction>
     </div>
   );
 }
