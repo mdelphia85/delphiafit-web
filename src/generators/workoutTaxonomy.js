@@ -13,7 +13,9 @@ export const UI_MAIN_CATEGORIES = [
   "Mobility",
   "Recovery",
   "Mind-Body",
-  "Group Fitness"
+  "Group Fitness",
+  "Combat Sports",
+  "Athlete Performance"
 ];
 
 // -----------------------------
@@ -26,7 +28,9 @@ export const UI_SUBCATEGORY_MAP = {
     "Olympic Weightlifting",
     "Resistance Training",
     "CrossFit",
-    "Circuit Training"
+    "Circuit Training",
+    "Calisthenics",
+    "Strongman"
   ],
 
   Cardio: [
@@ -36,7 +40,9 @@ export const UI_SUBCATEGORY_MAP = {
     "Elliptical",
     "Stair Climber",
     "Walking",
-    "Treadmill Intervals"
+    "Treadmill Intervals",
+    "Swimming",
+    "Hiking"
   ],
 
   HIIT: ["Tabata", "Interval Sprints", "Plyometric HIIT", "EMOM", "AMRAP"],
@@ -46,7 +52,9 @@ export const UI_SUBCATEGORY_MAP = {
     "Circuit Training",
     "CrossFit",
     "Athletic Conditioning",
-    "Movement Prep"
+    "Movement Prep",
+    "Agility Training",
+    "Sprint Training"
   ],
 
   Mobility: [
@@ -67,7 +75,9 @@ export const UI_SUBCATEGORY_MAP = {
 
   "Mind-Body": ["Yoga", "Pilates", "Meditation", "Breathwork", "Tai Chi"],
 
-  "Group Fitness": ["Spin", "Zumba", "Bootcamp", "Kickboxing", "Dance Fitness"]
+  "Group Fitness": ["Spin", "Zumba", "Bootcamp", "Kickboxing", "Dance Fitness"],
+  "Combat Sports": ["MMA Conditioning", "Boxing", "Muay Thai", "Wrestling", "Brazilian Jiu-Jitsu", "Grappling", "Fight Camp"],
+  "Athlete Performance": ["Athletic Conditioning", "Agility Training", "Sprint Training", "Plyometric HIIT"]
 };
 
 // -----------------------------
@@ -79,7 +89,9 @@ export const STRENGTH_TYPES = [
   "Olympic Weightlifting",
   "Resistance Training",
   "CrossFit",
-  "Circuit Training"
+  "Circuit Training",
+  "Calisthenics",
+  "Strongman"
 ];
 
 // -----------------------------
@@ -269,17 +281,23 @@ export const EXERCISE_CATALOG = [
 // DURATION & VOLUME MODEL
 // -----------------------------
 export const DURATION_MAP = {
+  "15 min": 15,
   "20 min": 20,
   "30 min": 30,
   "45 min": 45,
-  "60 min": 60
+  "60 min": 60,
+  "75 min": 75,
+  "90 min": 90
 };
 
 export const MAIN_BLOCK_EXERCISE_COUNTS = {
+  15: 3,
   20: 4,
   30: 5,
   45: 6,
-  60: 7
+  60: 7,
+  75: 8,
+  90: 9
 };
 
 // -----------------------------
@@ -340,6 +358,22 @@ export const CATEGORY_WEIGHTS = {
     main_secondary: { "Mind-Body": 0.6, Recovery: 0.4 },
     finisher: { "Mind-Body": 0.7, Mobility: 0.3 },
     cooldown: { "Mind-Body": 0.7, Mobility: 0.3 }
+  },
+
+  "Combat Sports": {
+    warmup: { Mobility: 0.5, Functional: 0.4, Cardio: 0.1 },
+    main_primary: { Functional: 0.6, HIIT: 0.25, Strength: 0.15 },
+    main_secondary: { Functional: 0.5, Cardio: 0.3, HIIT: 0.2 },
+    finisher: { Cardio: 0.4, HIIT: 0.4, Functional: 0.2 },
+    cooldown: { Mobility: 0.7, Recovery: 0.3 }
+  },
+
+  "Athlete Performance": {
+    warmup: { Mobility: 0.5, Functional: 0.4, Cardio: 0.1 },
+    main_primary: { Functional: 0.65, Strength: 0.25, HIIT: 0.1 },
+    main_secondary: { Functional: 0.5, HIIT: 0.3, Strength: 0.2 },
+    finisher: { HIIT: 0.5, Cardio: 0.3, Functional: 0.2 },
+    cooldown: { Mobility: 0.7, Recovery: 0.3 }
   },
 
   "Group Fitness": {
