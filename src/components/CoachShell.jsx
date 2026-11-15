@@ -1,4 +1,5 @@
 import { useContext, useEffect } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.js";
 import { hasSession } from "../utils/api.js";
@@ -62,9 +63,7 @@ export default function CoachShell({ title, children, color = COACH_COLOR, home 
             Coach Hub
           </div>
         )}
-        <div style={footerLink} onClick={() => setMenuOpen(true)}>
-          Return to Menu
-        </div>
+        <TextAction plain style={footerLink} onClick={() => setMenuOpen(true)}>Return to Menu</TextAction>
       </div>
     </div>
   );
