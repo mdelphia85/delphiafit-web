@@ -1,10 +1,11 @@
 import { useContext, useState } from "react";
+import { TACTICAL_COLORS } from "../config/tacticalColors.js";
 import { MenuContext } from "../context/MenuContext.js";
 import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
 import TextAction from "../components/TextAction.jsx";
 
 const initialCertifications = [];
-const color = "#2d5f3a";
+const color = TACTICAL_COLORS.certifications;
 
 export default function CertificationsTracker() {
   const { setMenuOpen } = useContext(MenuContext);
