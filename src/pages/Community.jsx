@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 
@@ -122,7 +123,7 @@ export default function Community() {
           </article>
         ))}
       </section>
-      <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: "20px", right: "20px", color: COLOR, background: "black", border: 0, textDecoration: "underline", fontSize: "18px", cursor: "pointer" }}>Return to Menu</button>
+      <TextAction plain onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: "20px", right: "20px", color: COLOR, background: "black", border: 0, textDecoration: "underline", fontSize: "18px", cursor: "pointer" }}>Return to Menu</TextAction>
     </main>
   );
 }
