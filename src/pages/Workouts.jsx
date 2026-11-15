@@ -6,7 +6,8 @@ import {
   UI_MAIN_CATEGORIES,
   UI_SUBCATEGORY_MAP,
   STRENGTH_TYPES,
-  CATEGORY_MAP
+  CATEGORY_MAP,
+  EQUIPMENT_GROUPS
 } from "../generators/workoutTaxonomy.js";
 
 import { generateWorkout } from "../generators/workoutGenerator.js";
@@ -20,6 +21,13 @@ import { getAdaptiveDifficulty } from "../ai/adaptiveDifficulty";
 import { syncAdaptiveProfile } from "../ai/adaptiveSync";
 
 const DIFFICULTY_SCALE = { easy: 0.8, medium: 1, hard: 1.2 };
+
+const ALL_EQUIPMENT = Object.values(EQUIPMENT_GROUPS).flat()
+  .filter((item) => item !== "Bodyweight");
+const HOME_EQUIPMENT = [
+  "Chair", "Yoga Mat", "Dumbbells", "Resistance Bands",
+  "Loop Bands", "Jump Rope", "Bench", "Foam Roller"
+];
 
 export default function Workouts() {
   const { openMenu } = useContext(MenuContext);
@@ -42,7 +50,8 @@ export default function Workouts() {
   const [workoutType, setWorkoutType] = useState("");
   const [duration, setDuration] = useState("30 min");
   const [experienceLevel, setExperienceLevel] = useState("beginner");
-  const [equipmentChoice, setEquipmentChoice] = useState("all");
+  // null means every implement is available. An empty list means bodyweight only.
+  const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [difficulty, setDifficulty] = useState(() => getAdaptiveDifficulty());
 
   useEffect(() => {
@@ -149,6 +158,16 @@ export default function Workouts() {
     }
   }
 
+  function toggleEquipment(item) {
+    setSelectedEquipment((current) => {
+      // Start from all items when customizing the default full-gym selection.
+      const next = new Set(current === null ? ALL_EQUIPMENT : current);
+      if (next.has(item)) next.delete(item);
+      else next.add(item);
+      return [...next];
+    });
+  }
+
   function handleGenerate() {
     resetTimers();
 
@@ -165,20 +184,12 @@ export default function Workouts() {
 
     const mainCategory = CATEGORY_MAP[workoutType] || workoutType;
 
-    const equipmentPresets = {
-      all: null,
-      bodyweight: ["Bodyweight", "Chair", "Yoga Mat"],
-      home: ["Bodyweight", "Chair", "Yoga Mat", "Dumbbells", "Resistance Bands", "Jump Rope", "PVC Pipe", "Foam Roller"],
-      barbell: ["Barbell", "Rack", "Bench", "Plates", "Bodyweight", "PVC Pipe"],
-      dumbbells: ["Dumbbells", "Bench", "Bodyweight", "Yoga Mat"]
-    };
-
     const generated = generateWorkout({
       category_label: mainCategory,
       type_label: workoutType,
       duration_label: duration,
       experience_level: experienceLevel,
-      equipment_available: equipmentPresets[equipmentChoice]
+      equipment_available: selectedEquipment
     });
 
     setPlan({
@@ -449,18 +460,75 @@ export default function Workouts() {
             </select>
 
             <div style={sectionHeader}>Available Equipment</div>
-            <select
-              value={equipmentChoice}
-              onChange={e => setEquipmentChoice(e.target.value)}
-              style={field}
-              aria-label="Available Equipment"
-            >
-              <option value="all">All Equipment / Gym</option>
-              <option value="bodyweight">Bodyweight / No Equipment</option>
-              <option value="home">Home / Basic Equipment</option>
-              <option value="barbell">Barbell / Rack</option>
-              <option value="dumbbells">Dumbbells / Bench</option>
-            </select>
+            <div style={{ ...label, fontSize: "14px" }}>
+              Choose the equipment you actually have. Bodyweight movements are always available.
+            </div>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              {[
+                { label: "All Equipment", value: null },
+                { label: "Bodyweight Only", value: [] },
+                { label: "Home Basics", value: HOME_EQUIPMENT }
+              ].map((choice) => (
+                <button
+                  key={choice.label}
+                  type="button"
+                  onClick={() => setSelectedEquipment(choice.value)}
+                  style={{
+                    padding: "8px 10px",
+                    color: SILVER,
+                    border: `1px solid ${SILVER}`,
+                    borderRadius: "6px",
+                    backgroundColor: "rgb(25,25,25)",
+                    cursor: "pointer"
+                  }}
+                >
+                  {choice.label}
+                </button>
+              ))}
+            </div>
+            <div style={{ ...label, fontSize: "14px", marginTop: "4px" }} role="status">
+              {selectedEquipment === null
+                ? "All equipment available"
+                : selectedEquipment.length === 0
+                  ? "Bodyweight only"
+                  : `${selectedEquipment.length} equipment items selected`}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              {Object.entries(EQUIPMENT_GROUPS).map(([group, items]) => {
+                const options = items.filter((item) => item !== "Bodyweight");
+                const selectedCount = selectedEquipment === null
+                  ? options.length
+                  : options.filter((item) => selectedEquipment.includes(item)).length;
+                return (
+                  <details
+                    key={group}
+                    style={{ border: `1px solid ${SILVER}`, borderRadius: "6px", padding: "8px" }}
+                  >
+                    <summary style={{ color: SILVER, cursor: "pointer" }}>
+                      {group} ({selectedCount}/{options.length})
+                    </summary>
+                    <div style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(125px, 1fr))",
+                      gap: "10px",
+                      paddingTop: "10px"
+                    }}>
+                      {options.map((item) => (
+                        <label key={item} style={{ color: SILVER, display: "flex", gap: "7px", alignItems: "center", fontSize: "14px" }}>
+                          <input
+                            type="checkbox"
+                            checked={selectedEquipment === null || selectedEquipment.includes(item)}
+                            onChange={() => toggleEquipment(item)}
+                            aria-label={item}
+                          />
+                          {item}
+                        </label>
+                      ))}
+                    </div>
+                  </details>
+                );
+              })}
+            </div>
 
             <div style={sectionHeader}>Duration</div>
             <select
