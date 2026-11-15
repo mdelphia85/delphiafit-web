@@ -118,7 +118,7 @@ export default function MissionReplay() {
               <div>{replay.completed ? `Completed · self-reported score ${replay.score}` : "In progress · not yet assessed"}</div>
               <small>{replay.started_at}</small>
             </TextAction>
-          ))
+          ))}
         </section>
         {selected && <section style={{ ...panelStyle, marginTop: 16 }}>
           <h2 style={{ color }}>Replay #{selected.id} steps</h2>
