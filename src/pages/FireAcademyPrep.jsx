@@ -61,7 +61,7 @@ export default function FireAcademyPrep({ embedded = false, accent = TACTICAL_CO
 
       <div style={{ position: "relative", zIndex: 2, width: "min(500px, 100%)", marginTop: "24px" }}><TacticalActivityLog module="fire-academy-prep" title="Fire Academy" accent={TACTICAL_COLOR} /></div>
 
-      {!embedded && <TextAction onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color: TACTICAL_COLOR, fontSize: 22, zIndex: 20 }}>Return to Menu</TextAction>}
+      {!embedded && <TextAction plain onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color: TACTICAL_COLOR, fontSize: 22, zIndex: 20 }}>Return to Menu</TextAction>}
     </div>
   );
 }
