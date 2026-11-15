@@ -162,7 +162,7 @@ export default function ScenarioSimulator() {
         )}
       </div>
 
-      <TextAction onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color: TACTICAL_COLOR, fontSize: 22, zIndex: 20 }}>Return to Menu</TextAction>
+      <TextAction plain onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color: TACTICAL_COLOR, fontSize: 22, zIndex: 20 }}>Return to Menu</TextAction>
     </div>
   );
 }
