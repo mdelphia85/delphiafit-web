@@ -1,44 +1,20 @@
 import { useContext } from "react";
-import carbon from "../assets/carbon.png";
 import { MenuContext } from "../context/MenuContext.js";
 import TacticalOperationLog from "./TacticalOperationLog.jsx";
 import TextAction from "./TextAction.jsx";
 import { TACTICAL_COLORS } from "../config/tacticalColors.js";
 
-/** Shared DelphiaFit visual layout for non-division tactical operations. */
+/** Shared wrapper for specialist operations; preserves the original black background. */
 export default function TacticalOperationPage({ module }) {
   const { setMenuOpen } = useContext(MenuContext);
   const accent = TACTICAL_COLORS[module] || "#aab4c0";
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundImage: `url(${carbon})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundColor: "#000",
-        padding: "40px 20px 90px",
-        position: "relative",
-        boxSizing: "border-box",
-        color: "#fff",
-      }}
-    >
-      <div
-        aria-hidden="true"
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.75)",
-          pointerEvents: "none",
-        }}
-      />
-      <div style={{ position: "relative", zIndex: 2, maxWidth: 900, margin: "0 auto" }}>
-        <TacticalOperationLog module={module} accent={accent} />
-      </div>
+    <div style={{ minHeight: "100vh", background: "#000", padding: "32px 16px 90px", boxSizing: "border-box", color: "#fff" }}>
+      <TacticalOperationLog module={module} accent={accent} />
       <TextAction
         onClick={() => setMenuOpen(true)}
-        style={{ position: "fixed", right: 20, bottom: 20, zIndex: 10, color: accent, fontSize: 18 }}
+        style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: accent, fontSize: 18 }}
       >
         Return to Menu
       </TextAction>
