@@ -1,4 +1,5 @@
 import { useCallback, useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.js";
 import StatusMessage from "../components/StatusMessage.jsx";
@@ -103,7 +104,7 @@ export default function ClientMessages() {
         )}
       </div>
       <div style={{ position: "fixed", bottom: 0, left: 0, width: "100%", height: "40px", background: "#000", display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 16px", boxSizing: "border-box", zIndex: 20 }}>
-        <div style={{ color: COACH_COLOR, fontSize: "18px", textDecoration: "underline", cursor: "pointer" }} onClick={() => setMenuOpen(true)}>Return to Menu</div>
+        <TextAction plain style={{ color: COACH_COLOR, fontSize: "18px", textDecoration: "underline", cursor: "pointer" }} onClick={() => setMenuOpen(true)}>Return to Menu</TextAction>
       </div>
     </div>
   );
