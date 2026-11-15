@@ -50,16 +50,43 @@ const RESTRICTED_STYLE_EQUIPMENT = {
   "Home Workout Basics": ["Bodyweight", "Chair", "Yoga Mat", "Dumbbells", "Resistance Bands", "Loop Bands", "Jump Rope"]
 };
 
-function isAvailable(exercise, equipmentAvailable, workoutStyle) {
+// Some catalog entries list substitute implements (one OR the other),
+// while other exercises require every piece of listed equipment.
+// Keep alternatives explicit so a user selecting dumbbells alone can still
+// do a Goblet Squat, but cannot be assigned a barbell bench press.
+const ALTERNATIVE_EQUIPMENT_SETS = [
+  ["Dumbbells", "Kettlebells"],
+  ["Dumbbells", "Barbell"],
+  ["Dumbbells", "Bodyweight"],
+  ["Bodyweight", "Dumbbells"],
+  ["Dumbbells", "Trap Bar"],
+  ["Resistance Bands", "Cable Machine"],
+  ["Barbell", "PVC Pipe"],
+  ["Rower", "Bike"],
+  ["Machine", "Bodyweight"]
+];
+
+export function isAvailable(exercise, equipmentAvailable, workoutStyle = "") {
+  const items = exercise.equipment || [];
   const restricted = RESTRICTED_STYLE_EQUIPMENT[workoutStyle];
-  // For explicitly equipment-limited beginner programs every listed item
-  // must be covered; a chair by itself cannot power a band-row exercise.
-  if (restricted && !exercise.equipment.every((item) => restricted.includes(item))) return false;
-  if (equipmentAvailable == null || equipmentAvailable.length === 0) return true;
-  // An equipment list normally names alternative implements (e.g. dumbbell
-  // *or* kettlebell). For explicitly equipment-limited workouts above, require
-  // all listed pieces to be available to avoid impossible exercise suggestions.
-  return exercise.equipment.some((item) => equipmentAvailable.includes(item));
+
+  // Bodyweight is always available, but chairs, mats, bags and other equipment
+  // still require explicit selection when custom equipment is enabled.
+  const selected = equipmentAvailable === null || equipmentAvailable === undefined
+    ? null
+    : new Set([...equipmentAvailable, "Bodyweight"]);
+
+  const permitted = restricted ? new Set([...restricted, "Bodyweight"]) : null;
+  const meets = (set) => {
+    if (!set) return true;
+    if (items.length === 0) return true;
+    const alternatives = ALTERNATIVE_EQUIPMENT_SETS.some((group) =>
+      group.length === items.length && group.every((item) => items.includes(item))
+    );
+    return alternatives ? items.some((item) => set.has(item)) : items.every((item) => set.has(item));
+  };
+
+  return meets(permitted) && meets(selected);
 }
 
 function shuffle(array) {
