@@ -97,7 +97,7 @@ export default function K9Operations() {
       {selected && <section style={panel}><h2 style={{ color }}>Deployment history</h2>{history.length ? history.map((entry) => <article key={entry.id} style={{ borderTop: "1px solid #444", padding: 8 }}><strong>{entry.mission_type}</strong><p>{entry.location} ? {entry.timestamp}</p>{entry.notes && <p>{entry.notes}</p>}<p>Success recorded: {entry.success ? "Yes" : "No"} (older records may not have captured explicit outcomes).</p></article>) : <p>No deployments logged for this unit.</p>}</section>}
       <section style={panel}><h2>Training curriculum</h2>{drills.map((drill) => <TextAction key={drill.id} onClick={() => setDrills((current) => current.map((item) => item.id === drill.id ? { ...item, completed: !item.completed } : item))} style={{ ...actionStyle, display: "block", padding: 8 }}>{drill.completed ? "✓" : "○"} {drill.name} · {drill.duration} · {drill.difficulty}</TextAction>)}</section>
     </main>
-    <TextAction onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color }}>Return to Menu</TextAction>
+    <TextAction plain onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color }}>Return to Menu</TextAction>
   </div>;
 }
 
