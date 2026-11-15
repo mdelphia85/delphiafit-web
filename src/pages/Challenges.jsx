@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 import { userDataApi } from "../utils/userDataApi.js";
@@ -86,6 +87,6 @@ export default function Challenges() {
         {editId === item.id ? <><input aria-label="Edit challenge title" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} /><input aria-label="Edit challenge target" type="number" min="1" value={editTarget} onChange={(e) => setEditTarget(e.target.value)} /><button type="button" disabled={saving} onClick={() => updateChallenge(item)}>Save changes</button><button type="button" onClick={() => setEditId(null)}>Cancel</button></> : <><strong style={{ color: "dodgerblue" }}>{item.title}</strong><p>{categoryLabel}: {count}/{item.target_value} recorded</p><progress value={progress} max="100" aria-label={`${item.title} progress`} /><span>{progress}%</span><div><button type="button" onClick={() => { setEditId(item.id); setEditTitle(item.title); setEditTarget(String(item.target_value)); }}>Edit</button> <button type="button" onClick={() => deleteChallenge(item)}>Delete</button></div></>}
       </article>;
     })}
-    <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "dodgerblue", background: "black", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</button>
+    <TextAction plain onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "dodgerblue", background: "black", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</TextAction>
   </main>;
 }

@@ -1,4 +1,5 @@
 import { useState, useContext, useEffect } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.js";
 
@@ -468,7 +469,7 @@ export default function Sports() {
       </button>
 
       {/* RETURN TO MENU (BOTTOM RIGHT) */}
-      <div
+      <TextAction plain
         onClick={openMenu}
         style={{
           position: "fixed",
@@ -479,9 +480,7 @@ export default function Sports() {
           textDecoration: "underline",
           fontSize: "18px",
         }}
-      >
-        Return to Menu
-      </div>
+      >Return to Menu</TextAction>
     </div>
   );
 }

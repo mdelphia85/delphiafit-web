@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import useInsights from "../hooks/useInsights.js";
 
@@ -27,6 +28,6 @@ export default function AthleteAnalytics() {
       <h2>Weekly trend</h2>
       {data.weekly_trend.map((week) => <p key={week.week_start}>Week of {week.week_start}: {week.sessions} sessions, {week.minutes} min</p>)}
     </>}
-    <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "#a78bfa", background: "none", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</button>
+    <TextAction plain onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "#a78bfa", background: "none", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</TextAction>
   </main>;
 }

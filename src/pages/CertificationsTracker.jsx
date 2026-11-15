@@ -100,7 +100,7 @@ export default function CertificationsTracker() {
           <strong>Summary</strong><div>Total Certifications: {certifications.length}</div><div>Completed: {completed}</div><div>In Progress: {inProgress}</div>
         </section>
       </div>
-      <TextAction onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color }}>Return to Menu</TextAction>
+      <TextAction plain onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color }}>Return to Menu</TextAction>
     </div>
   );
 }

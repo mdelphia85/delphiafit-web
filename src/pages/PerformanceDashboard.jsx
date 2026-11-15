@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 import useInsights from "../hooks/useInsights.js";
@@ -32,6 +33,6 @@ export default function PerformanceDashboard() {
       <h2>Latest strength metrics</h2>
       {latestStrength.length ? latestStrength.map((metric) => <p key={metric.id}>{metric.metric_name}: {metric.value} - {new Date(metric.created_at).toLocaleDateString()}</p>) : <p>No strength metrics recorded yet.</p>}
     </>}
-    <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "#fbbf24", background: "black", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</button>
+    <TextAction plain onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "#fbbf24", background: "black", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</TextAction>
   </main>;
 }

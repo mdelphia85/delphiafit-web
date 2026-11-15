@@ -1,4 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { Link } from "react-router-dom";
 import { apiRequest } from "../utils/api.js";
 import AdaptiveCoachCard from "../components/AdaptiveCoachCard.jsx";
@@ -103,6 +104,6 @@ export default function AICoach() {
       </form>
       <section style={{ marginTop: 16 }}><h2 style={{ fontSize: 16 }}>Saved coaching history</h2>{history.slice(0, 5).map((record) => <button key={record.id} onClick={() => { setReply(record.result.coach_response || "Saved recommendation"); setLastAdaptive(record.result.adaptive_inputs || null); setReplyMode(record.result.mode || "limited"); }} style={{ display: "block", width: "100%", textAlign: "left", padding: 10, marginBottom: 8, background: "#111", color: "#ddd", border: "1px solid #333", borderRadius: 8 }}>Saved {new Date(record.created_at).toLocaleString()} - {record.input.message}</button>)}</section>
     </div>
-    <div style={{ position: "fixed", bottom: 0, left: 0, width: "100%", height: 40, background: "#000", display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 16px", boxSizing: "border-box", zIndex: 20 }}><button type="button" onClick={() => setMenuOpen(true)} style={{ color: AI_COLOR, background: "transparent", border: 0, textDecoration: "none", cursor: "pointer" }}>Return to Menu</button></div>
+    <div style={{ position: "fixed", bottom: 0, left: 0, width: "100%", height: 40, background: "#000", display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 16px", boxSizing: "border-box", zIndex: 20 }}><TextAction plain onClick={() => setMenuOpen(true)} style={{ color: AI_COLOR, background: "transparent", border: 0, textDecoration: "none", cursor: "pointer" }}>Return to Menu</TextAction></div>
   </main>;
 }

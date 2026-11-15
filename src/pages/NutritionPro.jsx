@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 
@@ -76,6 +77,6 @@ export default function NutritionPro() {
         {plan ? <pre style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", color: "#ddd" }}>{JSON.stringify(plan, null, 2)}</pre> : <p>No saved meal plan yet.</p>}
       </section>
     </div>
-    <div style={{ position: "fixed", bottom: 0, left: 0, width: "100%", height: 40, background: "#000", display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 16px", boxSizing: "border-box", zIndex: 20 }}><button onClick={() => setMenuOpen(true)} style={{ color: NUTRITION_COLOR, background: "transparent", border: 0, textDecoration: "underline", cursor: "pointer" }}>Return to Menu</button></div>
+    <div style={{ position: "fixed", bottom: 0, left: 0, width: "100%", height: 40, background: "#000", display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 16px", boxSizing: "border-box", zIndex: 20 }}><TextAction plain onClick={() => setMenuOpen(true)} style={{ color: NUTRITION_COLOR, background: "transparent", border: 0, textDecoration: "underline", cursor: "pointer" }}>Return to Menu</TextAction></div>
   </main>;
 }

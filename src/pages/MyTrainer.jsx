@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
@@ -100,12 +101,10 @@ export default function MyTrainer() {
         )}
         {message && <p role="status">{message}</p>}
       </div>
-      <button type="button" onClick={() => setMenuOpen(true)}
+      <TextAction plain onClick={() => setMenuOpen(true)}
         style={{ position: "fixed", right: "20px", bottom: "20px", color: CLIENT_TRAINER_COLOR,
           fontSize: "18px", textDecoration: "none", cursor: "pointer",
-          background: "transparent", border: 0, padding: 0, zIndex: 20 }}>
-        Return to Menu
-      </button>
+          background: "transparent", border: 0, padding: 0, zIndex: 20 }}>Return to Menu</TextAction>
     </main>
   );
 }

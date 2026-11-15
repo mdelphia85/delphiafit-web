@@ -1,4 +1,5 @@
 import { useState, useContext } from "react";
+import TextAction from "../components/TextAction.jsx";
 import caloriesImage from "../assets/cals.png";
 import { MenuContext } from "../context/MenuContext.js";
 import useNutritionTargets from "../hooks/useNutritionTargets.js";
@@ -186,7 +187,7 @@ export default function Calories() {
         {saveStatus && <div role="status" style={{ textAlign: "center", marginTop: 8 }}>{saveStatus}</div>}
 
         {/* RETURN TO MENU */}
-        <div
+        <TextAction plain
           onClick={openMenu}
           style={{
             position: "fixed",
@@ -197,9 +198,7 @@ export default function Calories() {
             fontSize: "18px",
             cursor: "pointer"
           }}
-        >
-          Return to Menu
-        </div>
+        >Return to Menu</TextAction>
 
       </div>
 

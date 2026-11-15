@@ -12,7 +12,7 @@ export default function TacticalOperationPage({ module }) {
   return (
     <div style={{ minHeight: "100vh", background: "#000", padding: "32px 16px 90px", boxSizing: "border-box", color: "#fff" }}>
       <TacticalOperationLog module={module} accent={accent} />
-      <TextAction
+      <TextAction plain
         onClick={() => setMenuOpen(true)}
         style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: accent, fontSize: 18 }}
       >

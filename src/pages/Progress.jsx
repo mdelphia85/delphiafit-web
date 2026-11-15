@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 import useInsights from "../hooks/useInsights.js";
@@ -38,6 +39,6 @@ export default function Progress() {
         {weights.length ? [...weights].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10).map((entry) => <p key={entry.id}>{new Date(entry.date).toLocaleDateString()} - {entry.weight}{entry.body_fat != null ? ` - ${entry.body_fat}% body fat` : ""}</p>) : <p>No body weight entries recorded yet.</p>}
       </article>
     </>}
-    <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "yellow", background: "black", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</button>
+    <TextAction plain onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "yellow", background: "black", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</TextAction>
   </main>;
 }

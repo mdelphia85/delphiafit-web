@@ -1,4 +1,5 @@
 import { useState, useContext } from "react";
+import TextAction from "../components/TextAction.jsx";
 import proteinImage from "../assets/protein.png";
 import { MenuContext } from "../context/MenuContext.js";
 import useNutritionTargets from "../hooks/useNutritionTargets.js";
@@ -195,7 +196,7 @@ export default function Protein() {
       )}
 
       {/* RETURN TO MENU */}
-      <div
+      <TextAction plain
         onClick={openMenu}
         style={{
           position: "fixed",
@@ -206,9 +207,7 @@ export default function Protein() {
           fontSize: "18px",
           cursor: "pointer"
         }}
-      >
-        Return to Menu
-      </div>
+      >Return to Menu</TextAction>
 
     </div>
   );

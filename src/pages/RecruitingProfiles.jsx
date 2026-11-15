@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 
@@ -34,7 +35,7 @@ export default function RecruitingProfiles() {
     <form onSubmit={save} style={formStyle}><h2>Your athlete profile</h2><label>Sport<input required maxLength={80} value={profile.sport} onChange={(e) => update("sport", e.target.value)} style={inputStyle} /></label><label>Position<input maxLength={80} value={profile.position || ""} onChange={(e) => update("position", e.target.value)} style={inputStyle} /></label><label>Bio<textarea maxLength={2000} rows={3} value={profile.bio || ""} onChange={(e) => update("bio", e.target.value)} style={inputStyle} /></label><label style={{ display: "flex", gap: "8px", alignItems: "center" }}><input type="checkbox" checked={!!profile.public} onChange={(e) => update("public", e.target.checked)} /> Publish this profile for authenticated members</label><button style={buttonStyle}>Save Profile</button>{saved && <p role="status">Profile saved.</p>}</form>
     {error && <p role="alert" style={{ color: "#ff8b8b" }}>{error}</p>}
     <h2>Published athletes</h2>{loading ? <p>Loading profiles...</p> : athletes.length === 0 ? <p>No athletes have published a recruiting profile yet.</p> : athletes.map((athlete) => <article key={athlete.user_id} style={cardStyle}><strong>{athlete.name}</strong><p style={{ color: "#aaa" }}>{[athlete.sport, athlete.position].filter(Boolean).join(" | ")}</p>{athlete.bio && <p>{athlete.bio}</p>}</article>)}
-  </section><button type="button" onClick={() => setMenuOpen(true)} style={menuStyle}>Return to Menu</button></main>;
+  </section><TextAction plain onClick={() => setMenuOpen(true)} style={menuStyle}>Return to Menu</TextAction></main>;
 }
 const pageStyle = { width: "100vw", minHeight: "100vh", background: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", color: "#fff" };
 const formStyle = { display: "grid", gap: "10px", background: "#111", borderRadius: "12px", padding: "14px" };

@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 import { userDataApi } from "../utils/userDataApi.js";
@@ -32,6 +33,6 @@ export default function History() {
     {loading && <p role="status">Loading history…</p>}{error && <p role="alert">{error}</p>}
     {!loading && !error && entries.length === 0 && <p>No logs or workouts recorded yet.</p>}
     <div style={{ display: "grid", gap: 12 }}>{entries.map((item) => <article key={item.id} style={{ border: "1px solid #444", borderRadius: 8, padding: 14 }}><strong>{item.title}</strong><div>{new Date(item.date).toLocaleString()}</div><p>{item.summary}</p></article>)}</div>
-    <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "yellow", background: "black", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</button>
+    <TextAction plain onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "yellow", background: "black", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</TextAction>
   </main>;
 }

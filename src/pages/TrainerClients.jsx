@@ -1,4 +1,5 @@
 import { useCallback, useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.js";
 import { ApiError, apiRequest } from "../utils/api.js";
@@ -25,15 +26,12 @@ const btn = {
 function MainMenuLink() {
   const { setMenuOpen } = useContext(MenuContext);
   return (
-    <button
-      type="button"
+    <TextAction plain
       onClick={() => setMenuOpen(true)}
       style={{ position: "fixed", right: "20px", bottom: "20px", zIndex: 20, fontSize: "18px",
         color: TRAINER_COLOR, background: "transparent", border: 0, padding: 0,
         textDecoration: "none", cursor: "pointer" }}
-    >
-      Return to Menu
-    </button>
+    >Return to Menu</TextAction>
   );
 }
 

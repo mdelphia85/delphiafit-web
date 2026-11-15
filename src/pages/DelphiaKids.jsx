@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 
@@ -39,7 +40,7 @@ export default function DelphiaKids() {
     <p style={{ color: "#aaa" }}>Child profiles use a nickname only. No birth date, contact details, or public child profile is collected.</p>
     <form onSubmit={createChild} style={formStyle}><label>Child nickname<input required maxLength={40} value={nickname} onChange={(e) => setNickname(e.target.value)} style={inputStyle} /></label><button style={buttonStyle}>Add child profile</button></form>
     {error && <p role="alert" style={{ color: "#ff8b8b" }}>{error}</p>}{loading ? <p>Loading saved progress...</p> : children.length === 0 ? <p>No child profiles yet. Add a nickname to begin.</p> : children.map((child) => <article key={child.id} style={cardStyle}><header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><strong>{child.nickname}</strong><button type="button" onClick={() => toggleControls(child)} style={buttonStyle}>Parent controls: {child.parent_controls_enabled ? "On" : "Off"}</button></header><p style={{ color: "#aaa" }}>Activities</p>{ACTIVITIES.map((activity) => { const done = child.progress?.some((row) => row.activity_key === activity && row.completed); return <button type="button" key={activity} onClick={() => toggleActivity(child, activity)} style={{ ...activityStyle, borderColor: done ? COLOR : "#333", color: done ? COLOR : "white" }}>{activity} | {done ? "Complete" : "Mark complete"}</button>; })}</article>)}
-  </section><button type="button" onClick={() => setMenuOpen(true)} style={menuStyle}>Return to Menu</button></main>;
+  </section><TextAction plain onClick={() => setMenuOpen(true)} style={menuStyle}>Return to Menu</TextAction></main>;
 }
 const pageStyle = { width: "100vw", minHeight: "100vh", background: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", color: "#fff" };
 const formStyle = { display: "flex", gap: "10px", alignItems: "end", flexWrap: "wrap", background: "#111", borderRadius: "12px", padding: "14px", marginBottom: "16px" };

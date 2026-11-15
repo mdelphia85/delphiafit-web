@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import DelphiaLogo from "../assets/DelphiaDesigns.jpg";
 
@@ -103,7 +104,7 @@ export default function About() {
       </p>
 
       {/* RETURN TO MENU */}
-      <p
+      <TextAction plain
         onClick={() => setMenuOpen(true)}
         style={{
           position: "fixed",
@@ -114,9 +115,7 @@ export default function About() {
           textDecoration: "underline",
           cursor: "pointer"
         }}
-      >
-        Return to Menu
-      </p>
+      >Return to Menu</TextAction>
     </div>
   );
 }

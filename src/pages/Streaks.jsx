@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import useInsights from "../hooks/useInsights.js";
 
@@ -22,6 +23,6 @@ export default function Streaks() {
         <small>{item.last_active ? `Last logged ${item.last_active}` : "Nothing logged yet"}</small>
       </article>)}
     </>}
-    <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "#4464FF", background: "black", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</button>
+    <TextAction plain onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color: "#4464FF", background: "black", border: 0, textDecoration: "underline", fontSize: 18, cursor: "pointer" }}>Return to Menu</TextAction>
   </main>;
 }

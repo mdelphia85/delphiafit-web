@@ -7,6 +7,7 @@ export default function TextAction({
   children,
   onClick,
   submit = false,
+  plain = false,
   disabled = false,
   style = {},
   label,
@@ -43,6 +44,7 @@ export default function TextAction({
         cursor: disabled ? "default" : "pointer",
         opacity: disabled ? 0.5 : 1,
         ...style,
+        ...(plain ? { background: "transparent", border: "none", boxShadow: "none", padding: 0 } : {}),
         textDecoration: "none"
       }}
       {...rest}

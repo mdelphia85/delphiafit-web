@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { hasSession } from "../utils/api.js";
@@ -29,9 +30,7 @@ function CoachAccessRequired() {
         <button type="button" style={{ ...primaryButton, width: "100%", marginTop: "12px" }} onClick={() => navigate("/coach-login", { state: { from: "/client-management" } })}>
           Sign in to Coach Hub
         </button>
-        <button type="button" style={{ ...secondaryButton, width: "100%", marginTop: "12px" }} onClick={() => setMenuOpen(true)}>
-          Return to Menu
-        </button>
+        <TextAction plain style={{ ...secondaryButton, width: "100%", marginTop: "12px" }} onClick={() => setMenuOpen(true)}>Return to Menu</TextAction>
       </section>
     </main>
   );
