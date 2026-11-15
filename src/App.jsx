@@ -105,12 +105,6 @@ import WildlandFire from "./pages/WildlandFire.jsx";
 import TacticalFitnessCivilian from "./pages/TacticalFitnessCivilian.jsx";
 
 // ACADEMY PREP
-import FireAcademyPrep from "./pages/FireAcademyPrep.jsx";
-import PoliceAcademyPrep from "./pages/PoliceAcademyPrep.jsx";
-import EMTParamedicPrep from "./pages/EMTParamedicPrep.jsx";
-import MilitaryBootcampPrep from "./pages/MilitaryBootcampPrep.jsx";
-import SOFSelectionPrep from "./pages/SOFSelectionPrep.jsx";
-import SWATSelectionPrep from "./pages/SWATSelectionPrep.jsx";
 
 // TACTICAL CORE SYSTEMS
 import ScenarioSimulator from "./pages/ScenarioSimulator.jsx";
@@ -241,12 +235,6 @@ function MenuOverlay() {
   <MenuItem label="Tactical Fitness" onClick={() => go("/tactical/fitness-civilian")} />
 
   {/* ACADEMY PREP */}
-  <MenuItem label="Fire Academy Prep" onClick={() => go("/tactical/fire-academy")} />
-  <MenuItem label="Police Academy Prep" onClick={() => go("/tactical/police-academy")} />
-  <MenuItem label="EMT/Paramedic Prep" onClick={() => go("/tactical/emt-paramedic")} />
-  <MenuItem label="Military Bootcamp Prep" onClick={() => go("/tactical/military-bootcamp")} />
-  <MenuItem label="SOF Selection Prep" onClick={() => go("/tactical/sof-selection")} />
-  <MenuItem label="SWAT Selection Prep" onClick={() => go("/tactical/swat-selection")} />
 
   {/* TACTICAL CORE SYSTEMS */}
   <MenuItem label="Scenario Simulator" onClick={() => go("/tactical/scenario-simulator")} />
@@ -378,12 +366,12 @@ function AppWithMenu() {
   <Route path="/tactical/fitness-civilian" element={<TacticalFitnessCivilian />} />
       
   {/* ACADEMY PREP */}
-  <Route path="/tactical/fire-academy" element={<FireAcademyPrep />} />
-  <Route path="/tactical/police-academy" element={<PoliceAcademyPrep />} />
-  <Route path="/tactical/emt-paramedic" element={<EMTParamedicPrep />} />
-  <Route path="/tactical/military-bootcamp" element={<MilitaryBootcampPrep />} />
-  <Route path="/tactical/sof-selection" element={<SOFSelectionPrep />} />
-  <Route path="/tactical/swat-selection" element={<SWATSelectionPrep />} />
+  <Route path="/tactical/fire-academy" element={<Navigate to="/tactical/firefighters?view=academy" replace />} />
+  <Route path="/tactical/police-academy" element={<Navigate to="/tactical/police?view=academy" replace />} />
+  <Route path="/tactical/emt-paramedic" element={<Navigate to="/tactical/ems?view=academy" replace />} />
+  <Route path="/tactical/military-bootcamp" element={<Navigate to="/tactical/military?view=academy" replace />} />
+  <Route path="/tactical/sof-selection" element={<Navigate to="/tactical/military?view=sof" replace />} />
+  <Route path="/tactical/swat-selection" element={<Navigate to="/tactical/police?view=swat" replace />} />
       
   {/* TACTICAL CORE SYSTEMS */}
   <Route path="/tactical/scenario-simulator" element={<ScenarioSimulator />} />
