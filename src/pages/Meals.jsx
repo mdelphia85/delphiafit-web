@@ -1,4 +1,5 @@
 import { useContext, useState, useEffect } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import useNutritionTargets from "../hooks/useNutritionTargets.js";
 import { generateMealPlan, getLatestMealPlan } from "../utils/nutritionApi.js";
@@ -314,7 +315,7 @@ export default function Meals() {
 
         <div style={{ flex: 1 }} />
 
-        <div
+        <TextAction plain
           onClick={openMenu}
           style={{
             color: orange,
@@ -322,9 +323,7 @@ export default function Meals() {
             cursor: "pointer",
             textDecoration: "underline"
           }}
-        >
-          Return to Menu
-        </div>
+        >Return to Menu</TextAction>
       </div>
     </div>
   );
