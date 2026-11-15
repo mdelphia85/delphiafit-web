@@ -37,7 +37,21 @@ function mainBlockExerciseCount(minutes) {
   return MAIN_BLOCK_EXERCISE_COUNTS[120];
 }
 
-function isAvailable(exercise, equipmentAvailable) {
+// Some beginner styles promise a minimal-equipment workout. Enforce that
+// promise for *all* workout blocks, including warm-up and cooldown.
+const RESTRICTED_STYLE_EQUIPMENT = {
+  "No-Equipment Basics": ["Bodyweight"],
+  "First Workout": ["Bodyweight", "Chair", "Yoga Mat"],
+  "Chair Fitness": ["Chair", "Bodyweight"],
+  "Seated Cardio": ["Chair", "Bodyweight"],
+  "Home Workout Basics": ["Bodyweight", "Chair", "Yoga Mat", "Dumbbells", "Resistance Bands", "Loop Bands", "Jump Rope"]
+};
+
+function isAvailable(exercise, equipmentAvailable, workoutStyle) {
+  const restricted = RESTRICTED_STYLE_EQUIPMENT[workoutStyle];
+  // For explicitly equipment-limited beginner programs every listed item
+  // must be covered; a chair by itself cannot power a band-row exercise.
+  if (restricted && !exercise.equipment.every((item) => restricted.includes(item))) return false;
   if (equipmentAvailable == null || equipmentAvailable.length === 0) return true;
   return exercise.equipment.some((item) => equipmentAvailable.includes(item));
 }
@@ -76,7 +90,7 @@ function selectExercises(baseCategory, style, block, count, experienceLevel, equ
   const rank = LEVEL_RANK[experienceLevel] ?? LEVEL_RANK.beginner;
   const compatible = WORKOUT_EXERCISES.filter((ex) =>
     (LEVEL_RANK[ex.minLevel] ?? 0) <= rank &&
-    isAvailable(ex, equipmentAvailable) &&
+    isAvailable(ex, equipmentAvailable, style) &&
     !usedNames.has(ex.name)
   );
   const weights = CATEGORY_WEIGHTS[baseCategory]?.[block] || DEFAULT_WEIGHTS[block];
