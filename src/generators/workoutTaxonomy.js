@@ -197,10 +197,63 @@ export const WEIGHT_OPTIONS_KG = [
 // EQUIPMENT GROUPS
 // -----------------------------
 export const EQUIPMENT_GROUPS = {
-  "Free Weights": ["Dumbbells", "Kettlebells", "Barbell", "Plates"],
-  Machines: ["Cable Machine", "Leg Press", "Smith Machine"],
-  Bands: ["Resistance Bands", "Loop Bands"],
-  Bodyweight: ["Pull-Up Bar", "Dip Bars", "None"]
+  "Bodyweight & Essentials": [
+    "Bodyweight",
+    "Chair",
+    "Yoga Mat",
+    "Bench",
+    "Box",
+    "PVC Pipe"
+  ],
+  "Free Weights & Racks": [
+    "Dumbbells",
+    "Kettlebells",
+    "Barbell",
+    "Trap Bar",
+    "Plates",
+    "Rack"
+  ],
+  "Bands & Calisthenics": [
+    "Resistance Bands",
+    "Loop Bands",
+    "Pull-Up Bar",
+    "Dip Bars",
+    "Gymnastics Rings"
+  ],
+  "Machines & Cables": [
+    "Machine",
+    "Cable Machine",
+    "Leg Press",
+    "Smith Machine",
+    "Assisted Pull-Up Machine",
+    "Assisted Dip Machine"
+  ],
+  "Cardio Equipment": [
+    "Treadmill",
+    "Bike",
+    "Recumbent Bike",
+    "Rower",
+    "Elliptical",
+    "Stair Climber",
+    "Pool"
+  ],
+  "Athletic & Conditioning": [
+    "Jump Rope",
+    "Medicine Ball",
+    "Battle Ropes",
+    "Sled",
+    "Sandbag",
+    "Agility Ladder",
+    "Cones"
+  ],
+  "Combat Sports": [
+    "Heavy Bag",
+    "Gloves"
+  ],
+  "Recovery & Mobility": [
+    "Foam Roller",
+    "Massage Gun"
+  ]
 };
 
 // -----------------------------
