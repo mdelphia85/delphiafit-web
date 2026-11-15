@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { apiRequest } from "../utils/api.js";
+import TextAction from "./TextAction.jsx";
 
-export default function TacticalActivityLog({ module, title }) {
+export default function TacticalActivityLog({ module, title, accent = "#2d5f3a" }) {
   const [records, setRecords] = useState([]);
   const [activity, setActivity] = useState("");
   const [duration, setDuration] = useState("30");
@@ -38,20 +39,20 @@ export default function TacticalActivityLog({ module, title }) {
     catch (requestError) { setError(requestError.message || "Unable to remove this activity record."); }
   }
 
-  return <section aria-busy={loading} style={{ marginTop: 24, padding: 14, color: "#fff", background: "#111", border: "1px solid #2d5f3a", borderRadius: 10 }}>
-    <h2 style={{ color: "#2d5f3a" }}>{title} training log</h2>
+  return <section aria-busy={loading} style={{ marginTop: 24, padding: 14, color: "#fff", background: "#111", border: `1px solid ${accent}`, borderRadius: 10 }}>
+    <h2 style={{ color: accent }}>{title} training log</h2>
     <p>Record completed training sessions with duration and notes.</p>
     {error && <p role="alert" style={{ color: "#fecaca" }}>{error}</p>}
     <form onSubmit={logTraining} style={{ display: "grid", gap: 8 }}>
       <label>Activity<input required value={activity} onChange={(event) => setActivity(event.target.value)} style={field} /></label>
       <label>Duration (minutes)<input required type="number" min="1" value={duration} onChange={(event) => setDuration(event.target.value)} style={field} /></label>
       <label>Notes<textarea value={notes} onChange={(event) => setNotes(event.target.value)} rows="2" style={field} /></label>
-      <button type="submit" style={button}>Log training session</button>
+      <TextAction submit style={{ color: accent, display: "inline-block", padding: "8px 0" }}>Log training session</TextAction>
     </form>
     <h3>Recorded sessions</h3>
-    {loading ? <p role="status">Loading training activity?</p> : records.length === 0 ? <p role="status">No training sessions recorded yet.</p> : records.map((record) => <article key={record.id} style={{ borderTop: "1px solid #444", padding: 8 }}><strong>{record.activity}</strong><p>{record.duration_minutes} minutes ? {new Date(record.occurred_at).toLocaleString()}</p>{record.notes && <p>{record.notes}</p>}<button type="button" onClick={() => removeRecord(record.id)}>Delete session</button></article>)}
+    {loading ? <p role="status">Loading training activity?</p> : records.length === 0 ? <p role="status">No training sessions recorded yet.</p> : records.map((record) => <article key={record.id} style={{ borderTop: "1px solid #444", padding: 8 }}><strong>{record.activity}</strong><p>{record.duration_minutes} minutes · {new Date(record.occurred_at).toLocaleString()}</p>{record.notes && <p>{record.notes}</p>}<TextAction onClick={() => removeRecord(record.id)} style={{ color: accent }}>Delete session</TextAction></article>)}
   </section>;
 }
 
 const field = { display: "block", width: "100%", boxSizing: "border-box", padding: 8, marginTop: 4, color: "#fff", background: "#000", border: "1px solid #444", borderRadius: 6 };
-const button = { padding: 10, color: "#fff", background: "#151515", border: "1px solid #2d5f3a", borderRadius: 6, cursor: "pointer" };
+
