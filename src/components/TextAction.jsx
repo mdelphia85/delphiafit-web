@@ -39,10 +39,11 @@ export default function TextAction({
       onKeyDown={onKeyDown}
       style={{
         color: "inherit",
-        textDecoration: "underline",
+        textDecoration: "none",
         cursor: disabled ? "default" : "pointer",
         opacity: disabled ? 0.5 : 1,
-        ...style
+        ...style,
+        textDecoration: "none"
       }}
       {...rest}
     >
