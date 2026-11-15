@@ -1,4 +1,5 @@
 import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
+import TextAction from "../components/TextAction.jsx";
 import TacticalActivityLog from "../components/TacticalActivityLog.jsx";
 import { TACTICAL_COLORS } from "../config/tacticalColors.js";
 import { useContext } from "react";
@@ -60,9 +61,7 @@ export default function PoliceAcademyPrep({ embedded = false, accent = TACTICAL_
 
       <div style={{ position: "relative", zIndex: 2, width: "min(500px, 100%)", marginTop: "24px" }}><TacticalActivityLog module="police-academy-prep" title="Police Academy" accent={TACTICAL_COLOR} /></div>
 
-      {!embedded && <div onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: "20px", right: "20px", color: TACTICAL_COLOR, fontSize: "22px", textDecoration: "underline", cursor: "pointer", zIndex: 20 }}>
-        Return to Menu
-      </div>}
+      {!embedded && <TextAction onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color: TACTICAL_COLOR, fontSize: 22, zIndex: 20 }}>Return to Menu</TextAction>}
     </div>
   );
 }
