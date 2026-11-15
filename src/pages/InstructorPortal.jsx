@@ -1,9 +1,10 @@
 import { useContext, useState } from "react";
+import { TACTICAL_COLORS } from "../config/tacticalColors.js";
 import { MenuContext } from "../context/MenuContext.js";
 import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
 
 const initialDrills = [];
-const color = "#2d5f3a";
+const color = TACTICAL_COLORS.instructor;
 
 export default function InstructorPortal() {
   const { setMenuOpen } = useContext(MenuContext);
