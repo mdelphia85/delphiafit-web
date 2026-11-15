@@ -86,16 +86,29 @@ function selectExercises(baseCategory, style, block, count, experienceLevel, equ
   // the same generic workout.
   if (isMain && style) {
     const matchingStyle = compatible.filter((ex) => ex.styles.includes(style));
-    const targeted = pickVaried(matchingStyle, count, usedNames);
+    // Higher-level athletes should receive an appropriate selection of the
+    // higher-skill variations, not just beginner drills with more repetitions.
+    const moreChallenging = matchingStyle.filter((ex) =>
+      (LEVEL_RANK[ex.minLevel] ?? 0) >= Math.max(0, rank - 1)
+    );
+    const targeted = pickVaried(moreChallenging, count, usedNames);
+    const targetedNames = new Set(targeted.map((ex) => ex.name));
+    if (targeted.length < count) {
+      targeted.push(...pickVaried(
+        matchingStyle.filter((ex) => !targetedNames.has(ex.name)),
+        count - targeted.length,
+        new Set([...usedNames, ...targetedNames])
+      ));
+    }
     selections.push(...targeted);
   }
   if (selections.length < count) {
     const excluded = new Set([...usedNames, ...selections.map((ex) => ex.name)]);
-    const matchingCategory = compatible
-      .filter((ex) => ex.categories.some((category) => (weights[category] || 0) > 0))
+    const matchingCategory = shuffle(compatible
+      .filter((ex) => ex.categories.some((category) => (weights[category] || 0) > 0)))
       .sort((a, b) => {
         const score = (ex) => ex.categories.reduce((sum, category) => sum + (weights[category] || 0), 0);
-        return score(b) * (0.75 + Math.random() * 0.5) - score(a) * (0.75 + Math.random() * 0.5);
+        return score(b) - score(a);
       });
     selections.push(...pickVaried(matchingCategory.filter((ex) => !excluded.has(ex.name)), count - selections.length, excluded));
   }
