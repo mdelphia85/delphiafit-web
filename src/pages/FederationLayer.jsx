@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 
@@ -35,7 +36,7 @@ export default function FederationLayer() {
     <form onSubmit={create} style={formStyle}><strong>Create federation</strong><input aria-label="Federation name" required maxLength={160} placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} /><div style={{ display: "flex", gap: "8px" }}><input aria-label="Sport" placeholder="Sport" value={sport} onChange={(e) => setSport(e.target.value)} style={inputStyle} /><input aria-label="Country" placeholder="Country" value={country} onChange={(e) => setCountry(e.target.value)} style={inputStyle} /></div><button style={buttonStyle}>Create</button></form>
     {error && <p role="alert" style={{ color: "#ff8b8b" }}>{error}</p>}
     {loading ? <p>Loading federations...</p> : federations.length === 0 ? <p>No federations have been created yet.</p> : federations.map((fed) => <article key={fed.id} style={cardStyle}><strong>{fed.name}</strong><p style={{ color: "#aaa" }}>{[fed.sport, fed.country].filter(Boolean).join(" ? ") || "Federation"}</p><button type="button" onClick={() => toggle(fed)} style={buttonStyle}>{fed.joined ? "Leave" : "Join"}</button></article>)}
-  </section><button onClick={() => setMenuOpen(true)} style={menuStyle}>Return to Menu</button></main>;
+  </section><TextAction plain onClick={() => setMenuOpen(true)} style={menuStyle}>Return to Menu</TextAction></main>;
 }
 const pageStyle = { width: "100vw", minHeight: "100vh", background: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", color: "#fff" };
 const formStyle = { display: "grid", gap: "9px", background: "#111", borderRadius: "12px", padding: "14px", marginBottom: "18px" };
