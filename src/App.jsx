@@ -47,6 +47,7 @@ import NutritionPro from "./pages/NutritionPro.jsx";
 import SportsAcademy from "./pages/SportsAcademy.jsx";
 import AICoach from "./pages/AICoach.jsx";
 import TeamOperations from "./pages/TeamOperations.jsx";
+import TacticalTeamOperations from "./pages/TacticalTeamOperations.jsx";
 import TeamCommunications from "./pages/TeamCommunications.jsx";
 import TeamPerformance from "./pages/TeamPerformance.jsx";
 import RecruitingProfiles from "./pages/RecruitingProfiles.jsx";
@@ -376,7 +377,7 @@ function AppWithMenu() {
   {/* TACTICAL CORE SYSTEMS */}
   <Route path="/tactical/scenario-simulator" element={<ScenarioSimulator />} />
   <Route path="/tactical/loadouts" element={<LoadoutsManager />} />
-  <Route path="/tactical/team-ops" element={<TeamOperations />} />
+  <Route path="/tactical/team-ops" element={<TacticalTeamOperations />} />
   <Route path="/tactical/instructor" element={<InstructorPortal />} />
   <Route path="/tactical/mission-replay" element={<MissionReplay />} />
   <Route path="/tactical/certifications" element={<CertificationsTracker />} />
