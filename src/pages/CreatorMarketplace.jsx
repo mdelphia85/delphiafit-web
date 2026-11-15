@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 
@@ -52,7 +53,7 @@ export default function CreatorMarketplace() {
     <form onSubmit={createListing} style={formStyle}><h2>{editingId ? "Edit your listing" : "Publish a listing"}</h2><label>Title<input required maxLength={160} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} style={inputStyle} /></label><label>Category<input maxLength={80} value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} style={inputStyle} /></label><label>Description<textarea maxLength={3000} rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} style={inputStyle} /></label><label>Reference price (no checkout)<input type="number" min="0" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} style={inputStyle} /></label><button disabled={saving} style={buttonStyle}>{saving ? "Saving..." : editingId ? "Save listing changes" : "Become a Creator / Publish"}</button></form>
     {error && <p role="alert" style={{ color: "#ff8b8b" }}>{error}</p>}{notice && <p role="status" style={{ color: COLOR }}>{notice}</p>}
     <h2>Available listings</h2>{loading ? <p>Loading listings...</p> : listings.length === 0 ? <p>No creator listings are available yet.</p> : listings.map((item) => <article key={item.id} style={cardStyle}><header style={{ display: "flex", justifyContent: "space-between", gap: "10px" }}><strong>{item.title}</strong><span style={{ color: COLOR }}>{Number(item.price) > 0 ? `$${Number(item.price).toFixed(2)} reference price` : "Contact creator"}</span></header><p style={{ color: "#aaa" }}>{[item.category, `by ${item.creator_name}`].filter(Boolean).join(" | ")}</p>{item.description && <p>{item.description}</p>}{item.creator_user_id === userId ? <button type="button" onClick={() => startEditing(item)} style={buttonStyle}>Edit listing</button> : <button type="button" onClick={() => requestAccess(item)} style={buttonStyle}>Request access / express interest</button>}</article>)}
-  </section><button type="button" onClick={() => setMenuOpen(true)} style={menuStyle}>Return to Menu</button></main>;
+  </section><TextAction plain onClick={() => setMenuOpen(true)} style={menuStyle}>Return to Menu</TextAction></main>;
 }
 const pageStyle = { width: "100vw", minHeight: "100vh", background: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", color: "#fff" };
 const formStyle = { display: "grid", gap: "10px", background: "#111", borderRadius: "12px", padding: "14px", marginBottom: "18px" };
