@@ -121,7 +121,7 @@ export default function TacticalTeamOperations() {
               ))}
         </section>
       </main>
-      <TextAction onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color, fontSize: 18 }}>Return to Menu</TextAction>
+      <TextAction plain onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color, fontSize: 18 }}>Return to Menu</TextAction>
     </div>
   );
 }
