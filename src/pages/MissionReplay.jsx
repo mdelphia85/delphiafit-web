@@ -1,9 +1,10 @@
 import { useContext, useEffect, useState } from "react";
+import { TACTICAL_COLORS } from "../config/tacticalColors.js";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 import TextAction from "../components/TextAction.jsx";
 
-const color = "#2d5f3a";
+const color = TACTICAL_COLORS.replay;
 
 export default function MissionReplay() {
   const { setMenuOpen } = useContext(MenuContext);
