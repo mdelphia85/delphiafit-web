@@ -1,5 +1,3 @@
-import React from "react";
-
 /**
  * DelphiaFit action control: accessible clickable text, never a conventional
  * button. Keep the existing page typography/colour via the style prop.
