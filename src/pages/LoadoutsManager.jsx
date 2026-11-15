@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { TACTICAL_COLORS } from "../config/tacticalColors.js";
 import { MenuContext } from "../context/MenuContext.js";
+import TextAction from "../components/TextAction.jsx";
 import { apiRequest } from "../utils/api.js";
 
 const color = TACTICAL_COLORS.loadouts;
@@ -78,7 +79,7 @@ export default function LoadoutsManager() {
         </form>
       </section>}
     </main>
-    <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color, background: "#111", padding: 10 }}>Return to Menu</button>
+    <TextAction onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, zIndex: 20, color, fontSize: 18 }}>Return to Menu</TextAction>
   </div>;
 }
 
