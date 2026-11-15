@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import { TACTICAL_COLORS } from "../config/tacticalColors.js";
 import { MenuContext } from "../context/MenuContext.js";
 import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
 import { apiRequest } from "../utils/api.js";
@@ -9,7 +10,7 @@ const initialDrills = [
   { id: "track", name: "Tracking Through Urban Terrain", duration: "90 min", difficulty: "Advanced", completed: false },
   { id: "handler", name: "Handler Communication Protocol", duration: "40 min", difficulty: "Beginner", completed: false }
 ];
-const color = "#2d5f3a";
+const color = TACTICAL_COLORS.k9;
 
 export default function K9Operations() {
   const { setMenuOpen } = useContext(MenuContext);
