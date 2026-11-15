@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
+import TextAction from "../components/TextAction.jsx";
 
 const color = "#2d5f3a";
 
@@ -13,7 +14,7 @@ export default function MissionReplay() {
   const [missionId, setMissionId] = useState("1");
   const [action, setAction] = useState("");
   const [description, setDescription] = useState("");
-  const [score, setScore] = useState("100");
+  const [score, setScore] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -80,12 +81,17 @@ export default function MissionReplay() {
   async function completeReplay(event) {
     event.preventDefault();
     if (!selectedId) return;
+    if (score.trim() === "" || !Number.isFinite(Number(score)) || Number(score) < 0 || Number(score) > 100) {
+      setError("Enter an actual assessment score between 0 and 100; no score is assumed.");
+      return;
+    }
     try {
       const replay = await apiRequest(`/mission_replay/${selectedId}/complete`, {
         method: "POST", body: { score: Number(score) }
       });
       setReplays((current) => current.map((item) => item.id === replay.id ? replay : item));
       setError("");
+      setScore("");
     } catch (requestError) {
       setError(requestError.message || "Unable to complete this replay.");
     }
@@ -102,17 +108,17 @@ export default function MissionReplay() {
           <h2 style={{ color }}>Start a replay</h2>
           <label>Mission type<input required value={missionType} onChange={(event) => setMissionType(event.target.value)} style={fieldStyle} /></label>
           <label>Mission ID<input required type="number" min="1" value={missionId} onChange={(event) => setMissionId(event.target.value)} style={fieldStyle} /></label>
-          <button type="submit" style={buttonStyle}>Start session</button>
+          <TextAction submit style={actionStyle}>Start session</TextAction>
         </form>
         <section aria-busy={loading}>
           <h2 style={{ color }}>Your replays</h2>
           {loading ? <p role="status">Loading replays?</p> : replays.length === 0 ? <p role="status">No mission replays recorded yet.</p> : replays.map((replay) => (
-            <button type="button" key={replay.id} onClick={() => selectReplay(replay)} style={{ ...panelStyle, display: "block", width: "100%", textAlign: "left", cursor: "pointer" }}>
+            <TextAction key={replay.id} onClick={() => selectReplay(replay)} style={{ ...panelStyle, display: "block", textAlign: "left" }}>
               <strong>Replay #{replay.id}: {replay.mission_type} / {replay.mission_id}</strong>
-              <div>{replay.completed ? `Completed ? Score ${replay.score}` : "In progress"}</div>
+              <div>{replay.completed ? `Completed · self-reported score ${replay.score}` : "In progress · not yet assessed"}</div>
               <small>{replay.started_at}</small>
-            </button>
-          ))}
+            </TextAction>
+          ))
         </section>
         {selected && <section style={{ ...panelStyle, marginTop: 16 }}>
           <h2 style={{ color }}>Replay #{selected.id} steps</h2>
@@ -121,20 +127,20 @@ export default function MissionReplay() {
             <form onSubmit={addStep} style={{ display: "grid", gap: 8 }}>
               <label>Action<input required value={action} onChange={(event) => setAction(event.target.value)} style={fieldStyle} /></label>
               <label>Notes<input value={description} onChange={(event) => setDescription(event.target.value)} style={fieldStyle} /></label>
-              <button type="submit" style={buttonStyle}>Record step</button>
+              <TextAction submit style={actionStyle}>Record step</TextAction>
             </form>
             <form onSubmit={completeReplay} style={{ display: "flex", alignItems: "end", gap: 8, marginTop: 12 }}>
-              <label>Final score (0-100)<input type="number" min="0" max="100" value={score} onChange={(event) => setScore(event.target.value)} style={fieldStyle} /></label>
-              <button type="submit" style={buttonStyle}>Complete replay</button>
+              <label>Self-reported final score (0–100)<input required type="number" min="0" max="100" value={score} onChange={(event) => setScore(event.target.value)} style={fieldStyle} /></label>
+              <TextAction submit style={actionStyle}>Complete replay</TextAction>
             </form>
           </>}
         </section>}
       </main>
-      <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color, background: "#111", border: `1px solid ${color}`, padding: 10 }}>Return to Menu</button>
+      <TextAction onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color }}>Return to Menu</TextAction>
     </div>
   );
 }
 
 const panelStyle = { background: "#111", border: "1px solid #444", borderRadius: 10, padding: 12, marginBottom: 10, color: "#fff" };
 const fieldStyle = { display: "block", width: "100%", boxSizing: "border-box", padding: 8, marginTop: 4, color: "#fff", background: "#000", border: "1px solid #444", borderRadius: 6 };
-const buttonStyle = { padding: 10, color: "#fff", background: "#111", border: `1px solid ${color}`, borderRadius: 6, cursor: "pointer" };
+const actionStyle = { display: "inline-block", padding: "8px 0", color: "#ddd" };
