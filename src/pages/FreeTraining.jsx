@@ -1,4 +1,5 @@
 import { useContext, useState, useRef, useEffect } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
@@ -207,7 +208,7 @@ export default function FreeTraining() {
       </p>
 
       {/* RETURN TO MENU */}
-      <p
+      <TextAction plain
         onClick={() => setMenuOpen(true)}
         style={{
           position: "fixed",
@@ -218,9 +219,7 @@ export default function FreeTraining() {
           textDecoration: "underline",
           cursor: "pointer"
         }}
-      >
-        Return to Menu
-      </p>
+      >Return to Menu</TextAction>
     </div>
   );
 }
