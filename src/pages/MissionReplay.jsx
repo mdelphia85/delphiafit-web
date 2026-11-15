@@ -137,7 +137,7 @@ export default function MissionReplay() {
           </>}
         </section>}
       </main>
-      <TextAction onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color }}>Return to Menu</TextAction>
+      <TextAction plain onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 20, right: 20, color }}>Return to Menu</TextAction>
     </div>
   );
 }
