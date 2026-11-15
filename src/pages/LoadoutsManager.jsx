@@ -1,8 +1,9 @@
 import { useContext, useEffect, useState } from "react";
+import { TACTICAL_COLORS } from "../config/tacticalColors.js";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 
-const color = "#2d5f3a";
+const color = TACTICAL_COLORS.loadouts;
 
 export default function LoadoutsManager() {
   const { setMenuOpen } = useContext(MenuContext);
