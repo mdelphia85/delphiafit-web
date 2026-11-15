@@ -1,4 +1,5 @@
 import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
+import { TACTICAL_COLORS } from "../config/tacticalColors.js";
 import { useContext } from "react";
 import { MenuContext } from "../context/MenuContext.js";
 import TacticalWorkoutLog from "../components/TacticalWorkoutLog.jsx";
@@ -15,7 +16,7 @@ const initialWorkouts = [
 export default function TacticalFitnessCivilian() {
   const { setMenuOpen } = useContext(MenuContext);
   const [workouts, setWorkouts, progress] = useTacticalProgress("tactical-fitness-civilian", "tactical-fitness-civilian", initialWorkouts);
-  const TACTICAL_COLOR = "#2d5f3a";
+  const TACTICAL_COLOR = TACTICAL_COLORS.civilian;
 
 
   function toggleWorkout(id) {
