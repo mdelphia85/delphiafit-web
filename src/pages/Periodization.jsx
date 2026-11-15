@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { apiRequest } from "../utils/api.js";
 import { MenuContext } from "../context/MenuContext.js";
 
@@ -414,7 +415,7 @@ export default function Periodization() {
           zIndex: 20
         }}
       >
-        <div
+        <TextAction plain
           style={{
             color: PERIODIZATION_COLOR,
             fontSize: "18px",
@@ -422,9 +423,7 @@ export default function Periodization() {
             cursor: "pointer"
           }}
           onClick={() => setMenuOpen(true)}
-        >
-          Return to Menu
-        </div>
+        >Return to Menu</TextAction>
       </div>
     </div>
   );
