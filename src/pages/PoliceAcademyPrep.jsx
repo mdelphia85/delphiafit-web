@@ -1,5 +1,6 @@
 import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
 import TacticalActivityLog from "../components/TacticalActivityLog.jsx";
+import { TACTICAL_COLORS } from "../config/tacticalColors.js";
 import { useContext } from "react";
 import { MenuContext } from "../context/MenuContext.js";
 
@@ -12,10 +13,10 @@ const initialModules = [
   { id: 6, name: "Final Academy Certification", duration: "2 weeks", focus: "Evaluation", completed: false }
 ];
 
-export default function PoliceAcademyPrep() {
+export default function PoliceAcademyPrep({ embedded = false, accent = TACTICAL_COLORS.police }) {
   const { setMenuOpen } = useContext(MenuContext);
   const [modules, setModules, progress] = useTacticalProgress("police-academy-prep", "police-academy-prep", initialModules);
-  const TACTICAL_COLOR = "#2d5f3a";
+  const TACTICAL_COLOR = accent;
 
 
   function toggleModule(id) {
@@ -27,17 +28,17 @@ export default function PoliceAcademyPrep() {
   }
 
   return (
-    <div style={{ width: "100vw", minHeight: "100vh", backgroundColor: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", overflowY: "auto", color: "#fff" }}>
+    <div style={{ width: embedded ? "100%" : "100vw", minHeight: embedded ? "auto" : "100vh", backgroundColor: embedded ? "transparent" : "#000", padding: embedded ? "12px 0 24px" : "16px 16px 90px", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", gap: 16, overflowY: embedded ? "visible" : "auto", color: "#fff" }}>
       {(progress.loading || progress.error) && <div role="status" aria-live="polite" style={{ position: "fixed", top: "8px", left: "8px", zIndex: 50, background: "#111", color: "#fff", border: "1px solid #555", borderRadius: "6px", padding: "8px", fontSize: "12px" }}>{progress.loading ? "Syncing saved progress..." : `Progress unavailable: ${progress.error}`}</div>}
       <div style={{ width: "360px", maxWidth: "100%" }}>
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
+        {!embedded && <div style={{ textAlign: "center", marginBottom: "20px" }}>
           <div style={{ color: TACTICAL_COLOR, fontSize: "28px", fontWeight: "700" }}>👮 Police Academy Prep</div>
           <div style={{ color: "#999", fontSize: "12px", marginTop: "4px" }}>Preparation Program</div>
-        </div>
+        </div>}
 
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {modules.map((module) => (
-            <div key={module.id} onClick={() => toggleModule(module.id)} style={{ background: module.completed ? "#1a2a1f" : "#111", border: `1px solid ${module.completed ? TACTICAL_COLOR : "#333"}`, borderRadius: "10px", padding: "12px", cursor: "pointer", opacity: module.completed ? 0.7 : 1 }}>
+            <div key={module.id} role="button" tabIndex={0} aria-pressed={module.completed} onClick={() => toggleModule(module.id)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); toggleModule(module.id); } }} style={{ background: module.completed ? "#171717" : "#111", border: `1px solid ${module.completed ? TACTICAL_COLOR : "#333"}`, borderRadius: "10px", padding: "12px", cursor: "pointer", opacity: module.completed ? 0.7 : 1 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
                 <div style={{ color: "white", fontSize: "16px", fontWeight: "600", textDecoration: module.completed ? "line-through" : "none" }}>{module.name}</div>
                 <div style={{ color: TACTICAL_COLOR, fontWeight: "700" }}>{module.completed ? "✓" : "○"}</div>
@@ -57,11 +58,11 @@ export default function PoliceAcademyPrep() {
         </div>
       </div>
 
-      <div style={{ position: "relative", zIndex: 2, width: "min(500px, 100%)", marginTop: "24px" }}><TacticalActivityLog module="police-academy-prep" title="PoliceAcademyPrep" /></div>
+      <div style={{ position: "relative", zIndex: 2, width: "min(500px, 100%)", marginTop: "24px" }}><TacticalActivityLog module="police-academy-prep" title="Police Academy" accent={TACTICAL_COLOR} /></div>
 
-      <div onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: "20px", right: "20px", color: TACTICAL_COLOR, fontSize: "22px", textDecoration: "underline", cursor: "pointer", zIndex: 20 }}>
+      {!embedded && <div onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: "20px", right: "20px", color: TACTICAL_COLOR, fontSize: "22px", textDecoration: "underline", cursor: "pointer", zIndex: 20 }}>
         Return to Menu
-      </div>
+      </div>}
     </div>
   );
 }
