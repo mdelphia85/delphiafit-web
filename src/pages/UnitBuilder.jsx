@@ -1,4 +1,5 @@
 import { useTacticalProgress } from "../hooks/useTacticalProgress.js";
+import { TACTICAL_COLORS } from "../config/tacticalColors.js";
 import { useContext, useState } from "react";
 import { MenuContext } from "../context/MenuContext.js";
 
@@ -15,7 +16,7 @@ export default function UnitBuilder() {
     drills: 0
   });
 
-  const TACTICAL_COLOR = "#2d5f3a";
+  const TACTICAL_COLOR = TACTICAL_COLORS.unit;
 
 
   function createUnit() {
