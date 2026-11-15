@@ -6,6 +6,8 @@
 // MAIN CATEGORIES (UI)
 // -----------------------------
 export const UI_MAIN_CATEGORIES = [
+  "Beginner Fitness",
+  "Gentle & Low-Impact",
   "Strength",
   "Cardio",
   "HIIT",
@@ -22,6 +24,30 @@ export const UI_MAIN_CATEGORIES = [
 // SUBCATEGORIES (UI)
 // -----------------------------
 export const UI_SUBCATEGORY_MAP = {
+  "Beginner Fitness": [
+    "First Workout",
+    "Beginner Full Body",
+    "No-Equipment Basics",
+    "Home Workout Basics",
+    "Gym Machines 101",
+    "Dumbbell Basics",
+    "Resistance Band Basics",
+    "Beginner Core",
+    "Beginner Cardio",
+    "Low-Impact Circuit",
+    "Return to Fitness"
+  ],
+  "Gentle & Low-Impact": [
+    "Chair Fitness",
+    "Seated Cardio",
+    "Walking for Fitness",
+    "Low-Impact Cardio",
+    "Gentle Strength",
+    "Balance Basics",
+    "Gentle Stretching",
+    "Gentle Mobility",
+    "Active Aging"
+  ],
   Strength: [
     "Bodybuilding",
     "Powerlifting",
@@ -308,6 +334,20 @@ export const MAIN_BLOCK_EXERCISE_COUNTS = {
 // CATEGORY WEIGHTING MODEL
 // -----------------------------
 export const CATEGORY_WEIGHTS = {
+  "Beginner Fitness": {
+    warmup: { Mobility: 0.5, Cardio: 0.3, Functional: 0.2 },
+    main_primary: { Strength: 0.4, Functional: 0.35, Cardio: 0.15, Core: 0.1 },
+    main_secondary: { Functional: 0.4, Strength: 0.25, Core: 0.2, Cardio: 0.15 },
+    finisher: { Cardio: 0.55, Functional: 0.3, Mobility: 0.15 },
+    cooldown: { Mobility: 0.75, Recovery: 0.25 }
+  },
+  "Gentle & Low-Impact": {
+    warmup: { Mobility: 0.6, Cardio: 0.2, Functional: 0.2 },
+    main_primary: { Functional: 0.35, Cardio: 0.3, Mobility: 0.2, Strength: 0.15 },
+    main_secondary: { Mobility: 0.3, Functional: 0.3, Cardio: 0.25, Strength: 0.15 },
+    finisher: { Mobility: 0.4, Cardio: 0.35, Functional: 0.25 },
+    cooldown: { Mobility: 0.8, Recovery: 0.2 }
+  },
   Strength: {
     warmup: { Mobility: 0.6, Functional: 0.3, Strength: 0.1 },
     main_primary: { Strength: 0.7, Functional: 0.2, Core: 0.1 },
