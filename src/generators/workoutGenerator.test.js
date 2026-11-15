@@ -6,6 +6,7 @@ import {
   WORKOUT_EXERCISES
 } from "./workoutGenerator.js";
 import { UI_MAIN_CATEGORIES, UI_SUBCATEGORY_MAP, CATEGORY_MAP } from "./workoutTaxonomy.js";
+import { matchesWorkoutStyle } from "./workoutStyleProfiles.js";
 
 const names = (plan) => [
   ...plan.warmup,
@@ -16,11 +17,29 @@ const names = (plan) => [
 
 describe("DelphiaFit expanded workout generator", () => {
   it("offers a broad library while preserving the original catalog", () => {
-    expect(WORKOUT_EXERCISES.length).toBeGreaterThan(190);
+    expect(WORKOUT_EXERCISES.length).toBeGreaterThan(450);
     expect(WORKOUT_EXERCISES.some((ex) => ex.name === "Goblet Squat")).toBe(true);
     expect(WORKOUT_EXERCISES.some((ex) => ex.name === "Barbell Back Squat")).toBe(true);
     expect(WORKOUT_EXERCISES.some((ex) => ex.name === "BJJ Hip Escape")).toBe(true);
     expect(WORKOUT_EXERCISES.some((ex) => ex.name === "Full Snatch")).toBe(true);
+  });
+
+  it("keeps the workout menu organized by discipline rather than separate beginner categories", () => {
+    expect(UI_MAIN_CATEGORIES).toHaveLength(10);
+    expect(UI_MAIN_CATEGORIES).not.toContain("Beginner Fitness");
+    expect(UI_MAIN_CATEGORIES).not.toContain("Gentle & Low-Impact");
+    const styles = Object.values(UI_SUBCATEGORY_MAP).flat();
+    expect(styles.length).toBeGreaterThan(120);
+    expect(new Set(styles).size).toBe(styles.length);
+  });
+
+  it("has genuine beginner options in every workout type", () => {
+    for (const style of Object.values(UI_SUBCATEGORY_MAP).flat()) {
+      const matches = WORKOUT_EXERCISES.filter((ex) =>
+        ex.minLevel === "beginner" && matchesWorkoutStyle(ex, style)
+      );
+      expect(matches.length, `No genuine beginner variety in ${style}`).toBeGreaterThanOrEqual(4);
+    }
   });
 
   it("recognizes short and extended duration options", () => {
@@ -82,6 +101,25 @@ describe("DelphiaFit expanded workout generator", () => {
     for (const name of names(plan)) {
       const ex = WORKOUT_EXERCISES.find((item) => item.name === name);
       expect(ex.equipment.some((item) => gear.includes(item))).toBe(true);
+    }
+  });
+
+  it("makes the chosen training type relevant even at beginner level", () => {
+    for (const [category, styles] of Object.entries(UI_SUBCATEGORY_MAP)) {
+      for (const style of styles) {
+        const plan = generateWorkout({
+          category_label: category,
+          type_label: style,
+          duration_label: "30 min",
+          experience_level: "beginner"
+        });
+        const relevant = plan.main.filter((line) => {
+          const name = line.split(" — ")[0];
+          const exercise = WORKOUT_EXERCISES.find((ex) => ex.name === name);
+          return exercise && matchesWorkoutStyle(exercise, style);
+        });
+        expect(relevant.length, `Main routine for ${style} lacks specific exercises`).toBeGreaterThanOrEqual(2);
+      }
     }
   });
 
