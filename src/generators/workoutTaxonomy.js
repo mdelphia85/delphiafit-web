@@ -287,7 +287,9 @@ export const DURATION_MAP = {
   "45 min": 45,
   "60 min": 60,
   "75 min": 75,
-  "90 min": 90
+  "90 min": 90,
+  "105 min": 105,
+  "120 min": 120
 };
 
 export const MAIN_BLOCK_EXERCISE_COUNTS = {
@@ -297,7 +299,9 @@ export const MAIN_BLOCK_EXERCISE_COUNTS = {
   45: 6,
   60: 7,
   75: 8,
-  90: 9
+  90: 9,
+  105: 10,
+  120: 11
 };
 
 // -----------------------------
