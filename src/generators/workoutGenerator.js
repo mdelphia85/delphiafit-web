@@ -32,7 +32,9 @@ function mainBlockExerciseCount(minutes) {
   if (minutes <= 45) return MAIN_BLOCK_EXERCISE_COUNTS[45];
   if (minutes <= 60) return MAIN_BLOCK_EXERCISE_COUNTS[60];
   if (minutes <= 75) return MAIN_BLOCK_EXERCISE_COUNTS[75];
-  return MAIN_BLOCK_EXERCISE_COUNTS[90];
+  if (minutes <= 90) return MAIN_BLOCK_EXERCISE_COUNTS[90];
+  if (minutes <= 105) return MAIN_BLOCK_EXERCISE_COUNTS[105];
+  return MAIN_BLOCK_EXERCISE_COUNTS[120];
 }
 
 function isAvailable(exercise, equipmentAvailable) {
