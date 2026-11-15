@@ -2,6 +2,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import carbon from "../assets/carbon.png";
 import { MenuContext } from "../context/MenuContext.js";
 import TextAction from "./TextAction.jsx";
+import { useSearchParams } from "react-router-dom";
 import {
   createEMSDrill, createFirefighterDrill, createMilitaryDrill, createPoliceDrill,
   deleteEMSDrill, deleteFirefighterDrill, deleteMilitaryDrill, deletePoliceDrill,
@@ -20,9 +21,20 @@ const divisions = {
   military: { load: getMilitaryDrills, create: createMilitaryDrill, update: updateMilitaryDrill, remove: deleteMilitaryDrill, generate: generateMilitaryDrill }
 };
 
-export default function TacticalDrillLog({ division, title, accent, sections }) {
+export default function TacticalDrillLog({ division, title, accent, sections, preparation = [] }) {
   const { setMenuOpen } = useContext(MenuContext);
   const api = divisions[division];
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedMode = searchParams.get("view") || "operations";
+  const selectedPreparation = preparation.find((item) => item.value === selectedMode);
+  const PreparationComponent = selectedPreparation?.component;
+
+  function changeView(value) {
+    const nextParams = new URLSearchParams(searchParams);
+    if (value === "operations") nextParams.delete("view");
+    else nextParams.set("view", value);
+    setSearchParams(nextParams, { replace: true });
+  }
   const [drills, setDrills] = useState([]);
   const [category, setCategory] = useState(sections[0]);
   const [name, setName] = useState("");
@@ -111,9 +123,19 @@ export default function TacticalDrillLog({ division, title, accent, sections }) 
       <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.75)" }} />
       <main style={{ position: "relative", zIndex: 2, maxWidth: "900px", margin: "0 auto" }}>
         <header style={{ color: accent, marginBottom: "28px", textAlign: "center", display: "flex", flexDirection: "column", gap: "12px" }}>
-          <h1 style={{ margin: 0, lineHeight: 1.15 }}>{title}</h1>
-          <p style={{ margin: 0, lineHeight: 1.5 }}>Training drill log · saved to your account</p>
+          <h1 style={{ margin: 0, lineHeight: 1.15 }}>{selectedPreparation ? selectedPreparation.title : title}</h1>
+          <p style={{ margin: 0, lineHeight: 1.5 }}>{selectedPreparation ? "Preparation program · saved to your account" : "Training drill log · saved to your account"}</p>
         </header>
+        {preparation.length > 0 && (
+          <label style={{ display: "block", marginBottom: 22, color: "#fff", textAlign: "center" }}>
+            Training section
+            <select aria-label="Training section" value={selectedPreparation ? selectedMode : "operations"} onChange={(event) => changeView(event.target.value)} style={fieldStyle}>
+              <option value="operations">Operations &amp; drill log</option>
+              {preparation.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+            </select>
+          </label>
+        )}
+        {!selectedPreparation && <>
         {error && <div role="alert" style={{ padding: "10px", marginBottom: "14px", color: "#fecaca", background: "#441b1b", borderRadius: "8px" }}>{error}</div>}
         <form onSubmit={saveDrill} style={{ display: "grid", gap: "12px", padding: "18px", marginBottom: "24px", background: "rgba(0,0,0,0.7)", border: `1px solid ${accent}`, borderRadius: "10px" }}>
           <h2 style={{ margin: 0, color: accent }}>Create drill</h2>
@@ -150,6 +172,8 @@ export default function TacticalDrillLog({ division, title, accent, sections }) 
             </section>
           ))}
         </section>
+        </>}
+        {PreparationComponent && <PreparationComponent embedded accent={accent} />}
       </main>
       <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", right: "20px", bottom: "20px", zIndex: 10, color: accent, background: "#111", border: `1px solid ${accent}`, padding: "10px 14px", borderRadius: "8px", cursor: "pointer" }}>Return to Menu</button>
     </div>
