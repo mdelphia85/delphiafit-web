@@ -1,13 +1,8 @@
 // ---------------------------------------------------------
-// WORKOUT TAXONOMY — JS PORT OF workout_taxonomy.py
+// WORKOUT TAXONOMY — broad training disciplines for all experience levels.
+// Training ability is controlled by experience_level, not separate beginner menus.
 // ---------------------------------------------------------
-
-// -----------------------------
-// MAIN CATEGORIES (UI)
-// -----------------------------
 export const UI_MAIN_CATEGORIES = [
-  "Beginner Fitness",
-  "Gentle & Low-Impact",
   "Strength",
   "Cardio",
   "HIIT",
@@ -20,35 +15,8 @@ export const UI_MAIN_CATEGORIES = [
   "Athlete Performance"
 ];
 
-// -----------------------------
-// SUBCATEGORIES (UI)
-// -----------------------------
 export const UI_SUBCATEGORY_MAP = {
-  "Beginner Fitness": [
-    "First Workout",
-    "Beginner Full Body",
-    "No-Equipment Basics",
-    "Home Workout Basics",
-    "Gym Machines 101",
-    "Dumbbell Basics",
-    "Resistance Band Basics",
-    "Beginner Core",
-    "Beginner Cardio",
-    "Low-Impact Circuit",
-    "Return to Fitness"
-  ],
-  "Gentle & Low-Impact": [
-    "Chair Fitness",
-    "Seated Cardio",
-    "Walking for Fitness",
-    "Low-Impact Cardio",
-    "Gentle Strength",
-    "Balance Basics",
-    "Gentle Stretching",
-    "Gentle Mobility",
-    "Active Aging"
-  ],
-  Strength: [
+  "Strength": [
     "Bodybuilding",
     "Powerlifting",
     "Olympic Weightlifting",
@@ -56,10 +24,20 @@ export const UI_SUBCATEGORY_MAP = {
     "CrossFit",
     "Circuit Training",
     "Calisthenics",
-    "Strongman"
+    "Strongman",
+    "Full Body Strength",
+    "Upper Body Strength",
+    "Lower Body Strength",
+    "Bodyweight Strength",
+    "Dumbbell Training",
+    "Resistance Band Training",
+    "Machine Training",
+    "Core Strength",
+    "Push-Pull Training",
+    "Glute Training",
+    "Unilateral Training"
   ],
-
-  Cardio: [
+  "Cardio": [
     "Running",
     "Cycling",
     "Rowing",
@@ -68,57 +46,132 @@ export const UI_SUBCATEGORY_MAP = {
     "Walking",
     "Treadmill Intervals",
     "Swimming",
-    "Hiking"
+    "Hiking",
+    "Walking Intervals",
+    "Low-Impact Cardio",
+    "Seated Cardio",
+    "Steady-State Cardio",
+    "Cardio Endurance",
+    "Recumbent Cycling",
+    "Aqua Fitness",
+    "Incline Walking",
+    "Cardio Circuit"
   ],
-
-  HIIT: ["Tabata", "Interval Sprints", "Plyometric HIIT", "EMOM", "AMRAP"],
-
-  Functional: [
+  "HIIT": [
+    "Tabata",
+    "Interval Sprints",
+    "Plyometric HIIT",
+    "EMOM",
+    "AMRAP",
+    "Bodyweight Intervals",
+    "Low-Impact Intervals",
+    "Kettlebell Intervals",
+    "Sprint Intervals",
+    "Conditioning Circuits"
+  ],
+  "Functional": [
     "Bootcamp",
-    "Circuit Training",
-    "CrossFit",
-    "Athletic Conditioning",
     "Movement Prep",
-    "Agility Training",
-    "Sprint Training"
+    "Home Fitness",
+    "Balance Training",
+    "Chair Fitness",
+    "Functional Strength",
+    "Core Stability",
+    "Carry Training",
+    "Movement Skills",
+    "Low-Impact Circuit",
+    "Functional Circuit",
+    "Kettlebell Training",
+    "Daily Movement"
   ],
-
-  Mobility: [
+  "Mobility": [
     "Dynamic Stretching",
     "Static Stretching",
     "Yoga Mobility",
     "Joint Prep",
-    "Range of Motion Drills"
+    "Range of Motion Drills",
+    "Gentle Mobility",
+    "Hip Mobility",
+    "Shoulder Mobility",
+    "Ankle Mobility",
+    "Spinal Mobility",
+    "Mobility Flow"
   ],
-
-  Recovery: [
+  "Recovery": [
     "Foam Rolling",
     "Light Stretching",
     "Breathing Work",
     "Low-Intensity Cardio",
-    "Massage Gun Work"
+    "Massage Gun Work",
+    "Active Recovery",
+    "Restorative Movement",
+    "Gentle Stretching",
+    "Relaxation Breathing",
+    "Post-Workout Recovery",
+    "Seated Mobility"
   ],
-
-  "Mind-Body": ["Yoga", "Pilates", "Meditation", "Breathwork", "Tai Chi"],
-
-  "Group Fitness": ["Spin", "Zumba", "Bootcamp", "Kickboxing", "Dance Fitness"],
-  "Combat Sports": ["MMA Conditioning", "Boxing", "Muay Thai", "Wrestling", "Brazilian Jiu-Jitsu", "Grappling", "Fight Camp"],
-  "Athlete Performance": ["Athletic Conditioning", "Agility Training", "Sprint Training", "Plyometric HIIT"]
+  "Mind-Body": [
+    "Yoga",
+    "Pilates",
+    "Meditation",
+    "Breathwork",
+    "Tai Chi",
+    "Gentle Yoga",
+    "Chair Yoga",
+    "Yoga Flow",
+    "Posture and Balance",
+    "Mindful Movement"
+  ],
+  "Group Fitness": [
+    "Spin",
+    "Zumba",
+    "Kickboxing",
+    "Dance Fitness",
+    "Low-Impact Group Fitness",
+    "Total Body Circuit",
+    "Aerobic Dance",
+    "Step Fitness",
+    "Group Strength",
+    "Cardio Dance",
+    "Aqua Aerobics",
+    "Mat Pilates"
+  ],
+  "Combat Sports": [
+    "MMA Conditioning",
+    "Boxing",
+    "Muay Thai",
+    "Wrestling",
+    "Brazilian Jiu-Jitsu",
+    "Grappling",
+    "Fight Camp",
+    "Shadowboxing",
+    "Heavy Bag Training",
+    "Combat Footwork",
+    "Striking Conditioning",
+    "Grappling Mobility"
+  ],
+  "Athlete Performance": [
+    "Athletic Conditioning",
+    "Agility Training",
+    "Sprint Training",
+    "Speed Development",
+    "Explosive Power",
+    "Jump Training",
+    "Reaction Training",
+    "Acceleration Training",
+    "Sports Conditioning",
+    "Lateral Movement",
+    "Conditioning Intervals",
+    "Off-Season Conditioning"
+  ]
 };
 
 // -----------------------------
 // STRENGTH-BASED SUBCATEGORIES
 // -----------------------------
-export const STRENGTH_TYPES = [
-  "Bodybuilding",
-  "Powerlifting",
-  "Olympic Weightlifting",
-  "Resistance Training",
-  "CrossFit",
-  "Circuit Training",
-  "Calisthenics",
-  "Strongman"
-];
+export const STRENGTH_TYPES = UI_SUBCATEGORY_MAP.Strength.filter((style) =>
+  !["Bodyweight Strength", "Calisthenics", "Core Strength"].includes(style)
+);
 
 // -----------------------------
 // INTERNAL CATEGORY MAPPING
@@ -334,20 +387,6 @@ export const MAIN_BLOCK_EXERCISE_COUNTS = {
 // CATEGORY WEIGHTING MODEL
 // -----------------------------
 export const CATEGORY_WEIGHTS = {
-  "Beginner Fitness": {
-    warmup: { Mobility: 0.5, Cardio: 0.3, Functional: 0.2 },
-    main_primary: { Strength: 0.4, Functional: 0.35, Cardio: 0.15, Core: 0.1 },
-    main_secondary: { Functional: 0.4, Strength: 0.25, Core: 0.2, Cardio: 0.15 },
-    finisher: { Cardio: 0.55, Functional: 0.3, Mobility: 0.15 },
-    cooldown: { Mobility: 0.75, Recovery: 0.25 }
-  },
-  "Gentle & Low-Impact": {
-    warmup: { Mobility: 0.6, Cardio: 0.2, Functional: 0.2 },
-    main_primary: { Functional: 0.35, Cardio: 0.3, Mobility: 0.2, Strength: 0.15 },
-    main_secondary: { Mobility: 0.3, Functional: 0.3, Cardio: 0.25, Strength: 0.15 },
-    finisher: { Mobility: 0.4, Cardio: 0.35, Functional: 0.25 },
-    cooldown: { Mobility: 0.8, Recovery: 0.2 }
-  },
   Strength: {
     warmup: { Mobility: 0.6, Functional: 0.3, Strength: 0.1 },
     main_primary: { Strength: 0.7, Functional: 0.2, Core: 0.1 },
