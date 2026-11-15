@@ -1,4 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 
@@ -652,9 +653,7 @@ export default function Workouts() {
         Save Workout
       </div>
 
-      <div onClick={openMenu} style={returnStyle}>
-        Return to Menu
-      </div>
+      <TextAction plain onClick={openMenu} style={returnStyle}>Return to Menu</TextAction>
     </div>
   );
 }
