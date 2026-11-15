@@ -28,7 +28,7 @@ export default function TacticalFitnessCivilian() {
   }
 
   return (
-    <div style={{ width: "100vw", minHeight: "100vh", backgroundColor: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", justifyContent: "center", overflowY: "auto", color: "#fff" }}>
+    <div style={{ width: "100vw", minHeight: "100vh", backgroundColor: "#000", padding: "16px 16px 90px", boxSizing: "border-box", display: "flex", flexDirection: "column", alignItems: "center", gap: 16, overflowY: "auto", color: "#fff" }}>
       {(progress.loading || progress.error) && <div role="status" aria-live="polite" style={{ position: "fixed", top: "8px", left: "8px", zIndex: 50, background: "#111", color: "#fff", border: "1px solid #555", borderRadius: "6px", padding: "8px", fontSize: "12px" }}>{progress.loading ? "Syncing saved progress..." : `Progress unavailable: ${progress.error}`}</div>}
       <div style={{ width: "360px", maxWidth: "100%" }}>
         <div style={{ textAlign: "center", marginBottom: "20px" }}>
@@ -38,7 +38,7 @@ export default function TacticalFitnessCivilian() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {workouts.map((workout) => (
-            <div key={workout.id} onClick={() => toggleWorkout(workout.id)} style={{ background: workout.completed ? "#1a2a1f" : "#111", border: `1px solid ${workout.completed ? TACTICAL_COLOR : "#333"}`, borderRadius: "10px", padding: "12px", cursor: "pointer", opacity: workout.completed ? 0.7 : 1 }}>
+            <div key={workout.id} onClick={() => toggleWorkout(workout.id)} style={{ background: workout.completed ? "#171717" : "#111", border: `1px solid ${workout.completed ? TACTICAL_COLOR : "#333"}`, borderRadius: "10px", padding: "12px", cursor: "pointer", opacity: workout.completed ? 0.7 : 1 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
                 <div style={{ color: "white", fontSize: "16px", fontWeight: "600", textDecoration: workout.completed ? "line-through" : "none" }}>{workout.name}</div>
                 <div style={{ color: TACTICAL_COLOR, fontWeight: "700" }}>{workout.completed ? "✓" : "○"}</div>
@@ -58,7 +58,7 @@ export default function TacticalFitnessCivilian() {
         </div>
       </div>
 
-      <div style={{ position: "relative", zIndex: 2, width: "min(500px, 100%)", marginTop: "24px" }}><TacticalWorkoutLog /></div>
+      <div style={{ position: "relative", zIndex: 2, width: "min(500px, 100%)", marginTop: "24px" }}><TacticalWorkoutLog accent={TACTICAL_COLOR} /></div>
 
       <div onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: "20px", right: "20px", color: TACTICAL_COLOR, fontSize: "22px", textDecoration: "underline", cursor: "pointer", zIndex: 20 }}>
         Return to Menu
