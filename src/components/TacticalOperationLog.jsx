@@ -85,19 +85,19 @@ export default function TacticalOperationLog({ module, accent = "#2d5f3a" }) {
     <h1 style={{ color: accent, textAlign: "center", lineHeight: 1.2, marginBottom: 24 }}>{config.title}</h1>
     <p style={{ color: "#aaa", textAlign: "center", marginBottom: 24 }}>Operational records are private to your account.</p>
     {error && <p role="alert" style={{ color: "#fecaca", background: "#441b1b", padding: 10 }}>{error}</p>}
-    <form onSubmit={createOperation} style={panel}>
-      <h2>Create operation</h2>
+    <form onSubmit={createOperation} style={{ ...panel, border: `1px solid ${accent}`, background: "rgba(0,0,0,0.7)" }}>
+      <h2 style={{ color: accent, textAlign: "center" }}>Create operation</h2>
       <label>Operation name<input required value={name} onChange={(event) => setName(event.target.value)} style={field} /></label>
       <label>{config.typeLabel}<select value={type} onChange={(event) => setType(event.target.value)} style={field}>{config.types.map((item) => <option key={item}>{item}</option>)}</select></label>
       <label>Location<input value={location} onChange={(event) => setLocation(event.target.value)} style={field} /></label>
       <div style={{ textAlign: "center" }}><TextAction submit style={{ color: accent, display: "inline-block", padding: 8 }}>Create operation record</TextAction></div>
     </form>
-    <section aria-busy={loading}><h2>Your operations</h2>
+    <section aria-busy={loading}><h2 style={{ color: accent, textAlign: "center" }}>Your operations</h2>
       {loading ? <p role="status">Loading operations?</p> : operations.length === 0 ? <p role="status">No operations recorded yet.</p> : operations.map((operation) => <TextAction key={operation.id} onClick={() => selectOperation(operation)} style={{ ...panel, display: "block", width: "100%", boxSizing: "border-box", textAlign: "left", cursor: "pointer", border: `1px solid ${accent}` }}>
         <strong>{operation[config.name]}</strong><div>{operation[config.type]} · {operation.location || "Location not recorded"} · {operation.status || "active"}</div>
       </TextAction>)}
     </section>
-    {selected && <section style={panel}><h2>Activity for {selected[config.name]}</h2>
+    {selected && <section style={{ ...panel, border: `1px solid ${accent}` }}><h2 style={{ color: accent }}>Activity for {selected[config.name]}</h2>
       {activityRows.length ? activityRows.map((row) => <article key={row.id} style={{ borderTop: "1px solid #444", padding: 8 }}><strong>{row.name || row.resource_type || row.incident_type || row.event_type || row.exposure_type || row.team_name}</strong><p>{row.notes || row.description || row.members}</p></article>) : <p>No activity logged yet.</p>}
       <form onSubmit={recordActivity} style={{ display: "grid", gap: 8 }}><label>{config.activityLabel}<textarea required value={details} onChange={(event) => setDetails(event.target.value)} rows="3" style={field} /></label><TextAction submit style={{ color: accent, padding: "8px 0" }}>Save activity record</TextAction></form>
       {config.close && selected.status !== "completed" && <TextAction onClick={closeOperation} style={{ color: accent, display: "inline-block", marginTop: 10 }}>Close operation</TextAction>}
