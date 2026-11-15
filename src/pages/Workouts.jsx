@@ -491,7 +491,7 @@ export default function Workouts() {
               <option value="home">Home / Basic Equipment</option>
               <option value="barbell">Barbell / Rack</option>
               <option value="dumbbells">Dumbbells / Bench</option>
-              <option value="custom" disabled>Custom Equipment Selection</option>
+              <option value="custom">Custom Equipment Selection</option>
               {Object.entries(EQUIPMENT_GROUPS).map(([group, items]) => (
                 <optgroup key={group} label={group}>
                   {items.filter(item => item !== "Bodyweight").map(item => (
