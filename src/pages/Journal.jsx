@@ -1,4 +1,5 @@
 import { useState, useContext, useEffect } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { userDataApi } from "../utils/userDataApi.js";
 import { apiRequest } from "../utils/api.js";
@@ -140,7 +141,7 @@ export default function Journal() {
         Recall Entry
       </div>
 
-      <div
+      <TextAction plain
         style={{
           position: "fixed",
           bottom: "20px",
@@ -151,9 +152,7 @@ export default function Journal() {
           cursor: "pointer",
         }}
         onClick={openMenu}
-      >
-        Return to Menu
-      </div>
+      >Return to Menu</TextAction>
 
       {/* ========================= */}
       {/* RECALL MODAL (3 options) */}
