@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.js";
 
@@ -119,12 +120,10 @@ export default function CoachLogin() {
         </div>
       </div>
 
-      <div
+      <TextAction plain
         onClick={() => setMenuOpen(true)}
         style={{ position: "fixed", bottom: "20px", right: "20px", color: "#ec4899", textDecoration: "underline", fontSize: "18px", cursor: "pointer", zIndex: 20 }}
-      >
-        Return to Menu
-      </div>
+      >Return to Menu</TextAction>
     </div>
   );
 }
