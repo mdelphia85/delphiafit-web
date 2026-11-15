@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 
@@ -117,7 +118,7 @@ export default function GlobalCompetition() {
           </div>)}
         </article>)}
       </section>
-      <button type="button" onClick={() => setMenuOpen(true)} style={menuStyle}>Return to Menu</button>
+      <TextAction plain onClick={() => setMenuOpen(true)} style={menuStyle}>Return to Menu</TextAction>
     </main>
   );
 }
