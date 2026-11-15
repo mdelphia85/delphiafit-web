@@ -41,6 +41,8 @@ export default function Workouts() {
   // GENERATOR MODE
   const [workoutType, setWorkoutType] = useState("");
   const [duration, setDuration] = useState("30 min");
+  const [experienceLevel, setExperienceLevel] = useState("beginner");
+  const [equipmentChoice, setEquipmentChoice] = useState("all");
   const [difficulty, setDifficulty] = useState(() => getAdaptiveDifficulty());
 
   useEffect(() => {
@@ -72,13 +74,6 @@ export default function Workouts() {
   const [saveMessage, setSaveMessage] = useState("");
 
   const timerRef = useRef(null);
-
-  const blockDefaultMinutes = {
-    warmup: 3,
-    main: 20,
-    finisher: 5,
-    cooldown: 3
-  };
 
   const [blockDurations, setBlockDurations] = useState({
     warmup: "3",
@@ -170,10 +165,20 @@ export default function Workouts() {
 
     const mainCategory = CATEGORY_MAP[workoutType] || workoutType;
 
+    const equipmentPresets = {
+      all: null,
+      bodyweight: ["Bodyweight", "Chair", "Yoga Mat"],
+      home: ["Bodyweight", "Chair", "Yoga Mat", "Dumbbells", "Resistance Bands", "Jump Rope", "PVC Pipe", "Foam Roller"],
+      barbell: ["Barbell", "Rack", "Bench", "Plates", "Bodyweight", "PVC Pipe"],
+      dumbbells: ["Dumbbells", "Bench", "Bodyweight", "Yoga Mat"]
+    };
+
     const generated = generateWorkout({
       category_label: mainCategory,
+      type_label: workoutType,
       duration_label: duration,
-      equipment_available: null
+      experience_level: experienceLevel,
+      equipment_available: equipmentPresets[equipmentChoice]
     });
 
     setPlan({
@@ -184,14 +189,14 @@ export default function Workouts() {
       equipment: generated.equipment || []
     });
 
-    const scale = DIFFICULTY_SCALE[difficulty] || 1;
-    const scaled = (minutes) => String(Math.max(1, Math.round(minutes * scale)));
-    setBlockDurations({
-      warmup: scaled(blockDefaultMinutes.warmup),
-      main: scaled(blockDefaultMinutes.main),
-      finisher: scaled(blockDefaultMinutes.finisher),
-      cooldown: scaled(blockDefaultMinutes.cooldown)
-    });
+    // Allocate the selected time across workout blocks instead of using
+    // the same 31-minute timer preset for every workout duration.
+    const totalMinutes = Math.max(15, Number.parseInt(duration, 10) || 30);
+    const warmup = Math.max(2, Math.round(totalMinutes * 0.12));
+    const cooldown = Math.max(2, Math.round(totalMinutes * 0.10));
+    const finisher = Math.max(1, Math.round(totalMinutes * 0.12 * (DIFFICULTY_SCALE[difficulty] || 1)));
+    const main = Math.max(1, totalMinutes - warmup - cooldown - finisher);
+    setBlockDurations({ warmup: String(warmup), main: String(main), finisher: String(finisher), cooldown: String(cooldown) });
   }
 
   // ⭐ SMART MODE INTEGRATION
@@ -430,6 +435,33 @@ export default function Workouts() {
               ))}
             </select>
 
+            <div style={sectionHeader}>Experience Level</div>
+            <select
+              value={experienceLevel}
+              onChange={e => setExperienceLevel(e.target.value)}
+              style={field}
+              aria-label="Experience Level"
+            >
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+              <option value="expert">Expert / Competitive Athlete</option>
+            </select>
+
+            <div style={sectionHeader}>Available Equipment</div>
+            <select
+              value={equipmentChoice}
+              onChange={e => setEquipmentChoice(e.target.value)}
+              style={field}
+              aria-label="Available Equipment"
+            >
+              <option value="all">All Equipment / Gym</option>
+              <option value="bodyweight">Bodyweight / No Equipment</option>
+              <option value="home">Home / Basic Equipment</option>
+              <option value="barbell">Barbell / Rack</option>
+              <option value="dumbbells">Dumbbells / Bench</option>
+            </select>
+
             <div style={sectionHeader}>Duration</div>
             <select
               value={duration}
@@ -440,6 +472,9 @@ export default function Workouts() {
               <option value="20 min">20 min</option>
               <option value="30 min">30 min</option>
               <option value="45 min">45 min</option>
+              <option value="60 min">60 min</option>
+              <option value="75 min">75 min</option>
+              <option value="90 min">90 min</option>
             </select>
 
             <div style={sectionHeader}>Difficulty (adaptive)</div>
