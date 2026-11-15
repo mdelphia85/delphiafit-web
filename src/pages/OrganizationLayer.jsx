@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
 
@@ -49,6 +50,6 @@ export default function OrganizationLayer() {
       {selected && <section style={{ background: "#111", borderRadius: 10, marginTop: 16, padding: 16 }}><h2>{selected.name} · Units</h2>{tenants.length ? tenants.map((t) => <div key={t.id} style={{ padding: 8, borderBottom: "1px solid #333" }}>{t.name}{t.description ? ` — ${t.description}` : ""}</div>) : <p>No units configured.</p>}<form onSubmit={createTenant} style={{ display: "flex", gap: 8, marginTop: 12 }}><input aria-label="Unit name" value={tenantName} onChange={(e) => setTenantName(e.target.value)} placeholder="New unit name" style={inputStyle} /><button disabled={busy || !tenantName.trim()} style={{ background: COLOR, border: 0, borderRadius: 6, padding: 10 }}>Add unit</button></form></section>}
       <form onSubmit={createOrg} style={{ background: "#111", borderRadius: 10, marginTop: 20, padding: 16, display: "grid", gap: 10 }}><h2 style={{ margin: 0 }}>Create organization</h2><input aria-label="Organization name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Organization name" style={inputStyle} /><input aria-label="Industry" value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="Industry (optional)" style={inputStyle} /><button disabled={busy || !name.trim()} style={{ background: COLOR, border: 0, borderRadius: 8, padding: 12, fontWeight: 700 }}>Create organization</button></form>
     </div>
-    <div style={{ position: "fixed", bottom: 0, left: 0, width: "100%", height: 40, background: "#000", display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 16px", boxSizing: "border-box" }}><button onClick={() => setMenuOpen(true)} style={{ color: COLOR, background: "transparent", border: 0, textDecoration: "underline" }}>Return to Menu</button></div>
+    <div style={{ position: "fixed", bottom: 0, left: 0, width: "100%", height: 40, background: "#000", display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 16px", boxSizing: "border-box" }}><TextAction plain onClick={() => setMenuOpen(true)} style={{ color: COLOR, background: "transparent", border: 0, textDecoration: "underline" }}>Return to Menu</TextAction></div>
   </main>;
 }
