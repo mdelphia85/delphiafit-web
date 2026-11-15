@@ -175,7 +175,7 @@ export default function TacticalDrillLog({ division, title, accent, sections, pr
         </>}
         {PreparationComponent && <PreparationComponent embedded accent={accent} />}
       </main>
-      <button type="button" onClick={() => setMenuOpen(true)} style={{ position: "fixed", right: "20px", bottom: "20px", zIndex: 10, color: accent, background: "#111", border: `1px solid ${accent}`, padding: "10px 14px", borderRadius: "8px", cursor: "pointer" }}>Return to Menu</button>
+      <TextAction onClick={() => setMenuOpen(true)} style={{ position: "fixed", right: 20, bottom: 20, zIndex: 10, color: accent, fontSize: 18 }}>Return to Menu</TextAction>
     </div>
   );
 }
