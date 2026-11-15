@@ -8,6 +8,7 @@ import {
   MAIN_BLOCK_EXERCISE_COUNTS
 } from "./workoutTaxonomy.js";
 import { EXTENDED_EXERCISES } from "./extendedExerciseLibrary.js";
+import { matchesWorkoutStyle } from "./workoutStyleProfiles.js";
 
 export const EXPERIENCE_LEVELS = ["beginner", "intermediate", "advanced", "expert"];
 const LEVEL_RANK = Object.fromEntries(EXPERIENCE_LEVELS.map((level, index) => [level, index]));
@@ -44,6 +45,8 @@ const RESTRICTED_STYLE_EQUIPMENT = {
   "First Workout": ["Bodyweight", "Chair", "Yoga Mat"],
   "Chair Fitness": ["Chair", "Bodyweight"],
   "Seated Cardio": ["Chair", "Bodyweight"],
+  "Bodyweight Strength": ["Bodyweight", "Chair", "Yoga Mat"],
+  "Home Fitness": ["Bodyweight", "Chair", "Yoga Mat", "Dumbbells", "Resistance Bands", "Loop Bands", "Jump Rope"],
   "Home Workout Basics": ["Bodyweight", "Chair", "Yoga Mat", "Dumbbells", "Resistance Bands", "Loop Bands", "Jump Rope"]
 };
 
@@ -53,6 +56,9 @@ function isAvailable(exercise, equipmentAvailable, workoutStyle) {
   // must be covered; a chair by itself cannot power a band-row exercise.
   if (restricted && !exercise.equipment.every((item) => restricted.includes(item))) return false;
   if (equipmentAvailable == null || equipmentAvailable.length === 0) return true;
+  // An equipment list normally names alternative implements (e.g. dumbbell
+  // *or* kettlebell). For explicitly equipment-limited workouts above, require
+  // all listed pieces to be available to avoid impossible exercise suggestions.
   return exercise.equipment.some((item) => equipmentAvailable.includes(item));
 }
 
@@ -101,7 +107,7 @@ function selectExercises(baseCategory, style, block, count, experienceLevel, equ
   // bodybuilding, combat sports, yoga and other styles no longer collapse to
   // the same generic workout.
   if (isMain && style) {
-    const matchingStyle = compatible.filter((ex) => ex.styles.includes(style));
+    const matchingStyle = compatible.filter((ex) => matchesWorkoutStyle(ex, style));
     // Higher-level athletes should receive an appropriate selection of the
     // higher-skill variations, not just beginner drills with more repetitions.
     const moreChallenging = matchingStyle.filter((ex) =>
