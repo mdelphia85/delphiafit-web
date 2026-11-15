@@ -24,9 +24,18 @@ describe("DelphiaFit expanded workout generator", () => {
   });
 
   it("recognizes short and extended duration options", () => {
-    for (const minutes of [15, 20, 30, 45, 60, 75, 90]) {
+    for (const minutes of [15, 20, 30, 45, 60, 75, 90, 105, 120]) {
       expect(durationToMinutes(`${minutes} min`)).toBe(minutes);
     }
+  });
+
+  it("scales the number of exercises for longer sessions without repeating movements", () => {
+    const standard = generateWorkout({ category_label: "Strength", type_label: "Bodybuilding", duration_label: "45 min", experience_level: "intermediate" });
+    const extended = generateWorkout({ category_label: "Strength", type_label: "Bodybuilding", duration_label: "120 min", experience_level: "intermediate" });
+    expect(extended.main.length).toBeGreaterThan(standard.main.length);
+    expect(extended.main.length).toBe(11);
+    const extendedNames = names(extended);
+    expect(new Set(extendedNames).size).toBe(extendedNames.length);
   });
 
   it("respects beginner safety levels", () => {
