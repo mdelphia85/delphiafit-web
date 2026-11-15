@@ -1,4 +1,5 @@
 import { useState, useContext, useEffect } from "react";
+import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { supplementsByCategory, unitOptions } from "../context/supplementsData";
 import { userDataApi } from "../utils/userDataApi.js";
@@ -207,7 +208,7 @@ export default function Supplements() {
         </div>
 
         {/* RETURN TO MENU */}
-        <div
+        <TextAction plain
           onClick={() => setMenuOpen(true)}
           style={{
             color: GREEN,
@@ -215,9 +216,7 @@ export default function Supplements() {
             cursor: "pointer",
             textDecoration: "underline",
           }}
-        >
-          Return to Menu
-        </div>
+        >Return to Menu</TextAction>
       </div>
     </div>
   );
