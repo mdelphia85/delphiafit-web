@@ -22,8 +22,6 @@ import { syncAdaptiveProfile } from "../ai/adaptiveSync";
 
 const DIFFICULTY_SCALE = { easy: 0.8, medium: 1, hard: 1.2 };
 
-const ALL_EQUIPMENT = Object.values(EQUIPMENT_GROUPS).flat()
-  .filter((item) => item !== "Bodyweight");
 const HOME_EQUIPMENT = [
   "Chair", "Yoga Mat", "Dumbbells", "Resistance Bands",
   "Loop Bands", "Jump Rope", "Bench", "Foam Roller"
@@ -50,7 +48,8 @@ export default function Workouts() {
   const [workoutType, setWorkoutType] = useState("");
   const [duration, setDuration] = useState("30 min");
   const [experienceLevel, setExperienceLevel] = useState("beginner");
-  // null means every implement is available. An empty list means bodyweight only.
+  // Keep the original dropdown selector. null = full gym, [] = bodyweight only.
+  const [equipmentChoice, setEquipmentChoice] = useState("all");
   const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [difficulty, setDifficulty] = useState(() => getAdaptiveDifficulty());
 
@@ -159,13 +158,34 @@ export default function Workouts() {
   }
 
   function toggleEquipment(item) {
+    setEquipmentChoice("custom");
     setSelectedEquipment((current) => {
-      // Start from all items when customizing the default full-gym selection.
-      const next = new Set(current === null ? ALL_EQUIPMENT : current);
+      // Picking an individual item from "All Equipment" starts a custom list.
+      const next = new Set(current === null ? [] : current);
       if (next.has(item)) next.delete(item);
       else next.add(item);
       return [...next];
     });
+  }
+
+  function handleEquipmentSelect(value) {
+    if (value.startsWith("item:")) {
+      toggleEquipment(value.slice(5));
+      return;
+    }
+
+    const presets = {
+      all: null,
+      bodyweight: [],
+      home: [...HOME_EQUIPMENT],
+      barbell: ["Barbell", "Rack", "Bench", "Plates", "PVC Pipe"],
+      dumbbells: ["Dumbbells", "Bench", "Yoga Mat"]
+    };
+
+    if (Object.prototype.hasOwnProperty.call(presets, value)) {
+      setEquipmentChoice(value);
+      setSelectedEquipment(presets[value]);
+    }
   }
 
   function handleGenerate() {
@@ -460,75 +480,60 @@ export default function Workouts() {
             </select>
 
             <div style={sectionHeader}>Available Equipment</div>
-            <div style={{ ...label, fontSize: "14px" }}>
-              Choose the equipment you actually have. Bodyweight movements are always available.
-            </div>
-            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-              {[
-                { label: "All Equipment", value: null },
-                { label: "Bodyweight Only", value: [] },
-                { label: "Home Basics", value: HOME_EQUIPMENT }
-              ].map((choice) => (
-                <button
-                  key={choice.label}
-                  type="button"
-                  onClick={() => setSelectedEquipment(choice.value)}
-                  style={{
-                    padding: "8px 10px",
-                    color: SILVER,
-                    border: `1px solid ${SILVER}`,
-                    borderRadius: "6px",
-                    backgroundColor: "rgb(25,25,25)",
-                    cursor: "pointer"
-                  }}
-                >
-                  {choice.label}
-                </button>
+            <select
+              value={equipmentChoice}
+              onChange={e => handleEquipmentSelect(e.target.value)}
+              style={field}
+              aria-label="Available Equipment"
+            >
+              <option value="all">All Equipment / Gym</option>
+              <option value="bodyweight">Bodyweight / No Equipment</option>
+              <option value="home">Home / Basic Equipment</option>
+              <option value="barbell">Barbell / Rack</option>
+              <option value="dumbbells">Dumbbells / Bench</option>
+              <option value="custom" disabled>Custom Equipment Selection</option>
+              {Object.entries(EQUIPMENT_GROUPS).map(([group, items]) => (
+                <optgroup key={group} label={group}>
+                  {items.filter(item => item !== "Bodyweight").map(item => (
+                    <option key={item} value={`item:${item}`}>
+                      {item}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
-            </div>
-            <div style={{ ...label, fontSize: "14px", marginTop: "4px" }} role="status">
+            </select>
+            <div style={{ ...label, fontSize: "14px" }} role="status">
               {selectedEquipment === null
                 ? "All equipment available"
                 : selectedEquipment.length === 0
                   ? "Bodyweight only"
                   : `${selectedEquipment.length} equipment items selected`}
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              {Object.entries(EQUIPMENT_GROUPS).map(([group, items]) => {
-                const options = items.filter((item) => item !== "Bodyweight");
-                const selectedCount = selectedEquipment === null
-                  ? options.length
-                  : options.filter((item) => selectedEquipment.includes(item)).length;
-                return (
-                  <details
-                    key={group}
-                    style={{ border: `1px solid ${SILVER}`, borderRadius: "6px", padding: "8px" }}
-                  >
-                    <summary style={{ color: SILVER, cursor: "pointer" }}>
-                      {group} ({selectedCount}/{options.length})
-                    </summary>
-                    <div style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(auto-fit, minmax(125px, 1fr))",
-                      gap: "10px",
-                      paddingTop: "10px"
-                    }}>
-                      {options.map((item) => (
-                        <label key={item} style={{ color: SILVER, display: "flex", gap: "7px", alignItems: "center", fontSize: "14px" }}>
-                          <input
-                            type="checkbox"
-                            checked={selectedEquipment === null || selectedEquipment.includes(item)}
-                            onChange={() => toggleEquipment(item)}
-                            aria-label={item}
-                          />
-                          {item}
-                        </label>
-                      ))}
-                    </div>
-                  </details>
-                );
-              })}
-            </div>
+            {selectedEquipment !== null && selectedEquipment.length > 0 && (
+              <div style={{ ...label, fontSize: "14px" }}>
+                <div style={{ marginBottom: "6px" }}>Selected equipment (tap to remove):</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 12px" }}>
+                  {selectedEquipment.map(item => (
+                    <span
+                      key={item}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => toggleEquipment(item)}
+                      onKeyDown={e => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          toggleEquipment(item);
+                        }
+                      }}
+                      style={{ color: SILVER, textDecoration: "underline", cursor: "pointer" }}
+                      aria-label={`Remove ${item}`}
+                    >
+                      {item} ×
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div style={sectionHeader}>Duration</div>
             <select
