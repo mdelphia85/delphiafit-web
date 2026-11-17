@@ -462,7 +462,34 @@ npm run build
 npm run preview
 ```
 
-Testing is supplemented by backend integration tests and manual verification of key workflows in the deployed environment. For subsequent changes, development notes can reference the relevant commit, test results, and deployment verification.
+These checks serve different purposes: tests verify coded behavior within their coverage, lint identifies source-quality issues, builds validate bundling, and browser checks confirm the actual user experience. API and database integration must be verified separately where automated tests use mocks.
+
+### Quality-control and release verification
+
+Before each public release, record the frontend version, deployed backend version, target environment, test date, testing results, and any open issues. Verify against the actual deployed environment; repository code or historical test results alone do not establish production readiness.
+
+**Core user journeys**
+
+- Authentication: registration, login, logout, password recovery, session expiry, and authorized account access.
+- Fitness tracking: create, edit, retrieve, and delete workout, hydration, nutrition, recovery, and goal records; verify account history persists as expected.
+- Coaching: coach login, client invitations and relationships, plan management, messaging, dashboard navigation, and return-to-menu actions.
+- Administration: role-restricted login, user management, announcements, messages, audit information, and accurate reporting.
+- AI Coach and Nutrition Pro: question submission, response handling, saved history, plan and preference persistence, and clear errors when a service is unavailable.
+- Community and specialty areas: navigation, supported member actions, accessibility, and distinctions between operational capabilities and demonstration or future integrations.
+
+**Cross-system reliability**
+
+- Confirm the frontend uses the intended HTTPS API and that live request/response formats match the backend.
+- Verify server-side permissions and record ownership independently of visible navigation.
+- Check database changes with repeatable migration tests and representative nonproduction data before production deployment.
+- Test behavior under network failures, timeouts, expired sessions, and repeated submissions so users receive accurate status feedback.
+- Check responsive layouts, keyboard navigation, form validation, and essential workflows on supported devices.
+- For Android parity, validate the same authorized account and persisted records across the website and the existing native Android app; keep device-specific findings in the separate Android audit.
+
+**Release sign-off**
+
+Document each result as passed, failed, not applicable, or not yet verified, together with the supporting test evidence. Resolve release-critical findings before approval and record decisions for any deferred lower-priority work. Keep production credentials and private user information out of test logs and public documentation.
+
 
 ## Local web development
 
