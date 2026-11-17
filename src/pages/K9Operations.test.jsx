@@ -26,9 +26,10 @@ describe("K9Operations", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save K9 unit" }));
     await screen.findByText("Rex", { selector: "strong" });
     fireEvent.change(screen.getByLabelText("Mission type"), { target: { value: "Search" } });
+    fireEvent.change(screen.getByLabelText("Actual outcome"), { target: { value: "success" } });
     fireEvent.click(screen.getByRole("button", { name: "Log deployment" }));
     await screen.findByText(/Search/);
-    expect(calls.some(({ url }) => url.endsWith("/k9/deploy"))).toBe(true);
+    expect(calls.some(({ url, options }) => url.endsWith("/k9/deploy") && JSON.parse(options.body).success === true)).toBe(true);
     expect(calls.every((call) => call.options.headers.Authorization === "Bearer user-token")).toBe(true);
   });
 });
