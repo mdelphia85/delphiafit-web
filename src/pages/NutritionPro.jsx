@@ -1,4 +1,6 @@
 import { useContext, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import FoodScanner from "../components/FoodScanner.jsx";
 import TextAction from "../components/TextAction.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { apiRequest } from "../utils/api.js";
@@ -9,6 +11,8 @@ const inputStyle = { background: "#111", color: "#fff", border: "1px solid #444"
 
 export default function NutritionPro() {
   const { setMenuOpen } = useContext(MenuContext);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const section = searchParams.get("view") === "scanner" ? "scanner" : "planner";
   const [settings, setSettings] = useState(defaults);
   const [targets, setTargets] = useState(null);
   const [plans, setPlans] = useState([]);
@@ -55,7 +59,22 @@ export default function NutritionPro() {
   return <main style={{ width: "100%", minHeight: "100vh", background: "#000", padding: "20px 16px 90px", boxSizing: "border-box", color: "#fff" }}>
     <div style={{ maxWidth: 680, margin: "0 auto" }}>
       <h1 style={{ color: NUTRITION_COLOR, textAlign: "center" }}>🥗 Nutrition Pro</h1>
+      <label style={{ display: "block", color: NUTRITION_COLOR, marginBottom: 18 }}>
+        Nutrition section
+        <select aria-label="Nutrition section" value={section}
+          onChange={(event) => {
+            const params = new URLSearchParams(searchParams);
+            if (event.target.value === "scanner") params.set("view", "scanner");
+            else params.delete("view");
+            setSearchParams(params);
+          }}
+          style={{ ...inputStyle, marginTop: 6 }}>
+          <option value="planner">Nutrition goals &amp; meal planner</option>
+          <option value="scanner">Scan &amp; analyze food</option>
+        </select>
+      </label>
       {busy && <p role="status">Loading…</p>}{error && <p role="alert" style={{ color: "#f87171" }}>{error}</p>}{notice && <p role="status" style={{ color: "#6ee7b7" }}>{notice}</p>}
+      {section === "scanner" ? <FoodScanner avoid={settings.avoid} diet={settings.diet} /> : <>
       {targets && <section style={{ background: "#111", borderRadius: 12, padding: 16, marginBottom: 16 }}>
         <h2>Personalized targets</h2>
         {targets.status === "ready" ? <p>{targets.effective.calories} kcal · {targets.effective.protein_g} g protein · {targets.effective.carbs_g} g carbs · {targets.effective.fat_g} g fat</p> : <p>Complete your profile and goal to calculate targets. Missing: {(targets.missing || []).join(", ") || "profile inputs"}.</p>}
@@ -76,6 +95,7 @@ export default function NutritionPro() {
         {plans.length > 1 && <label style={{ display: "block", marginTop: 12 }}>Saved plans<select aria-label="Saved plans" style={inputStyle} onChange={(e) => setPlan(plans.find((p) => String(p.id) === e.target.value)?.plan || null)}>{plans.map((p) => <option key={p.id} value={p.id}>{new Date(p.created_at).toLocaleString()}</option>)}</select></label>}
         {plan ? <pre style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", color: "#ddd" }}>{JSON.stringify(plan, null, 2)}</pre> : <p>No saved meal plan yet.</p>}
       </section>
+      </>}
     </div>
     <div style={{ position: "fixed", bottom: 0, left: 0, width: "100%", height: 40, background: "#000", display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 16px", boxSizing: "border-box", zIndex: 20 }}><TextAction plain onClick={() => setMenuOpen(true)} style={{ color: NUTRITION_COLOR, background: "transparent", border: 0, textDecoration: "underline", cursor: "pointer" }}>Return to Menu</TextAction></div>
   </main>;
