@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { MemoryRouter } from "react-router-dom";
 import { MenuProvider } from "../context/MenuContext.jsx";
 import Firefighters from "../pages/Firefighters.jsx";
 
@@ -20,7 +21,7 @@ describe("Firefighters drill workspace", () => {
       return jsonResponse({}, 404);
     });
     vi.stubGlobal("fetch", fetchMock);
-    render(<MenuProvider><Firefighters /></MenuProvider>);
+    render(<MemoryRouter><MenuProvider><Firefighters /></MenuProvider></MemoryRouter>);
 
     await screen.findByText("No drills saved yet. Create one above to get started.");
     fireEvent.click(screen.getByRole("button", { name: "Generate drill details" }));
