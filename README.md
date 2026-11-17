@@ -214,7 +214,7 @@ The implementation language, framework and deployment details for iOS will be fi
 
 ---
 
-## Complete website page and route inventory (source snapshot: November 12, 2026)
+## Complete website page and route inventory (source snapshot: November 17, 2026)
 
 DelphiaFit defines **108 named website routes** in `src/App.jsx`, spanning fitness, nutrition, AI coaching, sports, community, specialized training, and administration. These include primary application pages, supporting screens, demonstration routes, and navigation aliases.
 
