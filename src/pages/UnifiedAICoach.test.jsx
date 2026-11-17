@@ -34,7 +34,7 @@ describe("Unified AI Coach", () => {
     const calls = [];
     vi.spyOn(globalThis, "fetch").mockImplementation(async (url, options = {}) => {
       calls.push({ url, options });
-      if (url.endsWith("/ai/weekly-plan")) return response({ result: { week: [{ name: "Day 1" }] }, record_id: 16 });
+      if (url.endsWith("/ai/weekly-plan")) return response({ result: { sessions_per_week: 4, split: "upper_lower_repeat", plan: [{ day: 1, type: "upper", exercises: [{ name: "Seated Cable Row", sets: 3, reps: "8–10" }] }] }, record_id: 16 });
       return response([]);
     });
     render(<MemoryRouter initialEntries={["/ai-coach"]}><App /></MemoryRouter>);
@@ -45,6 +45,7 @@ describe("Unified AI Coach", () => {
     fireEvent.click(screen.getByRole("button", { name: "Generate and save plan" }));
 
     expect(await screen.findByText("Saved weekly plan")).toBeInTheDocument();
+    expect(screen.getByText("Seated Cable Row")).toBeInTheDocument();
     const request = calls.find(({ url }) => url.endsWith("/ai/weekly-plan"));
     expect(request).toBeDefined();
     expect(request.options.method).toBe("POST");
@@ -61,7 +62,7 @@ describe("Unified AI Coach", () => {
     localStorage.setItem("token", "test-token");
     const rows = [
       { id: 4, feature: "coach", created_at: "2026-11-16T09:00:00Z", input: { message: "Running question" }, result: { coach_response: "Run gradually." } },
-      { id: 5, feature: "weekly-plan", created_at: "2026-11-16T11:00:00Z", input: { goals: ["strength"] }, result: { week: ["Training day"] } }
+      { id: 5, feature: "weekly-plan", created_at: "2026-11-16T11:00:00Z", input: { goals: ["strength"] }, result: { sessions_per_week: 3, split: "full_body", plan: [{ day: 1, type: "full_body", primary_focus: "Training day", exercises: [{ name: "Goblet Squat", sets: 3, reps: "8–10" }] }] } }
     ];
     vi.spyOn(globalThis, "fetch").mockResolvedValue(response(rows));
     render(<MemoryRouter initialEntries={["/ai-coach?view=history"]}><App /></MemoryRouter>);

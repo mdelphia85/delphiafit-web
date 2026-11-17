@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { apiRequest } from "../utils/api.js";
 import TextAction from "../components/TextAction.jsx";
 import { validCategory } from "../ai/categories.js";
+import WeeklyPlanView from "../components/WeeklyPlanView.jsx";
 
 const COLOR = "#a78bfa";
 const field = { display: "block", width: "100%", boxSizing: "border-box", padding: 10, marginTop: 6, background: "#111", color: "#fff", border: "1px solid #444", borderRadius: 6 };
@@ -92,7 +93,7 @@ export default function TrainingPlanGenerator({ onPlanSaved }) {
               {validCategory(plan.adaptive_inputs.preferred_category) ? `, preferred category: ${plan.adaptive_inputs.preferred_category}` : ""}.
             </p>
           )}
-          <pre style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", fontFamily: "inherit", fontSize: 14 }}>{JSON.stringify(plan, null, 2)}</pre>
+          <WeeklyPlanView plan={plan} />
         </section>
       )}
     </section>
