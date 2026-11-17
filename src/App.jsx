@@ -17,6 +17,7 @@ import Supplements from "./pages/Supplements.jsx";
 import Goals from "./pages/Goals.jsx";
 import Sports from "./pages/Sports.jsx";
 import FreeTraining from "./pages/FreeTraining.jsx";
+import RunningEndurance from "./pages/RunningEndurance.jsx";
 import Progress from "./pages/Progress.jsx";
 import Journal from "./pages/Journal.jsx";
 import Community from "./pages/Community.jsx";
@@ -177,6 +178,7 @@ function MenuOverlay() {
       <MenuItem label="Workouts" onClick={() => go("/workouts")} />
       <MenuItem label="Sports" onClick={() => go("/sports")} />
       <MenuItem label="Free Training" onClick={() => go("/free-training")} />
+      <MenuItem label="Running & Endurance" onClick={() => go("/running-endurance")} />
       <MenuItem label="Goals" onClick={() => go("/goals")} />
       <MenuItem label="Progress" onClick={() => go("/progress")} />
       <MenuItem label="Journal" onClick={() => go("/journal")} />
@@ -304,6 +306,7 @@ function AppWithMenu() {
       <Route path="/goals" element={<Goals />} />
       <Route path="/sports" element={<Sports />} />
       <Route path="/free-training" element={<FreeTraining />} />
+      <Route path="/running-endurance" element={<RunningEndurance />} />
       <Route path="/progress" element={<Progress />} />
       <Route path="/journal" element={<Journal />} />
       <Route path="/community" element={<Community />} />
