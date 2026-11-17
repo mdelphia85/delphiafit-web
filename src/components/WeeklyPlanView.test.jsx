@@ -52,7 +52,8 @@ describe("WeeklyPlanView", () => {
     };
     const { container } = render(<WeeklyPlanView plan={historicalPlan} />);
     expect(screen.getByText("Reported injury or restriction")).toBeInTheDocument();
-    expect(container.textContent).toContain("Bench Press");
+    expect(container.textContent).not.toContain("Bench Press");
+    expect(container.textContent).toContain("withheld pending individual review");
     expect(container.textContent.toLowerCase()).not.toContain("injury-friendly");
     expect(container.textContent.toLowerCase()).not.toContain("rehab-friendly");
     expect(container.textContent).not.toContain("normal training load is appropriate");
@@ -69,6 +70,6 @@ describe("WeeklyPlanView", () => {
     }} />);
     expect(screen.getByText("Reported injury or restriction")).toBeInTheDocument();
     expect(screen.getByText("No exercise prescriptions without individual review.")).toBeInTheDocument();
-    expect(screen.getByText("Exercises require review for your reported restrictions.")).toBeInTheDocument();
+    expect(screen.getByText("Exercise selections from this plan are withheld pending individual review of the reported restrictions.")).toBeInTheDocument();
   });
 });
