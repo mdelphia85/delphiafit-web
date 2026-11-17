@@ -2,7 +2,7 @@ import { useContext, useEffect, useMemo, useState } from "react";
 import carbon from "../assets/carbon.png";
 import { MenuContext } from "../context/MenuContext.js";
 import TextAction from "./TextAction.jsx";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   createEMSDrill, createFirefighterDrill, createMilitaryDrill, createPoliceDrill,
   deleteEMSDrill, deleteFirefighterDrill, deleteMilitaryDrill, deletePoliceDrill,
@@ -25,6 +25,7 @@ export default function TacticalDrillLog({ division, title, accent, sections, pr
   const { setMenuOpen } = useContext(MenuContext);
   const api = divisions[division];
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const selectedMode = searchParams.get("view") || "operations";
   const selectedPreparation = preparation.find((item) => item.value === selectedMode);
   const PreparationComponent = selectedPreparation?.component;
@@ -173,7 +174,14 @@ export default function TacticalDrillLog({ division, title, accent, sections, pr
           ))}
         </section>
         </>}
-        {PreparationComponent && <PreparationComponent embedded accent={accent} />}
+        {PreparationComponent && <>
+          <div style={{ marginBottom: 12, textAlign: "center" }}>
+            <TextAction plain onClick={() => navigate("/running-endurance?goal=" +
+              (division === "police" ? "1.5mi" : division === "military" ? "2mi" : "general"))}
+              style={{ color: accent }}>Open Running &amp; Endurance tracking</TextAction>
+          </div>
+          <PreparationComponent embedded accent={accent} />
+        </>}
       </main>
       <TextAction plain onClick={() => setMenuOpen(true)} style={{ position: "fixed", right: 20, bottom: 20, zIndex: 10, color: accent, fontSize: 18 }}>Return to Menu</TextAction>
     </div>

@@ -33,9 +33,9 @@ describe("MissionReplay", () => {
     fireEvent.change(screen.getByLabelText("Notes"), { target: { value: "On scene" } });
     fireEvent.click(screen.getByRole("button", { name: "Record step" }));
     await screen.findByText("check-in");
-    fireEvent.change(screen.getByLabelText("Final score (0-100)"), { target: { value: "94" } });
+    fireEvent.change(screen.getByLabelText("Self-reported final score (0–100)"), { target: { value: "94" } });
     fireEvent.click(screen.getByRole("button", { name: "Complete replay" }));
-    await waitFor(() => expect(screen.getByText("Completed ? Score 94")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Completed · self-reported score 94")).toBeInTheDocument());
     expect(calls.some(({ url }) => url.endsWith("/mission_replay/start"))).toBe(true);
     expect(fetchMock.mock.calls.every(([, options]) => options.headers.Authorization === "Bearer user-token")).toBe(true);
   });
