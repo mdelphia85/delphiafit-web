@@ -1,6 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import TextAction from "../components/TextAction.jsx";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import TrainingPlanGenerator from "./AutonomousCoaching.jsx";
 import { apiRequest } from "../utils/api.js";
 import AdaptiveCoachCard from "../components/AdaptiveCoachCard.jsx";
 import { MenuContext } from "../context/MenuContext.js";
@@ -8,6 +9,11 @@ import { validCategory } from "../ai/categories.js";
 
 export default function AICoach() {
   const { setMenuOpen } = useContext(MenuContext);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selected = searchParams.get("view");
+  const section = selected === "plan" || selected === "history" ? selected : "ask";
+  const [historyFilter, setHistoryFilter] = useState("all");
+  const [openedRecord, setOpenedRecord] = useState(null);
   const [message, setMessage] = useState("");
   const [reply, setReply] = useState("");
   const [replyMode, setReplyMode] = useState(null);
@@ -24,7 +30,8 @@ export default function AICoach() {
 
   async function loadHistory() {
     try {
-      setHistory((await apiRequest("/ai/records", { timeoutMs: 10000 })).filter((record) => record.feature === "coach"));
+      const records = await apiRequest("/ai/records", { timeoutMs: 10000 });
+      setHistory(Array.isArray(records) ? records.filter((record) => ["coach", "weekly-plan"].includes(record.feature)) : []);
     } catch (e) {
       if (e.status === 401) {
         setRequiresSignIn(true);
@@ -90,7 +97,23 @@ export default function AICoach() {
     <div style={{ width: 560, maxWidth: "100%", margin: "0 auto" }}>
       <h1 style={{ color: AI_COLOR, textAlign: "center" }}>AI Coach</h1>
       <p style={{ color: "#aaa", fontSize: 13, lineHeight: 1.5, marginBottom: 12 }}>Ask AI Coach any question — fitness, recovery, nutrition, or everyday topics. Conversational responses require the hosted model; otherwise limited workout guidance is available. When enabled, your question and relevant fitness context are processed by an external AI service. AI can make mistakes and cannot assess medical readiness.</p>
+      <label style={{ display: "block", marginBottom: 18, color: AI_COLOR }}>Coaching section
+        <select aria-label="Coaching section" value={section}
+          onChange={(event) => {
+            const next = new URLSearchParams(searchParams);
+            if (event.target.value === "ask") next.delete("view");
+            else next.set("view", event.target.value);
+            setSearchParams(next);
+            setOpenedRecord(null);
+          }}
+          style={{ display: "block", marginTop: 7, padding: 10, width: "100%", boxSizing: "border-box", color: "#fff", background: "#111", border: "1px solid #555", borderRadius: 6 }}>
+          <option value="ask">Ask AI Coach</option>
+          <option value="plan">Generate Training Plan</option>
+          <option value="history">Coaching History</option>
+        </select>
+      </label>
       <AdaptiveCoachCard />
+      {section === "ask" && <>
       <section aria-live="polite" style={{ background: "#111", borderRadius: 12, padding: 16, minHeight: 180, marginBottom: 14 }}>
         {busy && <p role="status">Preparing guidance…</p>}
         {reply && <div><strong>Coach guidance</strong>{replyMode === "limited" && <p style={{ fontSize: "12px", color: "#aaa" }}>Limited mode: general conversational AI is not configured yet.</p>}<p style={{ whiteSpace: "pre-wrap" }}>{reply}</p>{adaptiveUsed && <small style={{ color: "#aaa" }}>Adapted using your history: {adaptiveUsed.workouts_logged ?? 0} workout{(adaptiveUsed.workouts_logged ?? 0) === 1 ? "" : "s"} logged{adaptiveUsed.difficulty ? `, ${adaptiveUsed.difficulty} difficulty` : ""}{validCategory(adaptiveUsed.preferred_category) ? `, favours ${adaptiveUsed.preferred_category}` : ""}.</small>}</div>}
@@ -102,7 +125,46 @@ export default function AICoach() {
         <input aria-label="Ask AI Coach" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Ask anything…" maxLength={4000} style={{ flex: 1, minWidth: 0, padding: 10, background: "#111", border: "1px solid #444", borderRadius: 8, color: "#fff" }} />
         <button disabled={busy || !message.trim()} style={{ padding: "10px 16px", background: AI_COLOR, border: 0, borderRadius: 8, fontWeight: 600 }}>{busy ? "Working…" : "Send"}</button>
       </form>
-      <section style={{ marginTop: 16 }}><h2 style={{ fontSize: 16 }}>Saved coaching history</h2>{history.slice(0, 5).map((record) => <button key={record.id} onClick={() => { setReply(record.result.coach_response || "Saved recommendation"); setLastAdaptive(record.result.adaptive_inputs || null); setReplyMode(record.result.mode || "limited"); }} style={{ display: "block", width: "100%", textAlign: "left", padding: 10, marginBottom: 8, background: "#111", color: "#ddd", border: "1px solid #333", borderRadius: 8 }}>Saved {new Date(record.created_at).toLocaleString()} - {record.input.message}</button>)}</section>
+      <section style={{ marginTop: 16 }}><h2 style={{ fontSize: 16 }}>Saved coaching history</h2>{history.filter((record) => record.feature === "coach").slice(0, 5).map((record) => <button key={record.id} onClick={() => { setReply(record.result.coach_response || "Saved recommendation"); setLastAdaptive(record.result.adaptive_inputs || null); setReplyMode(record.result.mode || "limited"); }} style={{ display: "block", width: "100%", textAlign: "left", padding: 10, marginBottom: 8, background: "#111", color: "#ddd", border: "1px solid #333", borderRadius: 8 }}>Saved {new Date(record.created_at).toLocaleString()} - {record.input.message}</button>)}</section>
+      </>}
+      {section === "plan" && <TrainingPlanGenerator onPlanSaved={loadHistory} />}
+      {section === "history" && (
+        <section aria-label="Coaching History" style={{ background: "#111", padding: 16, borderRadius: 12 }}>
+          <h2 style={{ color: AI_COLOR, marginTop: 0 }}>Coaching History</h2>
+          <label>Show records
+            <select value={historyFilter} onChange={(event) => { setHistoryFilter(event.target.value); setOpenedRecord(null); }}
+              style={{ width: "100%", boxSizing: "border-box", marginTop: 6, padding: 10, borderRadius: 6, background: "#161616", color: "#fff", border: "1px solid #555" }}>
+              <option value="all">All coaching records</option>
+              <option value="coach">AI conversations</option>
+              <option value="weekly-plan">Training plans</option>
+            </select>
+          </label>
+          <p style={{ color: "#aaa", fontSize: 12 }}>Saved questions and weekly training plans remain in your account.</p>
+          {error && <p role="alert" style={{ color: "#f87171" }}>{error}</p>}
+          {history.filter((record) => historyFilter === "all" || record.feature === historyFilter).length === 0 && !error && (
+            <p>No saved coaching records in this category yet.</p>
+          )}
+          {history.filter((record) => historyFilter === "all" || record.feature === historyFilter).map((record) => (
+            <div key={record.id} style={{ padding: "12px 0", borderBottom: "1px solid #333" }}>
+              <TextAction plain onClick={() => setOpenedRecord((current) => current === record.id ? null : record.id)}
+                style={{ display: "block", color: AI_COLOR, textAlign: "left" }}>
+                {record.feature === "weekly-plan" ? "Training plan" : "AI conversation"} · {new Date(record.created_at).toLocaleString()}
+                {record.feature === "coach" && record.input?.message ? " · " + record.input.message : ""}
+              </TextAction>
+              {openedRecord === record.id && (
+                <div style={{ fontSize: 14, marginTop: 10 }}>
+                  {record.feature === "coach" && <p><strong>Question:</strong> {record.input?.message || "Saved question"}</p>}
+                  <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", overflowWrap: "anywhere" }}>
+                    {record.feature === "coach"
+                      ? record.result?.coach_response || "Saved answer unavailable."
+                      : JSON.stringify(record.result || {}, null, 2)}
+                  </pre>
+                </div>
+              )}
+            </div>
+          ))}
+        </section>
+      )}
     </div>
     <div style={{ position: "fixed", bottom: 0, left: 0, width: "100%", height: 40, background: "#000", display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "0 16px", boxSizing: "border-box", zIndex: 20 }}><TextAction plain onClick={() => setMenuOpen(true)} style={{ color: AI_COLOR, background: "transparent", border: 0, textDecoration: "none", cursor: "pointer" }}>Return to Menu</TextAction></div>
   </main>;

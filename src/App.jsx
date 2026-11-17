@@ -58,7 +58,6 @@ import GlobalCompetition from "./pages/GlobalCompetition.jsx";
 import FederationLayer from "./pages/FederationLayer.jsx";
 import AIPerformanceLab from "./pages/AIPerformanceLab.jsx";
 import MedicalRehab from "./pages/MedicalRehab.jsx";
-import AutonomousCoaching from "./pages/AutonomousCoaching.jsx";
 import GovernmentMilitary from "./pages/GovernmentMilitary.jsx";
 import About from "./pages/About.jsx";
 import PrivacyPolicy from "./pages/Privacy_Policy.jsx";
@@ -217,7 +216,6 @@ function MenuOverlay() {
       <MenuItem label="Federations" onClick={() => go("/federations")} />
       <MenuItem label="Performance Lab" onClick={() => go("/performance-lab")} />
       <MenuItem label="Medical + Rehab" onClick={() => go("/medical-rehab")} />
-      <MenuItem label="Autonomous Coaching" onClick={() => go("/autonomous-coaching")} />
       <MenuItem label="Government + Military" onClick={() => go("/government-military")} />
 
       <MenuItem label="About" onClick={() => go("/about")} />
@@ -347,7 +345,7 @@ function AppWithMenu() {
       <Route path="/federations" element={<FederationLayer />} />
       <Route path="/performance-lab" element={<AIPerformanceLab />} />
       <Route path="/medical-rehab" element={<MedicalRehab />} />
-      <Route path="/autonomous-coaching" element={<AutonomousCoaching />} />
+      <Route path="/autonomous-coaching" element={<Navigate to="/ai-coach?view=plan" replace />} />
       <Route path="/government-military" element={<GovernmentMilitary />} />
       <Route path="/about" element={<About />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
