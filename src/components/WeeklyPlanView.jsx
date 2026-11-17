@@ -97,7 +97,7 @@ export default function WeeklyPlanView({ plan }) {
                 Day {day.day ?? index + 1} · {DAY_TYPES[day.type] || readable(day.type) || "Training"}
               </summary>
               <div style={{ paddingTop: 12 }}>
-                {day.primary_focus && <p style={small}><strong style={{ color: "#fff" }}>Primary focus:</strong> {readable(day.primary_focus)}</p>}
+                {day.primary_focus && <p style={small}><strong style={{ color: "#fff" }}>Primary focus:</strong> {flagged ? "Exercise selection needs individual review" : readable(day.primary_focus)}</p>}
                 <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
                   {day.intensity && <p style={small}><strong style={{ color: "#fff" }}>Intensity:</strong> {readable(day.intensity)}</p>}
                   {day.volume && <p style={small}><strong style={{ color: "#fff" }}>Volume:</strong> {readable(day.volume)}</p>}
