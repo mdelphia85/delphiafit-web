@@ -103,7 +103,9 @@ export default function WeeklyPlanView({ plan }) {
                   {day.volume && <p style={small}><strong style={{ color: "#fff" }}>Volume:</strong> {readable(day.volume)}</p>}
                 </div>
                 <h5 style={{ fontSize: 15, margin: "14px 0 8px", color: "#fff" }}>Exercises</h5>
-                {exercises.length ? (
+                {flagged ? (
+                  <p style={small}>Exercise selections from this plan are withheld pending individual review of the reported restrictions.</p>
+                ) : exercises.length ? (
                   <ol style={{ paddingLeft: 24, margin: 0 }}>
                     {exercises.map((exercise, n) => (
                       <li key={n} style={{ marginBottom: 10, color: "#eee", lineHeight: 1.45 }}>
@@ -114,9 +116,9 @@ export default function WeeklyPlanView({ plan }) {
                     ))}
                   </ol>
                 ) : (
-                  <p style={small}>{flagged ? "Exercises require review for your reported restrictions." : "No exercises specified for this day."}</p>
+                  <p style={small}>No exercises specified for this day.</p>
                 )}
-                {conditioning && (
+                {!flagged && conditioning && (
                   <p style={small}><strong style={{ color: "#fff" }}>Conditioning:</strong> {readable(conditioning.type) || "Optional"}{conditioning.duration_minutes != null ? " · " + conditioning.duration_minutes + " minutes" : ""}</p>
                 )}
                 {day.notes && <p style={{ ...small, borderTop: "1px solid #333", paddingTop: 10 }}><strong style={{ color: "#fff" }}>Coach's note:</strong> {day.notes}</p>}
