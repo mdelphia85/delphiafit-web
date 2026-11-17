@@ -435,6 +435,65 @@ The original notebook and multiple subscriptions are the problem to solve, not m
 
 **Every Goal on One Platform.**
 
+## Development challenges, engineering decisions and lessons learned
+
+This retrospective records **real engineering problems, design choices and verifiable evidence** without treating an implemented screen or passing mocked test as proof of a successful production workflow. The website has been described by the founder as complete except for ongoing changes; release-specific verification is recorded separately.
+
+### Challenges encountered and the decisions behind them
+
+| Challenge | Engineering decision or corrective direction | Evidence and verification boundary |
+| --- | --- | --- |
+| Fragmented fitness tools | Build one account-based experience across workouts, hydration, nutrition, coaching and progress instead of another isolated tracker | Founder experience; Python/Kivy prototype and later React/FastAPI project |
+| Moving from prototype to maintainable software | Separate React presentation, API operations and SQL-backed server-side records so different clients can share authoritative data | `src/App.jsx`, `src/utils/api.js`, `src/utils/userDataApi.js` and backend architecture; full cross-device parity still requires testing |
+| Feature breadth versus finished workflows | Distinguish implemented, demonstrated, integration-dependent and future capabilities; prioritize real persistence and usable navigation over a count of visible screens | Historical `PROGRESS_REPORT.md` documents mocked passes alongside unverified browser/backend behavior |
+| Coach Hub session and navigation issues | Treat reported Return to Menu/logout and client-management problems as integration issues to reproduce with a coach session and real API requests | Historically reported in `PROGRESS_REPORT.md`; its earlier unresolved status is **not proof** of a current failure |
+| Static or misleading owner analytics | Connect the administrative UI to real data and avoid presenting fabricated zero-value metrics where data is unavailable | Historical admin follow-up and November 2026 web changes; confirm current deployments separately |
+| Authentication, role separation and persistence | Keep member, coach and owner/admin roles distinct, enforce authorization on the API rather than just hiding navigation, and verify data ownership | Dedicated UI/session utilities and server-side design; security must be tested against the running backend |
+| Conversational AI availability and retries | Provide request error states, timeouts, saved history and idempotency-oriented submission handling without promising an autonomous coaching system | `src/pages/AICoach.jsx`; hosted AI model operation depends on actual backend/environment configuration |
+| Native Android integration | Retain the existing Java Android Studio app, repair issues in place and validate shared backend data instead of rebuilding the client | Founder reported an earlier Android login crash fixed; current screen/API parity and physical-device results require separate audit |
+
+### Food barcode scanner — issues, changes and remaining checks
+
+The food scanner is **embedded inside Nutrition Pro**, not a separately added top-level menu product. Its frontend is in `src/components/FoodScanner.jsx`, with data calculations in `src/utils/foodScanner.js`. The component calls authenticated `/nutrition-scanner/product/{barcode}` and `/nutrition-scanner/history` endpoints, and uses the existing `POST /nutrition/` endpoint only when a person deliberately records food consumed. Product data is attributed to **Open Food Facts**. The current code and test suite show implementation intent; deployed backend behavior and phone-browser compatibility are not independently certified by these files.
+
+| Issue or risk | Implemented handling / engineering decision | Status and outstanding evidence |
+| --- | --- | --- |
+| Browser camera support differs across phones | Use `BarcodeDetector` only when available and compatible with EAN/UPC formats; provide printed-barcode manual entry when unsupported | Automated test models unsupported iPhone/Safari-style detection; **live iPhone/browser testing still needed** |
+| Permission denied, insecure origin or camera failure | Require browser media support and a secure context; explain permission failures, stop camera streams when scanning ends or the UI unmounts | Simulated permission-denial and successful scan tests exist; test real HTTPS, permissions, focus and device behavior |
+| Product cannot be located or service is busy | Normalize 8–14-digit EAN/UPC codes, preserve leading zeroes, and display distinct not-found, rate-limit or request errors with a manual tracking alternative | Frontend logic present; verify lookup responses and service availability against the deployed backend and provider |
+| A 0–100 number could overstate scientific validity | Replace the **experimental** numeric indicator with a display grounded in the reported Nutri-Score A–E grade; the 0–100 figure represents five grade bands, **not an independent health assessment**; reject legacy experimental values | Source changes and frontend tests exist; actual scoring implementation and records need backend/production validation |
+| Missing provider nutrient data or ambiguous measurement units | Display missing values as “Not reported,” not zero; keep facts tied to verified per-100 g/ml units; prohibit automatic quantity logging when required data is absent | Unit tests cover incomplete nutrients and invalid quantities; inspect real product samples across categories |
+| Scanning could accidentally record a meal or duplicate calories | Barcode lookup **never** logs a meal; user explicitly enters the consumed amount and selects log; the interface guards against repeated writes and advises checking totals after an uncertain request | Simulated tests confirm no auto-log and one intended write; assess backend idempotency and double-submit recovery against production |
+| Privacy, allergy and dietary interpretation | Store a barcode in private scan history only after an explicit action; show reported allergens/ingredients and warnings that missing data does not establish safety or suitability | UI and mocked endpoint tests are not evidence of server-side privacy controls; test account isolation and real provider-data reliability |
+
+**Scanner-specific verification before calling it fully functional**
+
+1. Test manually entered UPC/EAN values and camera capture on actual Android Chrome, iPhone Safari and supported desktop/mobile browsers. Record browser versions and whether camera decoding is supported; on unsupported browsers, require a clear manual-entry path.
+2. Exercise camera permission grant/denial, HTTPS restrictions, switching tabs, leaving Nutrition Pro and returning; confirm camera hardware is released when expected.
+3. Use real products with known, absent and contradictory data to check identification, leading-zero handling, nutrition units, ingredient disclosures, allergens, and an **Unrated** result when quality checks fail.
+4. Compare the displayed Nutri-Score grade and five-band index to the underlying provider record and the deployed API response. Avoid describing the index as a personalized or medically validated “healthfulness score.”
+5. Confirm scanning and viewing a product **do not** create a consumed-food record. Verify deliberate logging uses the entered quantity, updates the existing nutrition totals only once, and handles retries honestly.
+6. Test private scan-history create/list/delete and authenticated ownership across two distinct accounts. Verify deployed endpoint availability and review logging/data retention before release.
+7. Record unresolved issues by exact device, browser, barcode, frontend/backend commit, error and reproduction steps. **Do not mark camera compatibility, scoring reliability or end-to-end logging complete solely from automated tests.**
+
+**Source-control evidence**
+
+- [Integrated barcode scanner commit](https://github.com/mdelphia85/delphiafit-web/commit/d85fa4a61d6b514805406aa52299b8273e63e2eb) — Nutrition Pro integration, barcode lookup, history, camera entry and explicit meal logging.
+- [Camera scenario test commit](https://github.com/mdelphia85/delphiafit-web/commit/78958914b5a2542d29abcf2cb2de6d2faf8cdaef) — Unsupported detection, permission denial, successful decode and stopping camera capture.
+- [Nutrition score correction commit](https://github.com/mdelphia85/delphiafit-web/commit/de234dac057230c63992b91d45d50f7836ababec) — Provider grade, five-band index, unrated handling and removal of provisional-score display.
+
+### Engineering lessons carried forward
+
+1. **A route is not a feature-completion certificate.** Working data flow, permissions and end-to-end behavior matter more than the number of screens.
+2. **Use the backend as the system of record.** Web and Android clients should not drift into independent versions of a person's history.
+3. **Separate simulated confidence from observed behavior.** Unit/component tests, backend integration tests and actual production-device checks answer different questions.
+4. **Do not manufacture certainty from incomplete data.** This applies to administrator metrics, AI responses, nutrition information, scores and unconfirmed write operations.
+5. **Design recoverable failure paths.** Manual barcode entry, visible errors, controlled retries and fallback behavior keep core functionality usable when browsers or integrations differ.
+6. **Treat account and health-adjacent data carefully.** Explicit consent and actions, access controls, minimum necessary storage and clear limitations are product requirements, not polish.
+7. **Keep technical history traceable.** Record what failed, why a design changed, the code/commit that changed it and what still needs independent verification.
+
+---
+
 ## Quality assurance and testing
 
 DelphiaFit uses quality assurance practices to maintain reliable fitness tracking, consistent data, secure accounts, and an accessible user experience as the platform grows.
