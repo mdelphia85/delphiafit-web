@@ -85,6 +85,7 @@ export default function RunningEndurance() {
   const [busy, setBusy] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(true);
   const [history, setHistory] = useState([]);
+  const [historyUpdatedAt, setHistoryUpdatedAt] = useState(0);
   const [manualDistance, setManualDistance] = useState("");
   const [manualMinutes, setManualMinutes] = useState("");
   const [manualNotes, setManualNotes] = useState("");
@@ -103,7 +104,7 @@ export default function RunningEndurance() {
     }
     let active = true;
     apiRequest("/workouts/")
-      .then((rows) => { if (active) setHistory(safeRunRows(rows)); })
+      .then((rows) => { if (active) { setHistory(safeRunRows(rows)); setHistoryUpdatedAt(Date.now()); } })
       .catch((requestError) => { if (active) setError(requestError.message || "Unable to load running history."); })
       .finally(() => { if (active) setHistoryLoading(false); });
     return () => { active = false; };
@@ -302,6 +303,7 @@ export default function RunningEndurance() {
     try {
       const created = await apiRequest("/workouts/save", { method: "POST", body: payload });
       setHistory((current) => [created, ...current].slice(0, 100));
+      setHistoryUpdatedAt(Date.now());
       setNotice("Activity saved privately to your DelphiaFit account and workout history.");
       return true;
     } catch (saveError) {
@@ -341,7 +343,7 @@ export default function RunningEndurance() {
   const pace = formatPace(secondsPerUnit(distanceMeters, elapsedSeconds, unit));
   const goalData = ENDURANCE_GOALS.find((item) => item.value === goal) || ENDURANCE_GOALS[0];
   const splits = useMemo(() => calculateSplits(points, unit), [points, unit]);
-  const thirtyDaysAgo = Date.now() - 30 * 24 * 3600 * 1000;
+  const thirtyDaysAgo = historyUpdatedAt - 30 * 24 * 3600 * 1000;
   const recent = history.filter((item) => new Date(item.date).getTime() >= thirtyDaysAgo);
   const thirtyDayDistance = recent.reduce((sum, item) => sum + (Number(readRun(item)?.distance_m) || 0), 0);
   const longest = Math.max(0, ...history.map((item) => Number(readRun(item)?.distance_m) || 0));
