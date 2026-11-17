@@ -93,33 +93,36 @@ export function formatPace(seconds) {
 // between consecutive accepted GPS points. Segments without movement add none.
 export function calculateSplits(points, unit = "mi") {
   const step = unit === "km" ? METERS_PER_KM : METERS_PER_MILE;
+  if (!Array.isArray(points) || points.length < 2) return [];
   const result = [];
   let traveled = 0;
   let next = step;
-  let lastTime = null;
-  const start = points.find((p) => Number.isFinite(p.time));
-  if (!start) return result;
-  for (const point of points) {
-    if (lastTime !== null && point.segment !== points[points.indexOf(point) - 1]?.segment) {
-      lastTime = point.time;
+  let previous = points[0];
+  for (let i = 1; i < points.length; i++) {
+    const point = points[i];
+    if (point.segment !== previous.segment) {
+      previous = point;
       continue;
     }
-    if (lastTime !== null) {
-      const preceding = points[points.indexOf(point) - 1];
-      const meters = haversineMeters(preceding, point);
-      while (meters > 0 && traveled + meters >= next && result.length < 100) {
+    const meters = haversineMeters(previous, point);
+    const t1 = Number(previous.elapsedSeconds);
+    const t2 = Number(point.elapsedSeconds);
+    if (meters > 0 && Number.isFinite(t1) && Number.isFinite(t2) && t2 >= t1) {
+      while (traveled + meters >= next && result.length < 100) {
         const fraction = (next - traveled) / meters;
-        const crossing = preceding.time + (point.time - preceding.time) * fraction;
-        result.push({ distance: result.length + 1, elapsedSeconds: Math.round((crossing - start.time) / 1000) });
+        result.push({
+          distance: result.length + 1,
+          elapsedSeconds: Math.round(t1 + (t2 - t1) * fraction),
+        });
         next += step;
       }
       traveled += meters;
     }
-    lastTime = point.time;
+    previous = point;
   }
-  return result.map((s, i) => ({
-    ...s,
-    splitSeconds: s.elapsedSeconds - (i === 0 ? 0 : result[i - 1].elapsedSeconds),
+  return result.map((item, i) => ({
+    ...item,
+    splitSeconds: item.elapsedSeconds - (i === 0 ? 0 : result[i - 1].elapsedSeconds),
   }));
 }
 
