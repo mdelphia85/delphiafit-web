@@ -4,7 +4,7 @@ import { MenuContext } from "../context/MenuContext.js";
 import TextAction from "../components/TextAction.jsx";
 import { apiRequest, hasSession } from "../utils/api.js";
 import {
-  ENDURANCE_GOALS, ENDURANCE_MODES, METERS_PER_MILE,
+  ENDURANCE_GOALS, ENDURANCE_MODES,
   assessFix, calculateSplits, cleanFix, distanceInUnit,
   formatDuration, formatPace, reduceRoute, routeToSvg,
   secondsPerUnit, toMeters
@@ -21,7 +21,6 @@ const panel = {
   borderRadius: 12, padding: 16, marginBottom: 20
 };
 const action = { color: ACCENT, fontSize: 16, display: "inline-block", margin: "6px 14px 6px 0" };
-const GPS_MODES = new Set(ENDURANCE_MODES.map((item) => item.value));
 
 function readRun(item) {
   return item?.plan_json?.running_endurance || null;
@@ -84,7 +83,6 @@ export default function RunningEndurance() {
   const [busy, setBusy] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(true);
   const [history, setHistory] = useState([]);
-  const [saveCoordinates, setSaveCoordinates] = useState("no");
   const [manualDistance, setManualDistance] = useState("");
   const [manualMinutes, setManualMinutes] = useState("");
   const [manualNotes, setManualNotes] = useState("");
@@ -226,7 +224,7 @@ export default function RunningEndurance() {
     };
     phaseRef.current = "tracking";
     setPhase("tracking"); setElapsedSeconds(0); setDistanceMeters(0);
-    setPoints([]); setAccuracy(null); setSaveCoordinates("no");
+    setPoints([]); setAccuracy(null);
     watchLocation();
   }
 
@@ -275,12 +273,8 @@ export default function RunningEndurance() {
     }
     const unitLabel = distanceInUnit(meters, unit).toFixed(2) + " " + unit;
     const modeLabel = ENDURANCE_MODES.find((m) => m.value === newMode)?.label || "Endurance";
-    const storedRoute = source === "gps" && saveCoordinates === "yes"
-      ? reduceRoute(route, 250).map((p) => ({
-          lat: Number(p.lat.toFixed(5)), lon: Number(p.lon.toFixed(5)),
-          segment: p.segment, elapsedSeconds: p.elapsedSeconds
-        }))
-      : [];
+    // Never persist raw GPS coordinates until per-run deletion controls exist.
+    const storedRoute = [];
     const description = unitLabel + " · pace " +
       formatPace(secondsPerUnit(meters, seconds, unit)) + "/" + unit +
       (comments.trim() ? " · " + comments.trim().slice(0, 400) : "");
@@ -350,7 +344,9 @@ export default function RunningEndurance() {
   const thirtyDayDistance = recent.reduce((sum, item) => sum + (Number(readRun(item)?.distance_m) || 0), 0);
   const longest = Math.max(0, ...history.map((item) => Number(readRun(item)?.distance_m) || 0));
   const recordedGoal = history
-    .filter((item) => readRun(item)?.goal === goal && Number(readRun(item)?.distance_m) >= goalData.distanceMeters * 0.95)
+    .filter((item) => readRun(item)?.goal === goal &&
+      Number(readRun(item)?.distance_m) >= goalData.distanceMeters * 0.95 &&
+      Number(readRun(item)?.distance_m) <= goalData.distanceMeters * 1.05)
     .sort((a, b) => (Number(readRun(a)?.elapsed_s) || Infinity) - (Number(readRun(b)?.elapsed_s) || Infinity))[0];
 
   return (
@@ -419,15 +415,9 @@ export default function RunningEndurance() {
               <label>Notes (optional)
                 <textarea rows={3} style={field} maxLength={400} value={notes} onChange={(e) => setNotes(e.target.value)} />
               </label>
-              <label>Store precise route coordinates in your account?
-                <select style={field} value={saveCoordinates} onChange={(e) => setSaveCoordinates(e.target.value)}>
-                  <option value="no">No — save only activity metrics (recommended)</option>
-                  <option value="yes">Yes — save my GPS route privately</option>
-                </select>
-              </label>
               <p style={{ color: "#aaa", fontSize: 12 }}>
-                Route storage is off by default. Saved routes can reveal sensitive locations and are not published publicly.
-                A self-service delete tool for saved GPS route data is not available in this first release.
+                For privacy, this version saves distance, time, pace and splits only.
+                The live GPS trace disappears when you leave or save; precise coordinates are not stored.
               </p>
               <TextAction onClick={saveRecorded} disabled={busy || !(distanceMeters > 0) || !(elapsedSeconds > 0)} style={action}>
                 {busy ? "Saving…" : "Save activity"}
@@ -491,7 +481,7 @@ export default function RunningEndurance() {
           Train within your current fitness level and adjust for conditions.
         </p>
       </main>
-      <TextAction plain onClick={() => setMenuOpen(true)} style={{ position: "fixed", bottom: 18, right: 20, zIndex: 20, color: ACCENT, fontSize: 18 }}>Return to Menu</TextAction>
+      <TextAction plain onClick={() => { if (phase !== "idle" && !window.confirm("You have an unsaved GPS activity. If you navigate away, it will be lost. Open the menu?")) return; setMenuOpen(true); }} style={{ position: "fixed", bottom: 18, right: 20, zIndex: 20, color: ACCENT, fontSize: 18 }}>Return to Menu</TextAction>
     </div>
   );
 }
