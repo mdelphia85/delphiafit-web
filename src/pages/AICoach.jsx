@@ -2,6 +2,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import TextAction from "../components/TextAction.jsx";
 import { Link, useSearchParams } from "react-router-dom";
 import TrainingPlanGenerator from "./AutonomousCoaching.jsx";
+import WeeklyPlanView from "../components/WeeklyPlanView.jsx";
 import { apiRequest } from "../utils/api.js";
 import AdaptiveCoachCard from "../components/AdaptiveCoachCard.jsx";
 import { MenuContext } from "../context/MenuContext.js";
@@ -154,11 +155,9 @@ export default function AICoach() {
               {openedRecord === record.id && (
                 <div style={{ fontSize: 14, marginTop: 10 }}>
                   {record.feature === "coach" && <p><strong>Question:</strong> {record.input?.message || "Saved question"}</p>}
-                  <pre style={{ whiteSpace: "pre-wrap", fontFamily: "inherit", overflowWrap: "anywhere" }}>
-                    {record.feature === "coach"
-                      ? record.result?.coach_response || "Saved answer unavailable."
-                      : JSON.stringify(record.result || {}, null, 2)}
-                  </pre>
+                  {record.feature === "coach"
+                    ? <p style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>{record.result?.coach_response || "Saved answer unavailable."}</p>
+                    : <WeeklyPlanView plan={record.result} />}
                 </div>
               )}
             </div>
