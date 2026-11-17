@@ -1,5 +1,3 @@
-import React from "react";
-
 const PURPLE = "#a78bfa";
 const panel = {
   border: "1px solid #333",
