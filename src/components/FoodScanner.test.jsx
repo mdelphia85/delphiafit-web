@@ -1,0 +1,109 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import FoodScanner from "./FoodScanner.jsx";
+import NutritionPro from "../pages/NutritionPro.jsx";
+import { MenuProvider } from "../context/MenuContext.jsx";
+
+const sample = {
+  barcode: "0012345678905",
+  product_name: "Plain Test Yogurt",
+  brands: "Example",
+  serving_size: "125 g",
+  quantity: "500 g",
+  nutrition_unit: "g",
+  nutrition_per_100g_or_100ml: {
+    calories_kcal: 80, protein_g: 8, carbs_g: 7, fat_g: 2,
+    saturated_fat_g: 1, sugars_g: 5, fiber_g: 1, sodium_mg: 50
+  },
+  delphiafit_score_0_100: 76,
+  score_status: "experimental",
+  score_note: "Experimental nutrition composition indicator.",
+  score_factors: [{ label: "Sugar", points: -6.3 }],
+  score_methodology: { formula: "Illustrative transparent beta formula.", limits: "Not clinically validated." },
+  data_completeness_percent: 100,
+  allergens: ["milk"], traces: [], additives: [],
+  ingredients_text: "Milk, live cultures",
+  source: { name: "Open Food Facts", url: "https://world.openfoodfacts.org/product/0012345678905" },
+};
+
+const response = (data, status = 200) => ({
+  ok: status >= 200 && status < 300,
+  status,
+  json: async () => data,
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  localStorage.removeItem("token");
+});
+
+describe("FoodScanner", () => {
+  it("looks up a product without logging consumption, then logs one explicit portion", async () => {
+    localStorage.setItem("token", "example-token");
+    const calls = [];
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (url, options = {}) => {
+      calls.push({ url: String(url), options });
+      if (String(url).endsWith("/nutrition-scanner/history")) return response([]);
+      if (String(url).endsWith("/nutrition-scanner/product/0012345678905")) return response(sample);
+      if (String(url).endsWith("/nutrition/") && options.method === "POST") {
+        return response({ id: 42, recorded_at: new Date().toISOString(), ...JSON.parse(options.body) });
+      }
+      return response({ detail: "Not found" }, 404);
+    });
+    render(<MemoryRouter><FoodScanner /></MemoryRouter>);
+    fireEvent.change(screen.getByLabelText("EAN / UPC barcode"), { target: { value: "0012345678905" } });
+    fireEvent.click(screen.getByRole("button", { name: "Look up product" }));
+    expect(await screen.findByText("Plain Test Yogurt")).toBeInTheDocument();
+    expect(screen.getByText("76 / 100")).toBeInTheDocument();
+    expect(calls.filter((c) => c.url.endsWith("/nutrition/") && c.options.method === "POST")).toHaveLength(0);
+    fireEvent.change(screen.getByLabelText("Amount consumed"), { target: { value: "150" } });
+    fireEvent.click(screen.getByRole("button", { name: "Log consumed amount" }));
+    expect(await screen.findByText(/Food logged once to today's nutrition totals/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Logged to today's totals" })).toHaveAttribute("aria-disabled", "true");
+    const writes = calls.filter((c) => c.url.endsWith("/nutrition/") && c.options.method === "POST");
+    expect(writes).toHaveLength(1);
+    expect(JSON.parse(writes[0].options.body)).toMatchObject({ calories: 120, protein: 12, carbs: 11, fats: 3 });
+    expect(writes[0].options.headers.Authorization).toBe("Bearer example-token");
+  });
+
+  it("does not invent ratings or allow logging when required macro data is missing", async () => {
+    localStorage.setItem("token", "example-token");
+    const incomplete = {
+      ...sample,
+      delphiafit_score_0_100: null,
+      score_status: "unrated",
+      score_factors: [],
+      nutrition_unit: null,
+      nutrition_per_100g_or_100ml: { ...sample.nutrition_per_100g_or_100ml, protein_g: null }
+    };
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
+      if (String(url).endsWith("/nutrition-scanner/history")) return response([]);
+      return response(incomplete);
+    });
+    render(<MemoryRouter><FoodScanner /></MemoryRouter>);
+    fireEvent.change(screen.getByLabelText("EAN / UPC barcode"), { target: { value: "0012345678905" } });
+    fireEvent.click(screen.getByRole("button", { name: "Look up product" }));
+    expect(await screen.findByText("Unrated")).toBeInTheDocument();
+    expect(screen.getByText(/automatic logging is unavailable/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Log consumed amount" })).toHaveAttribute("aria-disabled", "true");
+    expect(fetchMock.mock.calls.filter(([url, opts]) => String(url).endsWith("/nutrition/") && opts?.method === "POST")).toHaveLength(0);
+  });
+
+  it("navigates from Nutrition Pro planner into the scanner without adding a separate menu page", async () => {
+    localStorage.setItem("token", "example-token");
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
+      const path = String(url);
+      if (path.endsWith("/nutrition-coach/settings")) return response({ goal_type: "maintain", avoid: [], diet: "none", meals_per_day: 3 });
+      if (path.endsWith("/nutrition-coach/targets")) return response({ status: "incomplete", missing: ["weight"] });
+      if (path.endsWith("/nutrition-coach/meal-plans")) return response([]);
+      if (path.endsWith("/nutrition-scanner/history")) return response([]);
+      return response({});
+    });
+    render(<MemoryRouter initialEntries={["/nutrition-pro"]}><MenuProvider><NutritionPro /></MenuProvider></MemoryRouter>);
+    fireEvent.change(screen.getByLabelText("Nutrition section"), { target: { value: "scanner" } });
+    expect(await screen.findByRole("heading", { name: "Scan & analyze food" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Plan preferences" })).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByLabelText("Nutrition section")).toHaveValue("scanner"));
+  });
+});
