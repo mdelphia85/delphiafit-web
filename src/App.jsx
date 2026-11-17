@@ -397,6 +397,7 @@ function AppWithMenu() {
 
       {/* UPDATED SETTINGS ROUTE */}
       <Route path="/settings" element={<Settings />} />
+      <Route path="*" element={<main><h1>Page not found</h1><a href="/">Return to DelphiaFit</a></main>} />
     </Routes>
   );
 }

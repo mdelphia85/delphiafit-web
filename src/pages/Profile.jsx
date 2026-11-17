@@ -172,12 +172,13 @@ export default function Profile() {
   return (
     <div
       style={{
-        height: "100vh",
-        width: "100vw",
+        minHeight: "100vh",
+        width: "100%",
+        boxSizing: "border-box",
         backgroundColor: "black",
         color: profileColor,
         display: "flex",
-        flexDirection: "row",
+        flexWrap: "wrap",
         padding: "20px",
         gap: "20px",
         overflow: "hidden",
@@ -187,7 +188,8 @@ export default function Profile() {
       {/* LEFT COLUMN */}
       <div
         style={{
-          width: "60%",
+          flex: "3 1 300px",
+          minWidth: 0,
           display: "flex",
           flexDirection: "column",
           alignItems: "center"
@@ -294,7 +296,8 @@ export default function Profile() {
       {/* RIGHT COLUMN */}
       <div
         style={{
-          width: "40%",
+          flex: "2 1 240px",
+          minWidth: 0,
           display: "flex",
           flexDirection: "column",
           gap: "20px",
@@ -332,7 +335,7 @@ export default function Profile() {
           )}
         </div>
 
-        <div style={{ display: "flex", justifyContent: "center", gap: "15px" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "15px" }}>
           <Button label="Upload" onClick={() => document.getElementById("avatarInput").click()} color={profileColor} />
           <Button label="Camera" onClick={handleCamera} color={profileColor} />
           <Button label="Clear" onClick={clearAvatar} color={profileColor} />

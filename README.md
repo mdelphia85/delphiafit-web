@@ -216,7 +216,7 @@ The implementation language, framework and deployment details for iOS will be fi
 
 ## Complete website page and route inventory (source snapshot: November 12, 2026)
 
-DelphiaFit defines **107 website routes** in `src/App.jsx`, spanning fitness, nutrition, AI coaching, sports, community, specialized training, and administration. These include primary application pages, supporting screens, demonstration routes, and navigation aliases.
+DelphiaFit defines **108 named website routes** in `src/App.jsx`, spanning fitness, nutrition, AI coaching, sports, community, specialized training, and administration. These include primary application pages, supporting screens, demonstration routes, and navigation aliases.
 
 ### Public, onboarding and demonstration (19 routes)
 
@@ -242,7 +242,7 @@ DelphiaFit defines **107 website routes** in `src/App.jsx`, spanning fitness, nu
 | `/privacy` | `PrivacyPolicy` | Privacy policy |
 | `/terms` | `TermsOfService` | Terms of service |
 
-### Member health, nutrition and performance (19 routes)
+### Member health, nutrition and performance (20 routes)
 
 | Website route | Component | Intended purpose |
 | --- | --- | --- |
@@ -256,6 +256,7 @@ DelphiaFit defines **107 website routes** in `src/App.jsx`, spanning fitness, nu
 | `/supplements` | `Supplements` | Supplement tracking |
 | `/goals` | `Goals` | Goal management |
 | `/free-training` | `FreeTraining` | Unstructured workout logging |
+| `/running-endurance` | `RunningEndurance` | Foreground GPS running and endurance tracking |
 | `/progress` | `Progress` | Progress measurement |
 | `/journal` | `Journal` | Training journal |
 | `/periodization` | `Periodization` | Training cycles |
