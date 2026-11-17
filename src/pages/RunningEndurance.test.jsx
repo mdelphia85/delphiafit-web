@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MenuProvider } from "../context/MenuContext.jsx";
@@ -58,6 +58,7 @@ describe("Running & Endurance", () => {
       return 42;
     });
     const clearWatch = vi.fn();
+    Object.defineProperty(window, "isSecureContext", { configurable: true, value: true });
     Object.defineProperty(navigator, "geolocation", {
       configurable: true,
       value: { watchPosition, clearWatch }
