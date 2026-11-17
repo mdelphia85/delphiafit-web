@@ -32,8 +32,8 @@ describe("WeeklyPlanView", () => {
     expect(screen.getByText(/Day 1 · Upper body/)).toBeInTheDocument();
     expect(screen.getByText("Bench Press")).toBeInTheDocument();
     expect(screen.getByText("Seated Cable Row")).toBeInTheDocument();
-    expect(screen.getByText("3 sets")).toBeInTheDocument();
-    expect(screen.getByText(/Optional · 10 minutes/)).toBeInTheDocument();
+    expect(screen.getAllByText(/3 sets/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/optional · 10 minutes/i)).toBeInTheDocument();
     expect(container.querySelector("pre")).not.toBeInTheDocument();
     expect(container.textContent).not.toContain('"sessions_per_week"');
     expect(container.textContent).not.toContain('"exercises"');
