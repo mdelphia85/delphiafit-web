@@ -454,6 +454,17 @@ This retrospective records **real engineering problems, design choices and verif
 
 ### Food barcode scanner — issues, changes and remaining checks
 
+#### Historical scanner CI failure — resolved
+
+A screenshot of the prior GitHub/deployment review showed **a failed workflow for older commit `e8b4cea`**, which had been **superseded**, rather than a failure of the corrected release. GitHub commit history identifies the corrective commit `6e6e2a3` as *Remove synchronous state update from scanner effect for React hooks lint*. It initializes scan-history loading state from `hasSession()` and avoids a synchronous state update inside that effect. A later commit, `f8b07ca`, updated scanner rating tests to match the standard-derived Nutri-Score display and reject legacy experimental scores. Commit `de234da` contains the score-display correction.
+
+The referenced screenshot reports **passed GitHub CI and successful deployments** for `6e6e2a3` and `f8b07ca`, and successful Vercel/Railway statuses for the subsequent `de234da` scoring release. Treat those as **historical status observations from that review**, not a new live status check today. **Do not present `e8b4cea`'s superseded CI failure as an open scanner blocker.** The CI/lint issue is resolved in source; separate real-device camera behavior, deployed product lookup and end-to-end backend scoring/logging remain subject to their own acceptance tests.
+
+- [Initial scanner validation commit (older failed run)](https://github.com/mdelphia85/delphiafit-web/commit/e8b4cea3be9a0873c5334001aee53198f72ddecf)
+- [React Hooks lint fix](https://github.com/mdelphia85/delphiafit-web/commit/6e6e2a37fd513de7e6e8beb82249540f7fc6b317)
+- [Updated scanner scoring tests](https://github.com/mdelphia85/delphiafit-web/commit/f8b07caa82e740bb174e243cd7c48f47f6b2976d)
+- [Scoring display correction](https://github.com/mdelphia85/delphiafit-web/commit/de234dac057230c63992b91d45d50f7836ababec)
+
 The food scanner is **embedded inside Nutrition Pro**, not a separately added top-level menu product. Its frontend is in `src/components/FoodScanner.jsx`, with data calculations in `src/utils/foodScanner.js`. The component calls authenticated `/nutrition-scanner/product/{barcode}` and `/nutrition-scanner/history` endpoints, and uses the existing `POST /nutrition/` endpoint only when a person deliberately records food consumed. Product data is attributed to **Open Food Facts**. The current code and test suite show implementation intent; deployed backend behavior and phone-browser compatibility are not independently certified by these files.
 
 | Issue or risk | Implemented handling / engineering decision | Status and outstanding evidence |
