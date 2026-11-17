@@ -120,7 +120,7 @@ export default function FoodScanner({ avoid = [], diet = "none" }) {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
-  const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(() => hasSession());
   const [logBusy, setLogBusy] = useState(false);
   const [historyBusy, setHistoryBusy] = useState(false);
   const [logged, setLogged] = useState(false);
@@ -157,7 +157,7 @@ export default function FoodScanner({ avoid = [], diet = "none" }) {
 
   useEffect(() => {
     let current = true;
-    if (!hasSession()) { setHistoryLoading(false); return undefined; }
+    if (!hasSession()) return undefined;
     apiRequest("/nutrition-scanner/history", { timeoutMs: 9000 })
       .then((rows) => { if (current) setHistory(Array.isArray(rows) ? rows : []); })
       .catch(() => { if (current) setStatus("Scan history is temporarily unavailable."); })
