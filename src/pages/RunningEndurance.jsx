@@ -1,5 +1,5 @@
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { MenuContext } from "../context/MenuContext.js";
 import TextAction from "../components/TextAction.jsx";
 import { apiRequest, hasSession } from "../utils/api.js";
@@ -69,8 +69,10 @@ function RouteTrace({ points = [] }) {
 export default function RunningEndurance() {
   const { setMenuOpen } = useContext(MenuContext);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedGoal = searchParams.get("goal");
   const [mode, setMode] = useState("running");
-  const [goal, setGoal] = useState("general");
+  const [goal, setGoal] = useState(() => ENDURANCE_GOALS.some((item) => item.value === requestedGoal) ? requestedGoal : "general");
   const [unit, setUnit] = useState("mi");
   const [phase, setPhase] = useState("idle");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
