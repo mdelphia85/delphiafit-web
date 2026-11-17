@@ -15,43 +15,64 @@ const action = { color: GREEN, display: "inline-block", padding: "7px 0", margin
 const DETECT_FORMATS = ["ean_13", "ean_8", "upc_a", "upc_e"];
 
 function ScoreOverview({ product }) {
+  // Old beta responses are not eligible for the production display.
   const score = product.delphiafit_score_0_100;
-  const rated = Number.isFinite(score);
+  const rated = product.score_status === "standard-derived" && Number.isFinite(score);
   const methodology = product.score_methodology || {};
+  const grade = ["a", "b", "c", "d", "e"].includes(product.nutri_score_grade)
+    ? product.nutri_score_grade.toUpperCase() : null;
   return (
-    <section style={panel} aria-label="Nutrition indicator">
-      <h3 style={{ color: GREEN, marginTop: 0 }}>DelphiaFit nutrition indicator</h3>
-      <p style={{ fontSize: rated ? 40 : 23, color: rated ? GREEN : "#ccc", fontWeight: 700, margin: "0 0 5px" }}>
-        {rated ? score + " / 100" : "Unrated"}
+    <section style={panel} aria-label="Nutrition rating">
+      <h3 style={{ color: GREEN, marginTop: 0 }}>Nutrition profile</h3>
+      {rated ? (
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 16, marginBottom: 10 }}>
+          <div>
+            <div style={{ fontSize: 12, color: "#aaa" }}>Provider Nutri-Score</div>
+            <strong style={{ fontSize: 35, color: GREEN }}>{grade}</strong>
+          </div>
+          <div>
+            <div style={{ fontSize: 12, color: "#aaa" }}>DelphiaFit grade index</div>
+            <strong style={{ fontSize: 35, color: GREEN }}>{score} / 100</strong>
+          </div>
+        </div>
+      ) : (
+        <p style={{ fontSize: 23, fontWeight: 700, color: "#ccc" }}>Unrated</p>
+      )}
+      <p style={{ color: "#ddd", fontSize: 13, lineHeight: 1.5 }}>
+        {rated
+          ? "Based on the Nutri-Score grade reported by Open Food Facts. "
+            + "The 0–100 index displays five grade levels; it is not a separate health assessment."
+          : product.score_note || "Insufficient trustworthy information to display a rating."}
       </p>
-      <p style={{ fontSize: 13, color: "#ddd", lineHeight: 1.5 }}>
-        {product.score_note || "This product has not been rated."}
-      </p>
-      {rated && <p style={{ fontSize: 12, color: "#aaa" }}>
-        Experimental beta calculation based on reported nutrition per 100 g or 100 ml.
-        Not a validated health, ingredient-safety or medical score. Compare similar products only.
+      {rated && (
+        <p style={{ color: "#aaa", fontSize: 12, lineHeight: 1.5 }}>
+          A Nutri-Score grade summarizes certain nutritional characteristics.
+          It does not assess food safety, allergens, additives, portion size, or personal dietary needs.
+          Compare similar products rather than using the index as an absolute judgment of health.
+        </p>
+      )}
+      {!rated && grade && <p style={{ color: "#aaa", fontSize: 12 }}>
+        Open Food Facts lists Nutri-Score {grade}, but DelphiaFit withheld its numeric index
+        because one or more data-quality checks did not pass.
       </p>}
-      {rated && Array.isArray(product.score_factors) && product.score_factors.length > 0 && (
+      {!rated && Array.isArray(product.score_unrated_reasons) && product.score_unrated_reasons.length > 0 && (
+        <ul style={{ paddingLeft: 20, color: "#bbb", fontSize: 13 }}>
+          {product.score_unrated_reasons.map((reason) => <li key={reason}>{reason}</li>)}
+        </ul>
+      )}
+      {methodology.version === "1.0" && (
         <details>
-          <summary style={{ color: GREEN, cursor: "pointer" }}>How the score was calculated</summary>
-          <p style={{ fontSize: 13, color: "#bbb" }}>{methodology.formula}</p>
-          {product.score_factors.map((factor) =>
-            <p key={factor.label} style={{ fontSize: 13, margin: "6px 0" }}>
-              {factor.label}: {factor.points > 0 ? "+" : ""}{factor.points} points
-            </p>)}
-          <p style={{ fontSize: 12, color: "#aaa" }}>{methodology.limits}</p>
+          <summary style={{ color: GREEN, cursor: "pointer", padding: "8px 0" }}>Rating method and limitations</summary>
+          <p style={{ fontSize: 13, color: "#ddd", lineHeight: 1.5 }}>{methodology.formula}</p>
+          <p style={{ fontSize: 12, color: "#aaa", lineHeight: 1.5 }}>{methodology.limits}</p>
+          <p style={{ fontSize: 12, color: "#aaa" }}>
+            Reference: <a href={methodology.standard_url} target="_blank" rel="noreferrer" style={{ color: GREEN }}>
+              Santé publique France — Nutri-Score methodology
+            </a>.
+            Product grades come from the community-maintained Open Food Facts record,
+            which may not identify which revision of the Nutri-Score calculation was used.
+          </p>
         </details>
-      )}
-      {!rated && Array.isArray(product.missing_score_nutrients) && product.missing_score_nutrients.length > 0 && (
-        <p style={{ fontSize: 13, color: "#bbb" }}>
-          Needed to calculate: {product.missing_score_nutrients.join(", ").replaceAll("_", " ")}.
-        </p>
-      )}
-      {product.nutri_score_grade && (
-        <p style={{ color: "#bbb" }}>
-          Provider Nutri-Score: <strong>{String(product.nutri_score_grade).toUpperCase()}</strong>
-          <span style={{ fontSize: 12 }}> (separate from the DelphiaFit indicator)</span>
-        </p>
       )}
     </section>
   );

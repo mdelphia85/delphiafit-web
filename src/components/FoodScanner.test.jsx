@@ -16,11 +16,16 @@ const sample = {
     calories_kcal: 80, protein_g: 8, carbs_g: 7, fat_g: 2,
     saturated_fat_g: 1, sugars_g: 5, fiber_g: 1, sodium_mg: 50
   },
-  delphiafit_score_0_100: 76,
-  score_status: "experimental",
-  score_note: "Experimental nutrition composition indicator.",
-  score_factors: [{ label: "Sugar", points: -6.3 }],
-  score_methodology: { formula: "Illustrative transparent beta formula.", limits: "Not clinically validated." },
+  delphiafit_score_0_100: 90,
+  nutri_score_grade: "a",
+  score_status: "standard-derived",
+  score_note: "Nutri-Score-derived index with five levels.",
+  score_factors: [],
+  score_methodology: {
+    version: "1.0", formula: "A=90, B=70, C=50, D=30, E=10.",
+    limits: "This is not a medical health rating.",
+    standard_url: "https://www.santepubliquefrance.fr/en/nutrition-and-physical-activity/nutri-score"
+  },
   data_completeness_percent: 100,
   allergens: ["milk"], traces: [], additives: [],
   ingredients_text: "Milk, live cultures",
@@ -55,7 +60,9 @@ describe("FoodScanner", () => {
     fireEvent.change(screen.getByLabelText("EAN / UPC barcode"), { target: { value: "0012345678905" } });
     fireEvent.click(screen.getByRole("button", { name: "Look up product" }));
     expect(await screen.findByText("Plain Test Yogurt")).toBeInTheDocument();
-    expect(screen.getByText("76 / 100")).toBeInTheDocument();
+    expect(screen.getByText("90 / 100")).toBeInTheDocument();
+    expect(screen.getByText("Provider Nutri-Score")).toBeInTheDocument();
+    expect(screen.getByText(/five grade levels/)).toBeInTheDocument();
     expect(calls.filter((c) => c.url.endsWith("/nutrition/") && c.options.method === "POST")).toHaveLength(0);
     fireEvent.change(screen.getByLabelText("Amount consumed"), { target: { value: "150" } });
     fireEvent.click(screen.getByRole("button", { name: "Log consumed amount" }));
@@ -88,6 +95,25 @@ describe("FoodScanner", () => {
     expect(screen.getByText(/automatic logging is unavailable/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Log consumed amount" })).toHaveAttribute("aria-disabled", "true");
     expect(fetchMock.mock.calls.filter(([url, opts]) => String(url).endsWith("/nutrition/") && opts?.method === "POST")).toHaveLength(0);
+  });
+
+  it("never displays a legacy experimental numeric score as production-rated", async () => {
+    localStorage.setItem("token", "example-token");
+    const oldResponse = {
+      ...sample,
+      delphiafit_score_0_100: 86,
+      score_status: "experimental",
+    };
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (url) =>
+      String(url).endsWith("/nutrition-scanner/history") ? response([]) : response(oldResponse)
+    );
+    render(<MemoryRouter><FoodScanner /></MemoryRouter>);
+    fireEvent.change(screen.getByLabelText("EAN / UPC barcode"), {
+      target: { value: "0012345678905" }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Look up product" }));
+    expect(await screen.findByText("Unrated")).toBeInTheDocument();
+    expect(screen.queryByText("86 / 100")).not.toBeInTheDocument();
   });
 
   it("navigates from Nutrition Pro planner into the scanner without adding a separate menu page", async () => {
