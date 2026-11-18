@@ -50,6 +50,12 @@
   }
 }
 
+/* Keep intrinsic widths, padding, and 1px borders inside viewport-sized layouts.
+   Codex still needs to remeasure all 108 routes on actual mobile viewport sizes. */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
 }
