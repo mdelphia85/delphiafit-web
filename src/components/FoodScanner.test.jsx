@@ -74,6 +74,35 @@ describe("FoodScanner", () => {
     expect(writes[0].options.headers.Authorization).toBe("Bearer example-token");
   });
 
+  it("retries a timed-out or uncertain log with the same server idempotency key", async () => {
+    localStorage.setItem("token", "example-token");
+    const writes = [];
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (url, options = {}) => {
+      const path = String(url);
+      if (path.endsWith("/nutrition-scanner/history")) return response([]);
+      if (path.endsWith("/nutrition-scanner/product/0012345678905")) return response(sample);
+      if (path.endsWith("/nutrition/") && options.method === "POST") {
+        writes.push(options);
+        if (writes.length === 1) throw new Error("Connection dropped after server accepted request");
+        return response({ id: 501, recorded_at: new Date().toISOString(), ...JSON.parse(options.body) });
+      }
+      return response({ detail: "Not found" }, 404);
+    });
+    render(<MemoryRouter><FoodScanner /></MemoryRouter>);
+    fireEvent.change(screen.getByLabelText("EAN / UPC barcode"), { target: { value: "0012345678905" } });
+    fireEvent.click(screen.getByRole("button", { name: "Look up product" }));
+    expect(await screen.findByText("Plain Test Yogurt")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Amount consumed"), { target: { value: "150" } });
+    fireEvent.click(screen.getByRole("button", { name: "Log consumed amount" }));
+    expect(await screen.findByText(/food log could not be confirmed/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Log consumed amount" }));
+    expect(await screen.findByText(/Food logged once to today's nutrition totals/)).toBeInTheDocument();
+    expect(writes).toHaveLength(2);
+    expect(writes[0].headers["Idempotency-Key"]).toMatch(/^[a-f0-9-]{36}$/i);
+    expect(writes[1].headers["Idempotency-Key"]).toBe(writes[0].headers["Idempotency-Key"]);
+    expect(writes[1].body).toBe(writes[0].body);
+  });
+
   it("does not invent ratings or allow logging when required macro data is missing", async () => {
     localStorage.setItem("token", "example-token");
     const incomplete = {

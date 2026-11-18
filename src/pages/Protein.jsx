@@ -53,8 +53,9 @@ export default function Protein() {
   return (
     <div
       style={{
-        height: "100vh",
-        width: "100vw",
+        minHeight: "100vh",
+        width: "100%",
+        boxSizing: "border-box",
         backgroundColor: "black",
         color: proteinColor,
         display: "flex",
@@ -144,7 +145,7 @@ export default function Protein() {
       <div style={{ marginBottom: "20px", textAlign: "center" }}>
         <p style={{ fontSize: "20px" }}>Add Scoops:</p>
 
-        <div style={{ display: "flex", gap: "15px", justifyContent: "center" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "15px", justifyContent: "center" }}>
           <TextButton label="1 Scoop" amount={25} onClick={addProtein} color={proteinColor} />
           <TextButton label="1.5 Scoops" amount={37.5} onClick={addProtein} color={proteinColor} />
           <TextButton label="2 Scoops" amount={50} onClick={addProtein} color={proteinColor} />
@@ -155,7 +156,7 @@ export default function Protein() {
       <div style={{ marginBottom: "20px", textAlign: "center" }}>
         <p style={{ fontSize: "20px" }}>Add Shake:</p>
 
-        <div style={{ display: "flex", gap: "15px", justifyContent: "center" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "15px", justifyContent: "center" }}>
           <TextButton label="+20g" amount={20} onClick={addProtein} color={proteinColor} />
           <TextButton label="+30g" amount={30} onClick={addProtein} color={proteinColor} />
           <TextButton label="+40g" amount={40} onClick={addProtein} color={proteinColor} />

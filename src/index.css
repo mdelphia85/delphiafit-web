@@ -50,6 +50,12 @@
   }
 }
 
+/* Keep intrinsic widths, padding, and 1px borders inside viewport-sized layouts.
+   Codex still needs to remeasure all 108 routes on actual mobile viewport sizes. */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
 }
@@ -436,6 +442,7 @@ code {
 /* ========================= */
 
 .demo-choice {
+  background-color: #111;
   text-align: center;
   padding: 80px 20px;
   animation: fadeIn 0.4s ease;
@@ -494,7 +501,7 @@ code {
 
 .demo-btn-demo {
   background: #4a90e2;
-  color: white;
+  color: #111;
 }
 
 .demo-btn-demo:hover {
@@ -503,7 +510,7 @@ code {
 
 .demo-btn-create {
   background: #27ae60;
-  color: white;
+  color: #111;
 }
 
 .demo-btn-create:hover {

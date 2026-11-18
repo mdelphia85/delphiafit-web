@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import "../screens/footer.css";
 
 export default function Footer() {
   return (

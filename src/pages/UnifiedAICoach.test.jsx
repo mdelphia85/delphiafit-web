@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import App from "../App.jsx";
 
@@ -66,9 +66,10 @@ describe("Unified AI Coach", () => {
     ];
     vi.spyOn(globalThis, "fetch").mockResolvedValue(response(rows));
     render(<MemoryRouter initialEntries={["/ai-coach?view=history"]}><App /></MemoryRouter>);
-    const history = await screen.findByRole("region", { name: "Coaching History" });
-    expect(history).toHaveTextContent("Running question");
-    expect(history).toHaveTextContent("Training plan");
+    const history = screen.getByRole("region", { name: "Coaching History" });
+    expect(within(history).getByRole("status")).toHaveTextContent("Loading coaching history");
+    expect(await within(history).findByRole("button", { name: /Running question/ })).toBeInTheDocument();
+    expect(within(history).getByRole("button", { name: /Training plan/ })).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Show records"), { target: { value: "weekly-plan" } });
     expect(history).not.toHaveTextContent("Running question");
     fireEvent.click(screen.getByRole("button", { name: /Training plan/ }));
