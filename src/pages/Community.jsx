@@ -95,7 +95,7 @@ export default function Community() {
   }
 
   return (
-    <main style={{ minHeight: "100vh", width: "100vw", backgroundColor: "black", padding: "20px 20px 90px", boxSizing: "border-box", color: "white" }}>
+    <main style={{ minHeight: "100vh", width: "100%", backgroundColor: "black", padding: "20px 20px 90px", boxSizing: "border-box", color: "white" }}>
       <section style={{ maxWidth: "760px", margin: "0 auto" }}>
         <h1 style={{ color: COLOR, fontSize: "28px" }}>Community</h1>
         <section style={{ marginBottom: "18px" }}>
