@@ -40,6 +40,7 @@ const response = (data, status = 200) => ({
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   localStorage.removeItem("token");
 });
 
@@ -75,6 +76,7 @@ describe("FoodScanner", () => {
   });
 
   it("retries a timed-out or uncertain log with the same server idempotency key", async () => {
+    vi.stubGlobal("crypto", { getRandomValues: globalThis.crypto.getRandomValues.bind(globalThis.crypto) });
     localStorage.setItem("token", "example-token");
     const writes = [];
     vi.spyOn(globalThis, "fetch").mockImplementation(async (url, options = {}) => {
@@ -98,7 +100,7 @@ describe("FoodScanner", () => {
     fireEvent.click(screen.getByRole("button", { name: "Log consumed amount" }));
     expect(await screen.findByText(/Food logged once to today's nutrition totals/)).toBeInTheDocument();
     expect(writes).toHaveLength(2);
-    expect(writes[0].headers["Idempotency-Key"]).toMatch(/^[a-f0-9-]{36}$/i);
+    expect(writes[0].headers["Idempotency-Key"]).toMatch(/^[a-f0-9]{32}$/i);
     expect(writes[1].headers["Idempotency-Key"]).toBe(writes[0].headers["Idempotency-Key"]);
     expect(writes[1].body).toBe(writes[0].body);
   });

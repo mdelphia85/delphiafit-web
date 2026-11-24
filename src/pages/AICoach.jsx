@@ -4,6 +4,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import TrainingPlanGenerator from "./AutonomousCoaching.jsx";
 import WeeklyPlanView from "../components/WeeklyPlanView.jsx";
 import { apiRequest } from "../utils/api.js";
+import { createIdempotencyKey } from "../utils/idempotency.js";
 import AdaptiveCoachCard from "../components/AdaptiveCoachCard.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { validCategory } from "../ai/categories.js";
@@ -55,20 +56,19 @@ export default function AICoach() {
     if (!prompt || submissionInFlight.current) return;
     submissionInFlight.current = true;
     setBusy(true); setError(""); setRequiresSignIn(false); setReply("");
-    const userData = { fatigue: Number(fatigue), sleep_hours: Number(sleepHours) };
-    const fingerprint = JSON.stringify({ user_data: userData, message: prompt });
-    if (pendingSubmission.current?.fingerprint !== fingerprint) {
-      pendingSubmission.current = { fingerprint, key: crypto.randomUUID() };
-    }
-    const submissionKey = pendingSubmission.current.key;
     try {
+      const userData = { fatigue: Number(fatigue), sleep_hours: Number(sleepHours) };
+      const fingerprint = JSON.stringify({ user_data: userData, message: prompt });
+      if (pendingSubmission.current?.fingerprint !== fingerprint) {
+        pendingSubmission.current = { fingerprint, key: createIdempotencyKey() };
+      }
       const result = await apiRequest("/ai/coach", {
         method: "POST",
         timeoutMs: 30000,
-        headers: { "Idempotency-Key": submissionKey },
+        headers: { "Idempotency-Key": pendingSubmission.current.key },
         body: { user_data: userData, message: prompt }
       });
-      if (pendingSubmission.current?.key === submissionKey) pendingSubmission.current = null;
+      pendingSubmission.current = null;
       setLastAdaptive(result && result.adaptive_inputs ? result.adaptive_inputs : null);
       setReplyMode(typeof result === "object" ? (result.mode || null) : null);
       setReply(typeof result === "string" ? result : result.coach_response || result.response || result.message || JSON.stringify(result));
@@ -78,7 +78,7 @@ export default function AICoach() {
         setRequiresSignIn(true);
         setError("Sign in to use personalized coaching.");
       } else if (e.status === 409) {
-        if (pendingSubmission.current?.key === submissionKey) pendingSubmission.current = null;
+        pendingSubmission.current = null;
         setError("This request key was already used for different coaching details. Please send your question again.");
       } else if (e.status === 0) {
         setError("AI Coach request timed out. Check saved coaching history before trying again.");

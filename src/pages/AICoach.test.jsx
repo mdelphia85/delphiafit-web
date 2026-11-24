@@ -6,6 +6,7 @@ import App from "../App.jsx";
 vi.mock("../components/AdaptiveCoachCard.jsx", () => ({ default: () => null }));
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   localStorage.removeItem("token");
 });
 
@@ -108,6 +109,7 @@ describe("AI Coach navigation", () => {
   });
 
   it("reuses the same idempotency key when a network-failed submission is retried", async () => {
+    vi.stubGlobal("crypto", { getRandomValues: globalThis.crypto.getRandomValues.bind(globalThis.crypto) });
     localStorage.setItem("token", "valid-session");
     const fetchMock = vi.spyOn(globalThis, "fetch")
       .mockResolvedValueOnce({ ok: true, status: 200, json: async () => [] })

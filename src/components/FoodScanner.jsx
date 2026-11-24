@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import TextAction from "./TextAction.jsx";
 import { apiRequest, hasSession } from "../utils/api.js";
+import { createIdempotencyKey } from "../utils/idempotency.js";
 import { formatNutrient, NUTRIENT_LABELS, normalizeBarcode, portionNutrients } from "../utils/foodScanner.js";
 
 const GREEN = "#10b981";
@@ -303,15 +304,14 @@ export default function FoodScanner({ avoid = [], diet = "none" }) {
     logLock.current = true;
     setLogBusy(true);
     setError("");
-    const fingerprint = JSON.stringify({ barcode: product.barcode, quantity: Number(quantity), nutrition: portion });
-    if (logAttempt.current?.fingerprint !== fingerprint) {
-      logAttempt.current = { fingerprint, key: crypto.randomUUID() };
-    }
-    const idempotencyKey = logAttempt.current.key;
     try {
+      const fingerprint = JSON.stringify({ barcode: product.barcode, quantity: Number(quantity), nutrition: portion });
+      if (logAttempt.current?.fingerprint !== fingerprint) {
+        logAttempt.current = { fingerprint, key: createIdempotencyKey() };
+      }
       await apiRequest("/nutrition/", {
         method: "POST", body: portion, timeoutMs: 12000,
-        headers: { "Idempotency-Key": idempotencyKey }
+        headers: { "Idempotency-Key": logAttempt.current.key }
       });
       logAttempt.current = null;
       setLogged(true);
