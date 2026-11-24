@@ -189,12 +189,12 @@ export default function FoodScanner({ avoid = [], diet = "none" }) {
   }, []);
 
   async function lookup(value) {
+    if (pendingLookup.current || logLock.current) return;
     const code = normalizeBarcode(value);
     if (!code) {
       setError("Enter an 8–14 digit EAN or UPC barcode.");
       return;
     }
-    if (pendingLookup.current) return;
     pendingLookup.current = true;
     stopCamera();
     setInput(code);
@@ -253,7 +253,7 @@ export default function FoodScanner({ avoid = [], diet = "none" }) {
         try {
           const barcodes = await detector.detect(video);
           const match = barcodes.find((item) => normalizeBarcode(item.rawValue));
-          if (match) {
+          if (match && !logLock.current) {
             await lookup(match.rawValue);
             return;
           }
@@ -350,10 +350,10 @@ export default function FoodScanner({ avoid = [], diet = "none" }) {
               autoComplete="off" maxLength={20} placeholder="For example, 12 or 13 digits" style={field}/>
           </label>
           <div>
-            <TextAction submit disabled={loading} style={action}>{loading ? "Looking up…" : "Look up product"}</TextAction>
+            <TextAction submit disabled={loading || logBusy} style={action}>{loading ? "Looking up…" : "Look up product"}</TextAction>
             {scanning
               ? <TextAction onClick={stopCamera} style={action}>Stop camera</TextAction>
-              : <TextAction onClick={startCamera} disabled={loading} style={action}>Scan with camera</TextAction>}
+              : <TextAction onClick={startCamera} disabled={loading || logBusy} style={action}>Scan with camera</TextAction>}
           </div>
         </form>
         <div style={{ display: scanning ? "block" : "none", marginTop: 12 }}>
@@ -385,7 +385,7 @@ export default function FoodScanner({ avoid = [], diet = "none" }) {
               This adds one entry to your existing daily nutrition totals.
             </p>
             <label>Amount consumed {product.nutrition_unit ? "(" + product.nutrition_unit + ")" : "(unit unavailable)"}
-              <input type="number" aria-label="Amount consumed" min="0.1" max="5000" step="0.1"
+              <input type="number" aria-label="Amount consumed" min="0.1" max="5000" step="0.1" disabled={logBusy || logged}
                 value={quantity} onChange={(event) => setQuantity(event.target.value)} style={field}/>
             </label>
             {portion && <p style={{ color: "#ccc", fontSize: 13 }}>
@@ -414,7 +414,7 @@ export default function FoodScanner({ avoid = [], diet = "none" }) {
         {!historyLoading && history.length === 0 && <p style={{ color: "#aaa" }}>No saved barcodes yet.</p>}
         {history.map((record) => (
           <div key={record.id} style={{ borderTop: "1px solid #333", padding: "10px 0", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12 }}>
-            <TextAction onClick={() => lookup(record.barcode)} style={action}>{record.barcode}</TextAction>
+            <TextAction onClick={() => lookup(record.barcode)} disabled={loading || logBusy} style={action}>{record.barcode}</TextAction>
             <span style={{ color: "#999", fontSize: 12 }}>{record.scanned_at ? new Date(record.scanned_at).toLocaleDateString() : ""}</span>
             <TextAction disabled={historyBusy} onClick={() => deleteHistory(record.id)} style={{ color: "#f3c98a" }}>
               Remove

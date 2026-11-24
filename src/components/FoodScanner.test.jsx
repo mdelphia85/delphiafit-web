@@ -48,11 +48,14 @@ describe("FoodScanner", () => {
   it("looks up a product without logging consumption, then logs one explicit portion", async () => {
     localStorage.setItem("token", "example-token");
     const calls = [];
+    let finishWrite;
+    const writePending = new Promise((resolve) => { finishWrite = resolve; });
     vi.spyOn(globalThis, "fetch").mockImplementation(async (url, options = {}) => {
       calls.push({ url: String(url), options });
       if (String(url).endsWith("/nutrition-scanner/history")) return response([]);
       if (String(url).endsWith("/nutrition-scanner/product/0012345678905")) return response(sample);
       if (String(url).endsWith("/nutrition/") && options.method === "POST") {
+        await writePending;
         return response({ id: 42, recorded_at: new Date().toISOString(), ...JSON.parse(options.body) });
       }
       return response({ detail: "Not found" }, 404);
@@ -67,7 +70,12 @@ describe("FoodScanner", () => {
     expect(calls.filter((c) => c.url.endsWith("/nutrition/") && c.options.method === "POST")).toHaveLength(0);
     fireEvent.change(screen.getByLabelText("Amount consumed"), { target: { value: "150" } });
     fireEvent.click(screen.getByRole("button", { name: "Log consumed amount" }));
+    expect(screen.getByLabelText("Amount consumed")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Look up product" })).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByRole("button", { name: "Scan with camera" })).toHaveAttribute("aria-disabled", "true");
+    finishWrite();
     expect(await screen.findByText(/Food logged once to today's nutrition totals/)).toBeInTheDocument();
+    expect(screen.getByLabelText("Amount consumed")).toBeDisabled();
     expect(screen.getByRole("button", { name: "Logged to today's totals" })).toHaveAttribute("aria-disabled", "true");
     const writes = calls.filter((c) => c.url.endsWith("/nutrition/") && c.options.method === "POST");
     expect(writes).toHaveLength(1);
