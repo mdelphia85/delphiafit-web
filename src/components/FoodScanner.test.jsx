@@ -42,6 +42,8 @@ afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
   localStorage.removeItem("token");
+  localStorage.removeItem("userEmail");
+  sessionStorage.clear();
 });
 
 describe("FoodScanner", () => {
@@ -83,9 +85,10 @@ describe("FoodScanner", () => {
     expect(writes[0].options.headers.Authorization).toBe("Bearer example-token");
   });
 
-  it("retries a timed-out or uncertain log with the same server idempotency key", async () => {
+  it("retries a timed-out or uncertain log with the same server idempotency key after remount", async () => {
     vi.stubGlobal("crypto", { getRandomValues: globalThis.crypto.getRandomValues.bind(globalThis.crypto) });
     localStorage.setItem("token", "example-token");
+    localStorage.setItem("userEmail", "scanner@example.com");
     const writes = [];
     vi.spyOn(globalThis, "fetch").mockImplementation(async (url, options = {}) => {
       const path = String(url);
@@ -98,19 +101,29 @@ describe("FoodScanner", () => {
       }
       return response({ detail: "Not found" }, 404);
     });
-    render(<MemoryRouter><FoodScanner /></MemoryRouter>);
-    fireEvent.change(screen.getByLabelText("EAN / UPC barcode"), { target: { value: "0012345678905" } });
-    fireEvent.click(screen.getByRole("button", { name: "Look up product" }));
-    expect(await screen.findByText("Plain Test Yogurt")).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Amount consumed"), { target: { value: "150" } });
-    fireEvent.click(screen.getByRole("button", { name: "Log consumed amount" }));
+    async function lookUpAndLog() {
+      fireEvent.change(screen.getByLabelText("EAN / UPC barcode"), { target: { value: "0012345678905" } });
+      fireEvent.click(screen.getByRole("button", { name: "Look up product" }));
+      expect(await screen.findByText("Plain Test Yogurt")).toBeInTheDocument();
+      fireEvent.change(screen.getByLabelText("Amount consumed"), { target: { value: "150" } });
+      fireEvent.click(screen.getByRole("button", { name: "Log consumed amount" }));
+    }
+    const firstView = render(<MemoryRouter><FoodScanner /></MemoryRouter>);
+    await lookUpAndLog();
     expect(await screen.findByText(/food log could not be confirmed/i)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Log consumed amount" }));
+    firstView.unmount();
+    const retryView = render(<MemoryRouter><FoodScanner /></MemoryRouter>);
+    await lookUpAndLog();
     expect(await screen.findByText(/Food logged once to today's nutrition totals/)).toBeInTheDocument();
     expect(writes).toHaveLength(2);
     expect(writes[0].headers["Idempotency-Key"]).toMatch(/^[a-f0-9]{32}$/i);
     expect(writes[1].headers["Idempotency-Key"]).toBe(writes[0].headers["Idempotency-Key"]);
     expect(writes[1].body).toBe(writes[0].body);
+    retryView.unmount();
+    render(<MemoryRouter><FoodScanner /></MemoryRouter>);
+    await lookUpAndLog();
+    expect(await screen.findByText(/Food logged once to today's nutrition totals/)).toBeInTheDocument();
+    expect(writes[2].headers["Idempotency-Key"]).not.toBe(writes[0].headers["Idempotency-Key"]);
   });
 
   it("does not invent ratings or allow logging when required macro data is missing", async () => {

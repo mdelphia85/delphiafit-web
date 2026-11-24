@@ -6,6 +6,36 @@ import { createIdempotencyKey } from "../utils/idempotency.js";
 import { formatNutrient, NUTRIENT_LABELS, normalizeBarcode, portionNutrients } from "../utils/foodScanner.js";
 
 const GREEN = "#10b981";
+
+function getLogAttempt(fingerprint) {
+  const email = localStorage.getItem("userEmail")?.trim().toLowerCase();
+  const storageKey = email ? JSON.stringify(["nutrition-scanner-pending", email, fingerprint]) : null;
+  let key;
+  if (storageKey) {
+    try {
+      const storedKey = sessionStorage.getItem(storageKey);
+      if (/^[a-f0-9]{32}$/.test(storedKey ?? "")) {
+        key = storedKey;
+      } else {
+        key = createIdempotencyKey();
+        sessionStorage.setItem(storageKey, key);
+      }
+    } catch {
+      // The in-memory attempt still supports retries if tab storage is unavailable.
+    }
+  }
+  return { fingerprint, key: key || createIdempotencyKey(), storageKey };
+}
+
+function clearLogAttempt(storageKey) {
+  if (!storageKey) return;
+  try {
+    sessionStorage.removeItem(storageKey);
+  } catch {
+    // Storage cleanup must not turn a confirmed write into a reported failure.
+  }
+}
+
 const field = {
   display: "block", width: "100%", marginTop: 6, boxSizing: "border-box",
   padding: 11, borderRadius: 7, color: "#fff", background: "#151515",
@@ -307,12 +337,13 @@ export default function FoodScanner({ avoid = [], diet = "none" }) {
     try {
       const fingerprint = JSON.stringify({ barcode: product.barcode, quantity: Number(quantity), nutrition: portion });
       if (logAttempt.current?.fingerprint !== fingerprint) {
-        logAttempt.current = { fingerprint, key: createIdempotencyKey() };
+        logAttempt.current = getLogAttempt(fingerprint);
       }
       await apiRequest("/nutrition/", {
         method: "POST", body: portion, timeoutMs: 12000,
         headers: { "Idempotency-Key": logAttempt.current.key }
       });
+      clearLogAttempt(logAttempt.current.storageKey);
       logAttempt.current = null;
       setLogged(true);
       setStatus("Food logged once to today's nutrition totals, including calories, protein, carbs and fat.");
