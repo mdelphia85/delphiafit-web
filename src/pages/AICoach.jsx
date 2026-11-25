@@ -4,6 +4,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import TrainingPlanGenerator from "./AutonomousCoaching.jsx";
 import WeeklyPlanView from "../components/WeeklyPlanView.jsx";
 import { apiRequest } from "../utils/api.js";
+import { createIdempotencyKey } from "../utils/idempotency.js";
 import AdaptiveCoachCard from "../components/AdaptiveCoachCard.jsx";
 import { MenuContext } from "../context/MenuContext.js";
 import { validCategory } from "../ai/categories.js";
@@ -22,7 +23,7 @@ export default function AICoach() {
   const [fatigue, setFatigue] = useState("3");
   const [sleepHours, setSleepHours] = useState("7");
   const [busy, setBusy] = useState(false);
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState(null);
   const [error, setError] = useState("");
   const [requiresSignIn, setRequiresSignIn] = useState(false);
   const submissionInFlight = useRef(false);
@@ -46,6 +47,7 @@ export default function AICoach() {
     }
   }
   useEffect(() => { const timer = setTimeout(() => { loadHistory(); }, 0); return () => clearTimeout(timer); }, []);
+  const coachingRecords = history ?? [];
   const adaptiveUsed = reply && lastAdaptive && Object.keys(lastAdaptive).length > 0 ? lastAdaptive : null;
 
   async function sendMessage(event) {
@@ -54,20 +56,19 @@ export default function AICoach() {
     if (!prompt || submissionInFlight.current) return;
     submissionInFlight.current = true;
     setBusy(true); setError(""); setRequiresSignIn(false); setReply("");
-    const userData = { fatigue: Number(fatigue), sleep_hours: Number(sleepHours) };
-    const fingerprint = JSON.stringify({ user_data: userData, message: prompt });
-    if (pendingSubmission.current?.fingerprint !== fingerprint) {
-      pendingSubmission.current = { fingerprint, key: crypto.randomUUID() };
-    }
-    const submissionKey = pendingSubmission.current.key;
     try {
+      const userData = { fatigue: Number(fatigue), sleep_hours: Number(sleepHours) };
+      const fingerprint = JSON.stringify({ user_data: userData, message: prompt });
+      if (pendingSubmission.current?.fingerprint !== fingerprint) {
+        pendingSubmission.current = { fingerprint, key: createIdempotencyKey() };
+      }
       const result = await apiRequest("/ai/coach", {
         method: "POST",
         timeoutMs: 30000,
-        headers: { "Idempotency-Key": submissionKey },
+        headers: { "Idempotency-Key": pendingSubmission.current.key },
         body: { user_data: userData, message: prompt }
       });
-      if (pendingSubmission.current?.key === submissionKey) pendingSubmission.current = null;
+      pendingSubmission.current = null;
       setLastAdaptive(result && result.adaptive_inputs ? result.adaptive_inputs : null);
       setReplyMode(typeof result === "object" ? (result.mode || null) : null);
       setReply(typeof result === "string" ? result : result.coach_response || result.response || result.message || JSON.stringify(result));
@@ -77,7 +78,7 @@ export default function AICoach() {
         setRequiresSignIn(true);
         setError("Sign in to use personalized coaching.");
       } else if (e.status === 409) {
-        if (pendingSubmission.current?.key === submissionKey) pendingSubmission.current = null;
+        pendingSubmission.current = null;
         setError("This request key was already used for different coaching details. Please send your question again.");
       } else if (e.status === 0) {
         setError("AI Coach request timed out. Check saved coaching history before trying again.");
@@ -126,7 +127,7 @@ export default function AICoach() {
         <input aria-label="Ask AI Coach" value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Ask anything…" maxLength={4000} style={{ flex: 1, minWidth: 0, padding: 10, background: "#111", border: "1px solid #444", borderRadius: 8, color: "#fff" }} />
         <button disabled={busy || !message.trim()} style={{ padding: "10px 16px", background: AI_COLOR, border: 0, borderRadius: 8, fontWeight: 600 }}>{busy ? "Working…" : "Send"}</button>
       </form>
-      <section style={{ marginTop: 16 }}><h2 style={{ fontSize: 16 }}>Saved coaching history</h2>{history.filter((record) => record.feature === "coach").slice(0, 5).map((record) => <button key={record.id} onClick={() => { setReply(record.result.coach_response || "Saved recommendation"); setLastAdaptive(record.result.adaptive_inputs || null); setReplyMode(record.result.mode || "limited"); }} style={{ display: "block", width: "100%", textAlign: "left", padding: 10, marginBottom: 8, background: "#111", color: "#ddd", border: "1px solid #333", borderRadius: 8 }}>Saved {new Date(record.created_at).toLocaleString()} - {record.input.message}</button>)}</section>
+      <section style={{ marginTop: 16 }}><h2 style={{ fontSize: 16 }}>Saved coaching history</h2>{coachingRecords.filter((record) => record.feature === "coach").slice(0, 5).map((record) => <button key={record.id} onClick={() => { setReply(record.result.coach_response || "Saved recommendation"); setLastAdaptive(record.result.adaptive_inputs || null); setReplyMode(record.result.mode || "limited"); }} style={{ display: "block", width: "100%", textAlign: "left", padding: 10, marginBottom: 8, background: "#111", color: "#ddd", border: "1px solid #333", borderRadius: 8 }}>Saved {new Date(record.created_at).toLocaleString()} - {record.input.message}</button>)}</section>
       </>}
       {section === "plan" && <TrainingPlanGenerator onPlanSaved={loadHistory} />}
       {section === "history" && (
@@ -142,10 +143,11 @@ export default function AICoach() {
           </label>
           <p style={{ color: "#aaa", fontSize: 12 }}>Saved questions and weekly training plans remain in your account.</p>
           {error && <p role="alert" style={{ color: "#f87171" }}>{error}</p>}
-          {history.filter((record) => historyFilter === "all" || record.feature === historyFilter).length === 0 && !error && (
+          {history === null && !error && <p role="status">Loading coaching history…</p>}
+          {history !== null && coachingRecords.filter((record) => historyFilter === "all" || record.feature === historyFilter).length === 0 && !error && (
             <p>No saved coaching records in this category yet.</p>
           )}
-          {history.filter((record) => historyFilter === "all" || record.feature === historyFilter).map((record) => (
+          {coachingRecords.filter((record) => historyFilter === "all" || record.feature === historyFilter).map((record) => (
             <div key={record.id} style={{ padding: "12px 0", borderBottom: "1px solid #333" }}>
               <TextAction plain onClick={() => setOpenedRecord((current) => current === record.id ? null : record.id)}
                 style={{ display: "block", color: AI_COLOR, textAlign: "left" }}>

@@ -1,9 +1,7 @@
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Footer from "./footer.jsx";
 
 export default function Landing() {
-  const navigate = useNavigate();
-
   return (
     <div
       style={{
@@ -18,7 +16,7 @@ export default function Landing() {
         textAlign: "center"
       }}
     >
-      <h1 style={{ fontSize: "42px", fontWeight: "700", marginBottom: "20px" }}>
+      <h1 style={{ color: "inherit", fontSize: "42px", fontWeight: "700", marginBottom: "20px" }}>
         Welcome to DelphiaFit
       </h1>
 
@@ -26,11 +24,12 @@ export default function Landing() {
         Explore DelphiaFit in read‑only demo mode — no account needed.
       </p>
 
-      <div
-        onClick={() => navigate("/demo")}
+      <Link
+        to="/demo"
         style={{
           padding: "14px 28px",
           backgroundColor: "#4da6ff",
+          textDecoration: "none",
           color: "black",
           borderRadius: "8px",
           fontSize: "20px",
@@ -40,10 +39,10 @@ export default function Landing() {
         }}
       >
         Start Demo
-      </div>
+      </Link>
 
-      <div
-        onClick={() => navigate("/register")}
+      <Link
+        to="/register"
         style={{
           color: "#4da6ff",
           fontSize: "20px",
@@ -53,10 +52,10 @@ export default function Landing() {
         }}
       >
         Create Account
-      </div>
+      </Link>
 
-      <div
-        onClick={() => navigate("/login")}
+      <Link
+        to="/login"
         style={{
           color: "#4da6ff",
           fontSize: "20px",
@@ -65,7 +64,7 @@ export default function Landing() {
         }}
       >
         Login
-      </div>
+      </Link>
       <Footer />
     </div>
   );

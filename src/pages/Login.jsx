@@ -69,7 +69,7 @@ export default function Login() {
       ></div>
 
       <div style={{ position: "relative", zIndex: 2, width: "100%" }}>
-        <h1 style={{ fontSize: "36px", fontWeight: "700", marginBottom: "35px" }}>
+        <h1 style={{ color: "inherit", fontSize: "36px", fontWeight: "700", marginBottom: "35px" }}>
           Login
         </h1>
 
@@ -113,11 +113,12 @@ export default function Login() {
         <button type="button" disabled={status === "loading"}
           onClick={handleLogin}
           style={{
+            backgroundColor: "#111",
             color:
               status === "success"
                 ? "lightgreen"
                 : status === "error"
-                ? "red"
+                ? "#ff7070"
                 : "#4da6ff",
             fontSize: "22px",
             fontWeight: "600",
@@ -135,7 +136,7 @@ export default function Login() {
         </button>
 
         {status === "error" && (
-          <p style={{ color: "red", marginTop: "12px" }}>
+          <p style={{ color: "#ff7070", marginTop: "12px" }}>
             {errorMessage}
           </p>
         )}

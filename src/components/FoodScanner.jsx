@@ -2,9 +2,40 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import TextAction from "./TextAction.jsx";
 import { apiRequest, hasSession } from "../utils/api.js";
+import { createIdempotencyKey } from "../utils/idempotency.js";
 import { formatNutrient, NUTRIENT_LABELS, normalizeBarcode, portionNutrients } from "../utils/foodScanner.js";
 
 const GREEN = "#10b981";
+
+function getLogAttempt(fingerprint) {
+  const email = localStorage.getItem("userEmail")?.trim().toLowerCase();
+  const storageKey = email ? JSON.stringify(["nutrition-scanner-pending", email, fingerprint]) : null;
+  let key;
+  if (storageKey) {
+    try {
+      const storedKey = sessionStorage.getItem(storageKey);
+      if (/^[a-f0-9]{32}$/.test(storedKey ?? "")) {
+        key = storedKey;
+      } else {
+        key = createIdempotencyKey();
+        sessionStorage.setItem(storageKey, key);
+      }
+    } catch {
+      // The in-memory attempt still supports retries if tab storage is unavailable.
+    }
+  }
+  return { fingerprint, key: key || createIdempotencyKey(), storageKey };
+}
+
+function clearLogAttempt(storageKey) {
+  if (!storageKey) return;
+  try {
+    sessionStorage.removeItem(storageKey);
+  } catch {
+    // Storage cleanup must not turn a confirmed write into a reported failure.
+  }
+}
+
 const field = {
   display: "block", width: "100%", marginTop: 6, boxSizing: "border-box",
   padding: 11, borderRadius: 7, color: "#fff", background: "#151515",
@@ -152,6 +183,7 @@ export default function FoodScanner({ avoid = [], diet = "none" }) {
   const activeRef = useRef(false);
   const pendingLookup = useRef(false);
   const logLock = useRef(false);
+  const logAttempt = useRef(null);
 
   const stopCamera = useCallback(() => {
     activeRef.current = false;
@@ -187,17 +219,18 @@ export default function FoodScanner({ avoid = [], diet = "none" }) {
   }, []);
 
   async function lookup(value) {
+    if (pendingLookup.current || logLock.current) return;
     const code = normalizeBarcode(value);
     if (!code) {
       setError("Enter an 8–14 digit EAN or UPC barcode.");
       return;
     }
-    if (pendingLookup.current) return;
     pendingLookup.current = true;
     stopCamera();
     setInput(code);
     setProduct(null);
     setLogged(false);
+    logAttempt.current = null;
     setLoading(true);
     setError("");
     setStatus("");
@@ -250,7 +283,7 @@ export default function FoodScanner({ avoid = [], diet = "none" }) {
         try {
           const barcodes = await detector.detect(video);
           const match = barcodes.find((item) => normalizeBarcode(item.rawValue));
-          if (match) {
+          if (match && !logLock.current) {
             await lookup(match.rawValue);
             return;
           }
@@ -302,7 +335,16 @@ export default function FoodScanner({ avoid = [], diet = "none" }) {
     setLogBusy(true);
     setError("");
     try {
-      await apiRequest("/nutrition/", { method: "POST", body: portion, timeoutMs: 12000 });
+      const fingerprint = JSON.stringify({ barcode: product.barcode, quantity: Number(quantity), nutrition: portion });
+      if (logAttempt.current?.fingerprint !== fingerprint) {
+        logAttempt.current = getLogAttempt(fingerprint);
+      }
+      await apiRequest("/nutrition/", {
+        method: "POST", body: portion, timeoutMs: 12000,
+        headers: { "Idempotency-Key": logAttempt.current.key }
+      });
+      clearLogAttempt(logAttempt.current.storageKey);
+      logAttempt.current = null;
       setLogged(true);
       setStatus("Food logged once to today's nutrition totals, including calories, protein, carbs and fat.");
     } catch (err) {
@@ -339,10 +381,10 @@ export default function FoodScanner({ avoid = [], diet = "none" }) {
               autoComplete="off" maxLength={20} placeholder="For example, 12 or 13 digits" style={field}/>
           </label>
           <div>
-            <TextAction submit disabled={loading} style={action}>{loading ? "Looking up…" : "Look up product"}</TextAction>
+            <TextAction submit disabled={loading || logBusy} style={action}>{loading ? "Looking up…" : "Look up product"}</TextAction>
             {scanning
               ? <TextAction onClick={stopCamera} style={action}>Stop camera</TextAction>
-              : <TextAction onClick={startCamera} disabled={loading} style={action}>Scan with camera</TextAction>}
+              : <TextAction onClick={startCamera} disabled={loading || logBusy} style={action}>Scan with camera</TextAction>}
           </div>
         </form>
         <div style={{ display: scanning ? "block" : "none", marginTop: 12 }}>
@@ -374,7 +416,7 @@ export default function FoodScanner({ avoid = [], diet = "none" }) {
               This adds one entry to your existing daily nutrition totals.
             </p>
             <label>Amount consumed {product.nutrition_unit ? "(" + product.nutrition_unit + ")" : "(unit unavailable)"}
-              <input type="number" aria-label="Amount consumed" min="0.1" max="5000" step="0.1"
+              <input type="number" aria-label="Amount consumed" min="0.1" max="5000" step="0.1" disabled={logBusy || logged}
                 value={quantity} onChange={(event) => setQuantity(event.target.value)} style={field}/>
             </label>
             {portion && <p style={{ color: "#ccc", fontSize: 13 }}>
@@ -403,7 +445,7 @@ export default function FoodScanner({ avoid = [], diet = "none" }) {
         {!historyLoading && history.length === 0 && <p style={{ color: "#aaa" }}>No saved barcodes yet.</p>}
         {history.map((record) => (
           <div key={record.id} style={{ borderTop: "1px solid #333", padding: "10px 0", display: "flex", flexWrap: "wrap", alignItems: "center", gap: 12 }}>
-            <TextAction onClick={() => lookup(record.barcode)} style={action}>{record.barcode}</TextAction>
+            <TextAction onClick={() => lookup(record.barcode)} disabled={loading || logBusy} style={action}>{record.barcode}</TextAction>
             <span style={{ color: "#999", fontSize: 12 }}>{record.scanned_at ? new Date(record.scanned_at).toLocaleDateString() : ""}</span>
             <TextAction disabled={historyBusy} onClick={() => deleteHistory(record.id)} style={{ color: "#f3c98a" }}>
               Remove

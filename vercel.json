@@ -1,4 +1,10 @@
 {
+  "git": {
+    "deploymentEnabled": {
+      "qa/release-functional-20261124": false,
+      "qa/recertification-web-20261117": false
+    }
+  },
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ]

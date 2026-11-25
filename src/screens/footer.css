@@ -1,14 +1,14 @@
 .footer {
   padding: 20px;
   text-align: center;
-  color: #666;
+  color: inherit;
   font-size: 14px;
   margin-top: 40px;
 }
 
 .footer-links a {
-  color: #2e7d32;
-  text-decoration: none;
+  color: inherit;
+  text-decoration: underline;
   margin: 0 6px;
 }
 

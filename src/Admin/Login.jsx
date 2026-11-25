@@ -61,8 +61,10 @@ export default function AdminLogin() {
   }
 
   const container = {
-    width: "100vw",
-    height: "100vh",
+    width: "100%",
+    minHeight: "100vh",
+    padding: "16px",
+    boxSizing: "border-box",
     backgroundColor: BG,
     display: "flex",
     justifyContent: "center",
@@ -76,6 +78,7 @@ export default function AdminLogin() {
     borderRadius: "10px",
     padding: "30px",
     width: "350px",
+    maxWidth: "100%",
     display: "flex",
     flexDirection: "column",
     gap: "16px",
@@ -83,10 +86,11 @@ export default function AdminLogin() {
   };
 
   const title = {
+    color: TEXT_MAIN,
     fontSize: "24px",
     fontWeight: "600",
     textAlign: "center",
-    marginBottom: "10px"
+    margin: "0 0 10px"
   };
 
   const input = {
@@ -122,7 +126,7 @@ export default function AdminLogin() {
   return (
     <div style={container}>
       <form style={card} onSubmit={handleLogin}>
-        <div style={title}>Admin Login</div>
+        <h1 style={title}>Admin Login</h1>
         <div style={subtitle}>Access to the DelphiaFit admin panel</div>
 
         <input

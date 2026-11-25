@@ -1,11 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import App from "../App.jsx";
 
 vi.mock("../components/AdaptiveCoachCard.jsx", () => ({ default: () => null }));
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   localStorage.removeItem("token");
 });
 
@@ -80,7 +81,35 @@ describe("AI Coach navigation", () => {
     expect(localStorage.getItem("token")).toBe("valid-session");
   });
 
+  it("aborts a stalled request and preserves the question for recovery", async () => {
+    vi.useFakeTimers();
+    try {
+      localStorage.setItem("token", "valid-session");
+      const fetchMock = vi.spyOn(globalThis, "fetch")
+        .mockResolvedValueOnce({ ok: true, status: 200, json: async () => [] })
+        .mockImplementationOnce((_url, { signal }) => new Promise((_resolve, reject) => {
+          signal.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")));
+        }));
+
+      render(<MemoryRouter initialEntries={["/ai-coach"]}><App /></MemoryRouter>);
+      await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+      const question = screen.getByLabelText("Ask AI Coach");
+      fireEvent.change(question, { target: { value: "Workout?" } });
+      fireEvent.click(screen.getByRole("button", { name: "Send" }));
+
+      await act(async () => { await vi.advanceTimersByTimeAsync(30000); });
+      expect(fetchMock.mock.calls[1][1].signal.aborted).toBe(true);
+      expect(screen.getByRole("alert")).toHaveTextContent("AI Coach request timed out.");
+      expect(question).toHaveValue("Workout?");
+      expect(screen.getByRole("button", { name: "Send" })).toBeEnabled();
+      expect(localStorage.getItem("token")).toBe("valid-session");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("reuses the same idempotency key when a network-failed submission is retried", async () => {
+    vi.stubGlobal("crypto", { getRandomValues: globalThis.crypto.getRandomValues.bind(globalThis.crypto) });
     localStorage.setItem("token", "valid-session");
     const fetchMock = vi.spyOn(globalThis, "fetch")
       .mockResolvedValueOnce({ ok: true, status: 200, json: async () => [] })

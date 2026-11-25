@@ -40,18 +40,24 @@ const response = (data, status = 200) => ({
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
   localStorage.removeItem("token");
+  localStorage.removeItem("userEmail");
+  sessionStorage.clear();
 });
 
 describe("FoodScanner", () => {
   it("looks up a product without logging consumption, then logs one explicit portion", async () => {
     localStorage.setItem("token", "example-token");
     const calls = [];
+    let finishWrite;
+    const writePending = new Promise((resolve) => { finishWrite = resolve; });
     vi.spyOn(globalThis, "fetch").mockImplementation(async (url, options = {}) => {
       calls.push({ url: String(url), options });
       if (String(url).endsWith("/nutrition-scanner/history")) return response([]);
       if (String(url).endsWith("/nutrition-scanner/product/0012345678905")) return response(sample);
       if (String(url).endsWith("/nutrition/") && options.method === "POST") {
+        await writePending;
         return response({ id: 42, recorded_at: new Date().toISOString(), ...JSON.parse(options.body) });
       }
       return response({ detail: "Not found" }, 404);
@@ -66,12 +72,58 @@ describe("FoodScanner", () => {
     expect(calls.filter((c) => c.url.endsWith("/nutrition/") && c.options.method === "POST")).toHaveLength(0);
     fireEvent.change(screen.getByLabelText("Amount consumed"), { target: { value: "150" } });
     fireEvent.click(screen.getByRole("button", { name: "Log consumed amount" }));
+    expect(screen.getByLabelText("Amount consumed")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Look up product" })).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByRole("button", { name: "Scan with camera" })).toHaveAttribute("aria-disabled", "true");
+    finishWrite();
     expect(await screen.findByText(/Food logged once to today's nutrition totals/)).toBeInTheDocument();
+    expect(screen.getByLabelText("Amount consumed")).toBeDisabled();
     expect(screen.getByRole("button", { name: "Logged to today's totals" })).toHaveAttribute("aria-disabled", "true");
     const writes = calls.filter((c) => c.url.endsWith("/nutrition/") && c.options.method === "POST");
     expect(writes).toHaveLength(1);
     expect(JSON.parse(writes[0].options.body)).toMatchObject({ calories: 120, protein: 12, carbs: 11, fats: 3 });
     expect(writes[0].options.headers.Authorization).toBe("Bearer example-token");
+  });
+
+  it("retries a timed-out or uncertain log with the same server idempotency key after remount", async () => {
+    vi.stubGlobal("crypto", { getRandomValues: globalThis.crypto.getRandomValues.bind(globalThis.crypto) });
+    localStorage.setItem("token", "example-token");
+    localStorage.setItem("userEmail", "scanner@example.com");
+    const writes = [];
+    vi.spyOn(globalThis, "fetch").mockImplementation(async (url, options = {}) => {
+      const path = String(url);
+      if (path.endsWith("/nutrition-scanner/history")) return response([]);
+      if (path.endsWith("/nutrition-scanner/product/0012345678905")) return response(sample);
+      if (path.endsWith("/nutrition/") && options.method === "POST") {
+        writes.push(options);
+        if (writes.length === 1) throw new Error("Connection dropped after server accepted request");
+        return response({ id: 501, recorded_at: new Date().toISOString(), ...JSON.parse(options.body) });
+      }
+      return response({ detail: "Not found" }, 404);
+    });
+    async function lookUpAndLog() {
+      fireEvent.change(screen.getByLabelText("EAN / UPC barcode"), { target: { value: "0012345678905" } });
+      fireEvent.click(screen.getByRole("button", { name: "Look up product" }));
+      expect(await screen.findByText("Plain Test Yogurt")).toBeInTheDocument();
+      fireEvent.change(screen.getByLabelText("Amount consumed"), { target: { value: "150" } });
+      fireEvent.click(screen.getByRole("button", { name: "Log consumed amount" }));
+    }
+    const firstView = render(<MemoryRouter><FoodScanner /></MemoryRouter>);
+    await lookUpAndLog();
+    expect(await screen.findByText(/food log could not be confirmed/i)).toBeInTheDocument();
+    firstView.unmount();
+    const retryView = render(<MemoryRouter><FoodScanner /></MemoryRouter>);
+    await lookUpAndLog();
+    expect(await screen.findByText(/Food logged once to today's nutrition totals/)).toBeInTheDocument();
+    expect(writes).toHaveLength(2);
+    expect(writes[0].headers["Idempotency-Key"]).toMatch(/^[a-f0-9]{32}$/i);
+    expect(writes[1].headers["Idempotency-Key"]).toBe(writes[0].headers["Idempotency-Key"]);
+    expect(writes[1].body).toBe(writes[0].body);
+    retryView.unmount();
+    render(<MemoryRouter><FoodScanner /></MemoryRouter>);
+    await lookUpAndLog();
+    expect(await screen.findByText(/Food logged once to today's nutrition totals/)).toBeInTheDocument();
+    expect(writes[2].headers["Idempotency-Key"]).not.toBe(writes[0].headers["Idempotency-Key"]);
   });
 
   it("does not invent ratings or allow logging when required macro data is missing", async () => {
